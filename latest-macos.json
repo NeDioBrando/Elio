@@ -1,0 +1,224 @@
+{
+  "version": "1.24.20",
+  "desktop_version": "1.24.20",
+  "url": "https://raw.githubusercontent.com/stoveez/PlazCode/main/PlazCode-macOS-1.24.20.zip",
+  "sha256": "b28b897d70bbc2cc1f43ac4e28fd13d06012caa342c01ba68817147d64254143",
+  "release_notes": [
+    {
+      "version": "1.24.20",
+      "title": "ClickUp Ask Brain connects again",
+      "summary": "Fixes Start Agent on ClickUp's Ask Brain, which used to stop right after the AI's first reply and never finish connecting. Nothing else changes.",
+      "added": [],
+      "improved": [],
+      "fixed": [
+        "Start Agent now finishes connecting in a new ClickUp Ask Brain chat. Before, PlazCode stopped about a second after Brain's first reply, the bar said \"Not connected to this chat yet\", and the rest of the setup was never sent.",
+        "Why it happened: ClickUp changes the page address as soon as a new chat gets its first message, and PlazCode took that for a different chat. It now treats it as the same chat.",
+        "Everything else is unchanged: other AI sites, ClickUp agent chats, and your settings, memory and connections."
+      ],
+      "notes": [
+        "Tried on a real ClickUp Ask Brain chat in AgentScript mode: all five setup steps went through and PlazCode reported it was ready. Before the fix, the same test stopped after the first reply.",
+        "ClickUp agent chats and Firefox were not changed and were not tried on a live account. Automated tests on Windows, Mac and Linux must pass before this is published.",
+        "The Windows app is unsigned and the Mac app is not notarized, as in earlier versions. Your computer may ask you to confirm opening it."
+      ],
+      "github": {
+        "summary": "Fixes Start Agent on ClickUp's Ask Brain, which stopped right after the AI's first reply and never finished connecting.",
+        "sections": [
+          {
+            "title": "🛠️ What's fixed",
+            "items": [
+              "Start Agent now finishes connecting in a new ClickUp Ask Brain chat. Before, it stopped a second after Brain's first reply and said \"Not connected to this chat yet\".",
+              "ClickUp changes the page address when a new chat gets its first message, and PlazCode mistook that for a different chat. It now knows it is the same chat.",
+              "Nothing else changes: other AI sites, ClickUp agent chats, and your settings, memory and connections stay as they were."
+            ]
+          },
+          {
+            "title": "🧪 What was checked",
+            "items": [
+              "Tried on a real ClickUp Ask Brain chat: all five setup steps went through and PlazCode said it was ready. The same test failed before the fix.",
+              "ClickUp agent chats and Firefox were not changed and not tried on a live account.",
+              "The Windows app is unsigned and the Mac app is not notarized, as before. Your computer may ask you to confirm opening it."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.24.19",
+      "title": "Polish and shared reply recovery",
+      "summary": "Adds Polish throughout the PlazCode interface and improves shared reply recovery across verified assistant remounts, with ownership checks before tool dispatch.",
+      "added": [
+        "Polski — Polish in desktop, extension bar and popup language settings, with all 877 interface strings translated.",
+        "Fifteen searchable offline language choices; English remains the default and user-authored content is not translated."
+      ],
+      "improved": [
+        "Carry the exact parsed assistant text into dispatch bookkeeping when a verified reply is temporarily blank or remounted.",
+        "Explain unreadable replies accurately and direct stopped-loop recovery to Start or Restart in the PlazCode bar."
+      ],
+      "fixed": [
+        "Keep same-turn reply evidence only with unchanged fresh identity and conversation/send/session ownership; discard evidence when a node is reused for another turn.",
+        "Recheck reply ownership after visibility waits before dispatch. Pause without dispatching that reply if ownership cannot be verified."
+      ],
+      "notes": [
+        "Publication requires exact-source browser and Linux/Windows/macOS validation plus actual packaged Mac desktop lifetime, visibility and updater-relaunch checks.",
+        "Recovery evidence uses local unit/offline browser fixtures, including the real Claude reader and asynchronous loop handoffs. The affected live Claude account, real Studio projects and Microsoft Edge binary were not tested. Provider identity fallbacks remain a limitation; this is not a comprehensive no-replay guarantee.",
+        "Windows binaries are unsigned. The Mac app is ad-hoc signed, not notarized. Validated native bytes are reused without rebuilding during promotion."
+      ],
+      "github": {
+        "summary": "Polish joins the offline interface languages, and the shared reply loop handles verified remounts more reliably without borrowing another turn’s command.",
+        "sections": [
+          {
+            "title": "🌐 Polish interface",
+            "items": [
+              "Polski — Polish across desktop, bar and popup: 877 translated interface strings, searchable by name or code.",
+              "Fifteen offline language choices. English stays default; AI replies, prompts, code and tool arguments are unchanged."
+            ]
+          },
+          {
+            "title": "🛠️ Shared reply recovery",
+            "items": [
+              "Retain exact assistant evidence across verified same-turn remounts; clear it on changed turn/chat/send/session identity.",
+              "Check ownership again after visibility waits and before tool dispatch; pause if it cannot be verified.",
+              "Clearer stopped-loop instructions point to Start or Restart in the PlazCode bar. Existing ClickUp, Studio, Blender, Ultra and skill features remain."
+            ]
+          },
+          {
+            "title": "🧪 Validation and limits",
+            "items": [
+              "Exact-source platform/browser checks and actual packaged Mac lifetime/update-relaunch gates are required. Validated native bytes are reused.",
+              "Offline/unit fixtures include the real Claude reader and async loop handoffs, not the affected live account. Real Studio projects and the Edge binary were not tested; unreliable provider identities remain a limitation.",
+              "Windows unsigned; Mac ad-hoc signed, not notarized. GitHub provenance does not replace platform signing."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.24.18",
+      "title": "Interface languages and ClickUp startup reliability",
+      "summary": "Adds 14 offline interface-language choices and improves ClickUp startup draft acceptance and repeated history reads while preserving protected user content and send safeguards.",
+      "added": [
+        "Choose English, Spanish, French, Russian, Arabic, Simplified or Traditional Chinese, Japanese, Korean, German, Brazilian Portuguese, Italian, Hindi or Turkish in desktop, extension and bar settings.",
+        "Search language names and codes; persist the selection with existing preferences and use scoped Arabic right-to-left layout."
+      ],
+      "improved": [
+        "Translate built-in interface text offline while leaving user-authored content, paths, commands and PlazCode/Ultra branding unchanged.",
+        "Cache ClickUp history reads and avoid redundant owned-message masking work during tool-result loops."
+      ],
+      "fixed": [
+        "Keep the exact ClickUp composer protected but natively writable while delayed draft/model acceptance enables Send; repeated lock sweeps no longer close that acceptance window.",
+        "Stop before sending if the composer remounts or a different unsent draft is already present. Preserve exact-route rollback and never force disabled Send or replay uncertain delivery.",
+        "Retain startup staging, complete tool-result paging, native launch/update behavior and existing features."
+      ],
+      "notes": [
+        "Publication requires successful exact-source browser and Linux/Windows/macOS validation plus actual packaged Mac desktop lifetime, visibility and updater-relaunch checks.",
+        "Local delayed-model tests are sanitized model-bound fixtures, not actual Quill or live ClickUp accounts. Hosted browser fixtures use a mocked bridge; a signed-in ClickUp connection and labelled feedback transport also passed without project tools. Affected accounts, Microsoft Edge binary and real project edits were not tested.",
+        "Windows binaries are unsigned. The Mac app is ad-hoc signed, not notarized. Final native bytes are reused from validated artifacts; there is no separate user test-build delivery."
+      ],
+      "github": {
+        "summary": "Adds 14 offline UI languages and fixes locally reproduced ClickUp acceptance and repeated-scan problems without bypassing native send safety.",
+        "sections": [
+          {
+            "title": "🌐 Interface languages",
+            "items": [
+              "Fourteen choices across desktop, extension and bar settings, searchable by native/English name or code.",
+              "Offline catalogs, preference persistence, scoped Arabic RTL and protected authored/technical content."
+            ]
+          },
+          {
+            "title": "🛠️ ClickUp reliability",
+            "items": [
+              "Protected native-editability window for delayed draft acceptance, with exact editor/route checks and remount aborts.",
+              "Different existing drafts are preserved without clicking; disabled controls are never forced and ambiguous sends are not replayed.",
+              "Cached history reads and mutation-safe masking reduce repeated work between tool calls; existing result paging and startup features remain."
+            ]
+          },
+          {
+            "title": "🧪 Validation and limitations",
+            "items": [
+              "Exact-source platform/browser and real packaged Mac desktop lifetime gates are required before publication; validated native bytes are not rebuilt during promotion.",
+              "Delayed-model evidence is from local sanitized fixtures, not actual Quill. Signed-in ClickUp connection/feedback transport also passed. Affected accounts, Microsoft Edge binary and real-project edits were not tested.",
+              "Windows unsigned; Mac ad-hoc signed and not notarized. GitHub provenance does not replace platform signing."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.24.17",
+      "title": "ClickUp tool results and Blender command lists",
+      "summary": "ClickUp reads large tool results through complete retained pages and correctly selects Blender when its catalog request places server outside params.",
+      "added": [],
+      "improved": [
+        "Send ClickUp-sized result pages while keeping every original character available through plazcode_result_read, without rerunning the original tool.",
+        "Recheck final tool feedback after appended status and reference context."
+      ],
+      "fixed": [
+        "Large Blender results and full command references no longer exceed ClickUp’s outgoing transport bound.",
+        "Read-only command-list requests preserve an unambiguous top-level server selector; conflicting selectors are rejected."
+      ],
+      "notes": [
+        "Exact-source Windows/macOS/Linux/browser and packaged Mac desktop checks are required before publication.",
+        "Browser fixtures use a mocked bridge; affected live ClickUp accounts and real Blender/Studio work are not claimed tested. Windows is unsigned; macOS is not notarized."
+      ],
+      "github": {
+        "summary": "Fixes oversized ClickUp tool feedback and Blender command-list selection.",
+        "sections": [
+          {
+            "title": "🛠️ Fixes",
+            "items": [
+              "Large results and complete Blender/Roblox GUI catalogs use retained pages, without repeating the operation.",
+              "Blender catalog requests preserve server when supplied outside params.",
+              "Final feedback sizing includes appended status and references."
+            ]
+          },
+          {
+            "title": "🧪 Validation and limitations",
+            "items": [
+              "Platform/browser and packaged Mac desktop gates run before publication.",
+              "Fixtures use a mocked bridge; affected accounts and real projects were not tested. Windows unsigned; Mac not notarized."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.24.16",
+      "title": "Reliable ClickUp startup receipts",
+      "summary": "ClickUp startup continues after accepted context parts, uses compact defaults, and stops clearly when the selected AI model declines the connection.",
+      "added": [],
+      "improved": [
+        "Use compact default ClickUp startup instructions and bounded saved-note previews; keep full notes available through the memory reader and preserve custom instructions exactly.",
+        "Observe a startup acknowledgement through the existing response timeout when its receipt is delayed."
+      ],
+      "fixed": [
+        "Confirm each startup context part from a persisted new user row and its exact new assistant acknowledgement when rich-text rendering changes the user row.",
+        "Recognize explicit ClickUp model refusals before sending a protocol correction; leave startup stopped and the composer unlocked.",
+        "Cancel receipt observation on Stop or a known conversation change without sending again."
+      ],
+      "notes": [
+        "Validated on Windows, macOS and Linux with Chromium/Firefox regressions and packaged macOS desktop checks before publishing.",
+        "Affected live ClickUp accounts were not reproduced. AI models can still decline the connection request. Windows is unsigned; macOS is not notarized."
+      ],
+      "github": {
+        "summary": "ClickUp startup receipt and model-refusal fixes.",
+        "sections": [
+          {
+            "title": "🛠️ Fixes",
+            "items": [
+              "Accepted startup parts continue after rendered text changes or delayed acknowledgements.",
+              "Compact defaults reduce startup context while preserving custom instructions.",
+              "Explicit model refusals stop without repeated handshake requests."
+            ]
+          },
+          {
+            "title": "🧪 Validation and limitations",
+            "items": [
+              "Windows, macOS, Linux and Chromium/Firefox checks; packaged Mac desktop lifetime checked before publication.",
+              "Affected live accounts were not reproduced. A ClickUp model can still decline. Windows unsigned; Mac not notarized."
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

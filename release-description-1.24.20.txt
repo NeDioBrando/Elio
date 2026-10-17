@@ -1,0 +1,24 @@
+## ✨ PlazCode 1.24.20
+
+Fixes Start Agent on ClickUp's Ask Brain, which stopped right after the AI's first reply and never finished connecting.
+
+### 🛠️ What's fixed
+
+- Start Agent now finishes connecting in a new ClickUp Ask Brain chat. Before, it stopped a second after Brain's first reply and said "Not connected to this chat yet".
+- ClickUp changes the page address when a new chat gets its first message, and PlazCode mistook that for a different chat. It now knows it is the same chat.
+- Nothing else changes: other AI sites, ClickUp agent chats, and your settings, memory and connections stay as they were.
+
+### 🧪 What was checked
+
+- Tried on a real ClickUp Ask Brain chat: all five setup steps went through and PlazCode said it was ready. The same test failed before the fix.
+- ClickUp agent chats and Firefox were not changed and not tried on a live account.
+- The Windows app is unsigned and the Mac app is not notarized, as before. Your computer may ask you to confirm opening it.
+
+### 📥 How to update
+
+- Open PlazCode, or choose **Updates → Update now**.
+- Manual downloads: **PlazCode-1.24.20.zip** for Windows, **PlazCode-macOS-1.24.20.zip** for Mac, or **PlazCode-Firefox-1.24.20.zip** for Firefox.
+- Reload your extension and refresh your AI tabs. Firefox users: reload the temporary add-on after restarting Firefox.
+- Your settings, memory and connections are kept.
+
+Test details are included in VALIDATION.txt.

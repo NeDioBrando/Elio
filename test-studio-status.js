@@ -1,0 +1,23 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const source=fs.readFileSync(__dirname+'/background.js','utf8');
+const proc=source.slice(source.indexOf('async function refreshProcStatus()'),source.search(/const browserIdentity\s*=/));
+const probe=source.slice(source.indexOf('let studioProbing'),source.indexOf('function handleBridgeMessage'));
+(async()=>{
+ let response={roblox_connected:true,roblox_proc:false,local_ready:false};let broadcasts=0;
+ const box={RUST_ROBLOX_HTTP:'http://127.0.0.1:3000',rustMode:true,fullSyncedOnce:true,robloxProc:false,robloxEditorConnected:false,localReady:false,localFull:false,localRoot:'',connected:true,engine:'roblox',studioConnected:true,pending:new Map(),broadcastStatus(){broadcasts++},pullDesktopPreferences:async()=>{},bridgeFetch:async()=>({ok:true,json:async()=>response}),send:async()=>({ok:false,kind:'timeout'})};
+ vm.createContext(box);vm.runInContext(proc+probe,box);await box.refreshProcStatus();assert.equal(box.robloxEditorConnected,true);assert.equal(box.robloxProc,true);assert.equal(broadcasts,1);
+ await box.refreshStudioStatus();assert.equal(box.robloxEditorConnected,true);assert.equal(box.studioConnected,true);
+ box.send=async()=>({ok:true,studio:false});await box.refreshStudioStatus();assert.equal(box.robloxEditorConnected,false);assert.equal(box.studioConnected,false);
+ response={roblox_connected:false,roblox_proc:true,local_ready:false};await box.refreshProcStatus();assert.equal(box.robloxEditorConnected,false);assert.equal(box.robloxProc,true);
+ response={roblox_proc:true,local_ready:false};box.robloxEditorConnected=true;await box.refreshProcStatus();assert.equal(box.robloxEditorConnected,true);
+ Object.assign(box,{studioChecking:true,studioProc:false,mcpAlive:false,toolsCache:[],serversCache:[],studioApp:null});
+ const handler=source.slice(source.indexOf('function handleBridgeMessage'),source.indexOf('function resolvePending'));
+ vm.runInContext(handler,box);
+ const before=broadcasts;
+ box.handleBridgeMessage({type:'roblox_status',studio:true,studio_proc:true,mcp_alive:true,tools:[{name:'execute_luau'}]});
+ assert.equal(broadcasts,before+1);assert.equal(box.robloxEditorConnected,true);assert.equal(box.studioChecking,false);assert.equal(box.serversCache[0].alive,true);assert.equal(box.serversCache[0].tools,1);
+ box.engine='local';box.toolsCache=[{name:'read_file'}];box.studioConnected=true;box.mcpAlive=true;
+ box.handleBridgeMessage({type:'roblox_status',studio:false,studio_proc:true});
+ assert.equal(box.robloxEditorConnected,false);assert.equal(box.studioConnected,true);assert.equal(box.toolsCache[0].name,'read_file');assert.equal(box.mcpAlive,true);
+ console.log('Desktop confirmed-editor status, missed process scans, unknown probe timeouts, explicit failures and older status payloads passed.');
+})().catch(e=>{console.error(e);process.exitCode=1});

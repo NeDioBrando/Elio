@@ -1,0 +1,99 @@
+{
+  "name": "MeadowIsland",
+  "profile": "default",
+  "note": "Example TERRAIN map: an island of smooth voxel terrain with beaches, a terraced hillside, a mesa, a graded road up to a flattened shrine pad ringed by standing stones, and an islet you can only swim to. The ground is terrain, so the T checks prove it organic. Parts on terrain must sit at the terrain height: the pad is forced to y=92, so the 10-stud stones are centred at y=97, and the spawn is 2+ studs above the ground under it (smooth terrain surfaces about 2 studs above the heightfield). Run: python scripts/build_map.py meadow_island",
+  "volume": {
+    "bounds": [[-384, -40, -384], [384, 220, 384]],
+    "killPlane": -60,
+    "lift": 8
+  },
+  "terrain": {
+    "size": [768, 768],
+    "seed": 7,
+    "seaFloor": -30,
+    "tide": {
+      "low": 28,
+      "high": 40,
+      "periodSeconds": 480
+    },
+    "landforms": [
+      {
+        "name": "island",
+        "center": [0, 0],
+        "radius": [300, 260],
+        "lobes": 6,
+        "lobeAmp": 0.14,
+        "rough": 10,
+        "profile": [[-80, -20], [-12, 30], [0, 38], [60, 46], [180, 90], [420, 150]]
+      },
+      {
+        "name": "mesa",
+        "center": [110, 70],
+        "radius": 90,
+        "rough": 6,
+        "blend": 6,
+        "profile": [[0, 90], [10, 160], [200, 170]]
+      },
+      {
+        "name": "terraces",
+        "center": [-140, -100],
+        "radius": 130,
+        "op": "terrace",
+        "step": 18
+      },
+      {
+        "name": "islet",
+        "center": [-300, 210],
+        "radius": 46,
+        "rough": 4,
+        "profile": [[0, 30], [20, 52], [60, 58]]
+      }
+    ],
+    "pads": [
+      {
+        "name": "Shrine",
+        "center": [-60, 40],
+        "radius": 26,
+        "material": "Cobblestone",
+        "reason": "a flat stone circle for the shrine",
+        "height": 92
+      }
+    ],
+    "paths": [
+      {
+        "name": "ShrineRoad",
+        "points": [[-152, -86], [-140, -30], [-110, 10], [-60, 40]],
+        "width": 12,
+        "maxGrade": 24
+      }
+    ],
+    "zones": [
+      {
+        "name": "Shrine",
+        "center": [-60, 40],
+        "radius": 20
+      },
+      {
+        "name": "Islet",
+        "center": [-300, 210],
+        "radius": 20,
+        "access": "swim"
+      }
+    ]
+  },
+  "parts": [
+    {"id": "ShrineStone1", "size": [3, 10, 2], "pos": [-42.0, 97, 40.0], "yaw": 90, "decor": true, "roles": ["landmark"], "material": "Slate", "color": [120, 124, 132]},
+    {"id": "ShrineStone2", "size": [3, 10, 2], "pos": [-51.0, 97, 55.59], "yaw": 30, "decor": true, "roles": ["landmark"], "material": "Slate", "color": [120, 124, 132]},
+    {"id": "ShrineStone3", "size": [3, 10, 2], "pos": [-69.0, 97, 55.59], "yaw": 330, "decor": true, "roles": ["landmark"], "material": "Slate", "color": [120, 124, 132]},
+    {"id": "ShrineStone4", "size": [3, 10, 2], "pos": [-78.0, 97, 40.0], "yaw": 270, "decor": true, "roles": ["landmark"], "material": "Slate", "color": [120, 124, 132]},
+    {"id": "ShrineStone5", "size": [3, 10, 2], "pos": [-69.0, 97, 24.41], "yaw": 210, "decor": true, "roles": ["landmark"], "material": "Slate", "color": [120, 124, 132]},
+    {"id": "ShrineStone6", "size": [3, 10, 2], "pos": [-51.0, 97, 24.41], "yaw": 150, "decor": true, "roles": ["landmark"], "material": "Slate", "color": [120, 124, 132]}
+  ],
+  "spawns": [[-152, 57, -86]],
+  "intent": {},
+  "sightlines": {
+    "minClearFraction": 0.0,
+    "maxClearFraction": 1.0
+  },
+  "open_edges": "An example island in open sea: the water is the edge here. Add invisible barrier walls before shipping a real map."
+}

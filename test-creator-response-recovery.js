@@ -1,0 +1,23 @@
+const assert=require('node:assert/strict'),C=require('./core/chat-creators.js');
+const save={action:'save',build_id:'cow-1',status:'building',blueprint:{root_id:'root',nodes:[{id:'root',class:'Model'}]}};
+let result=C.recoverPreview('Plan proportions.\n```json\n'+JSON.stringify(save)+'\n```',true);
+assert.equal(result.tool,'creation_preview');assert.equal(result.arguments.blueprint.build_id,'cow-1');assert.equal(result.arguments.status,'building');
+assert.equal(C.recoverPreview(JSON.stringify(save),false),null);
+for(const text of ['```json\n'+JSON.stringify(save)+'\n```\n```json\n{}\n```','{"action":"save",','Some prose '+JSON.stringify(save),JSON.stringify({...save,command:'execute_luau'}),JSON.stringify({...save,blueprint:{...save.blueprint,build_id:'other'}}),JSON.stringify({...save,action:'insert'})])assert.equal(C.recoverPreview(text,true),null,text);
+assert.equal(C.recoverPreview(JSON.stringify({command:'creation_preview',params:save}),true),null);
+const fs=require('node:fs'),vm=require('node:vm');
+const main=fs.readFileSync('core/main.js','utf8');
+const begin=main.slice(main.indexOf('  let latestRequestCache=null;'),main.indexOf('  async function finishTaskCheckpoint('));
+(async()=>{
+ let label='Enhanced cow brief',engine='roblox';
+ const A={sessionGen:1,creatorPreEnhanced:{text:label,raw:'low poly cow',context:JSON.stringify(['chat','roblox',1])}};
+ const context=vm.createContext({synerixcodeActivity:require('./core/activity'),synerixcodeChecklist:require('./core/checklist'),activity:require('./core/activity').create(),A,P:{allItems:()=>[{text:label,cloneNode(){return {text:this.text,querySelectorAll:()=>[]};}}],isUserItem:()=>true,itemText:i=>i.text,conversationKey:()=> 'chat',id:'fixture'},RS:{SYS_MARKER:'system-marker'},RSParse:{isInjectedFeedback:()=>false},activeEngine:()=>engine,refreshPersonalMemory:async()=>{},recallEngram:()=>{},engramScope:()=> 'chat:fixture',synerixcodeChatCreators:C,synerixcodeTemplates:{reference:()=>''},bg:async()=>({ok:true,id:'checkpoint'}),ui:{toast:()=>{}}});
+ vm.runInContext(begin+';this.begin=beginTaskCheckpoint',context);
+ await context.begin();
+ assert.equal(A.creatorPreEnhanced,null);assert.equal(A.creatorTask,true);assert.equal(A.taskRequest,'low poly cow');
+ assert.equal(C.recoverPreview(JSON.stringify(save),A.creatorTask).tool,'creation_preview');
+ label='Explain this error';await context.begin();assert.equal(A.creatorTask,false);
+ label='Make a low poly cow model';await context.begin();assert.equal(A.creatorTask,true);
+ engine='local';await context.begin();assert.equal(A.creatorTask,false);
+ console.log('PASS: creator recovery persists through enhancement cleanup, resets between tasks, rejects local-engine JSON, conflicts and competing JSON.');
+})().catch(error=>{console.error(error);process.exitCode=1;});

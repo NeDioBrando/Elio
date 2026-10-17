@@ -1,23 +1,11 @@
-# PlazCode
+# synerixcode v1
 
-PlazCode connects your AI chats to tools on your computer. This repository only hosts the **downloads and update information** for PlazCode.
+Independent GPL-3.0-or-later fork of PlazCode 1.24.20, originally derived from ZeroScript-Free.
+Blue identity, Vani AI provider, local-only v1 version display, no product self-updater.
 
-## Download
+**This source package does not contain a prebuilt Windows executable.**
+See [README-RU.md](README-RU.md) for build, installation, limitations and Windows validation.
+Build on Windows x64 using `Build-Windows.ps1` or the manual GitHub Actions workflow.
+Do not reuse the upstream EXE, because it still contains its original updater.
 
-Get the latest version from the [Releases page](https://github.com/stoveez/PlazCode/releases/latest):
-
-- **Windows:** `PlazCode-<version>.zip`
-- **Mac:** `PlazCode-macOS-<version>.zip`
-- **Firefox:** `PlazCode-Firefox-<version>.zip`
-
-## Updating
-
-PlazCode updates itself. Open PlazCode, or choose **Updates → Update now**. Your settings, memory and connections are kept.
-
-## What is in this repository
-
-- `latest.json`, `latest-macos.json` – the files PlazCode reads to find new versions. Please do not rename or move them.
-- `release-notes.json` – the list of what changed in each version.
-- The current version's download files.
-
-PlazCode's source code is not published here.
+Upstream license/branding and third-party notices are preserved. This is not an official PlazCode release.

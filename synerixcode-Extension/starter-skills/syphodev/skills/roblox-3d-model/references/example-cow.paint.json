@@ -1,0 +1,298 @@
+{
+  "_generated": "make_paint_spec.py - FIRST PASS. Render it and look before trusting it.",
+  "_asset": "cow",
+  "_landmarks": {
+    "span_studs": [
+      2.651,
+      6.009,
+      4.32
+    ],
+    "body_axis": "y",
+    "width_axis": "x",
+    "up_axis": "z",
+    "head_at_axis_min": true,
+    "head_end_cross_section": 0.263,
+    "tail_end_cross_section": 0.114,
+    "head_tail_ratio": 2.3,
+    "head_z_range": [
+      0.0,
+      0.817
+    ],
+    "head_width_range": [
+      0.121,
+      0.881
+    ],
+    "nose_point": [
+      0.502,
+      1.0,
+      0.246
+    ],
+    "nose_z": 0.246,
+    "foot_body_range": [
+      0.114,
+      0.664
+    ],
+    "has_ears": false,
+    "head_end_source": "explicit:min"
+  },
+  "base": "#F4F1F0",
+  "stamps": [
+    {
+      "name": "belly",
+      "type": "band",
+      "axis": "z",
+      "max": 0.34,
+      "color": "#FFFFFF",
+      "soft": 0.2
+    },
+    {
+      "name": "back",
+      "type": "band",
+      "axis": "z",
+      "min": 0.86,
+      "color": "#E7DFDD",
+      "soft": 0.14
+    },
+    {
+      "name": "hooves",
+      "type": "band",
+      "axis": "z",
+      "max": 0.055,
+      "color": "#444241",
+      "soft": 0.018
+    },
+    {
+      "name": "patch1",
+      "type": "blob",
+      "at": [
+        0.3,
+        0.3,
+        0.55
+      ],
+      "r": [
+        0.184,
+        0.1323,
+        0.1438
+      ],
+      "color": "#4E4C4A",
+      "soft": 0.3,
+      "mirror": "x"
+    },
+    {
+      "name": "patch2",
+      "type": "blob",
+      "at": [
+        0.24,
+        0.47,
+        0.72
+      ],
+      "r": [
+        0.216,
+        0.1552,
+        0.1688
+      ],
+      "color": "#4E4C4A",
+      "soft": 0.3,
+      "mirror": "x"
+    },
+    {
+      "name": "patch3",
+      "type": "blob",
+      "at": [
+        0.33,
+        0.63,
+        0.48
+      ],
+      "r": [
+        0.16,
+        0.115,
+        0.125
+      ],
+      "color": "#4E4C4A",
+      "soft": 0.3,
+      "mirror": "x"
+    },
+    {
+      "name": "patch4",
+      "type": "blob",
+      "at": [
+        0.27,
+        0.74,
+        0.68
+      ],
+      "r": [
+        0.192,
+        0.138,
+        0.15
+      ],
+      "color": "#4E4C4A",
+      "soft": 0.3,
+      "mirror": "x"
+    },
+    {
+      "name": "patch5",
+      "type": "blob",
+      "at": [
+        0.36,
+        0.2,
+        0.75
+      ],
+      "r": [
+        0.152,
+        0.1092,
+        0.1187
+      ],
+      "color": "#4E4C4A",
+      "soft": 0.3,
+      "mirror": "x"
+    },
+    {
+      "name": "patch6",
+      "type": "blob",
+      "at": [
+        0.4,
+        0.55,
+        0.3
+      ],
+      "r": [
+        0.144,
+        0.1035,
+        0.1125
+      ],
+      "color": "#4E4C4A",
+      "soft": 0.3,
+      "mirror": "x"
+    },
+    {
+      "name": "patch7",
+      "type": "blob",
+      "at": [
+        0.31,
+        0.86,
+        0.6
+      ],
+      "r": [
+        0.168,
+        0.1207,
+        0.1313
+      ],
+      "color": "#4E4C4A",
+      "soft": 0.3,
+      "mirror": "x"
+    },
+    {
+      "name": "snout",
+      "type": "blob",
+      "at": [
+        0.5,
+        0.01,
+        0.246
+      ],
+      "r": [
+        0.232,
+        0.066,
+        0.2696
+      ],
+      "color": "#E0CCC6",
+      "soft": 0.3,
+      "facing": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "facing_min": 0.1
+    },
+    {
+      "name": "nostril",
+      "type": "blob",
+      "at": [
+        0.418,
+        0.0,
+        0.246
+      ],
+      "r": [
+        0.042,
+        0.045,
+        0.048
+      ],
+      "color": "#444241",
+      "soft": 0.25,
+      "facing": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "facing_min": 0.35,
+      "mirror": "x"
+    },
+    {
+      "name": "eye_white",
+      "type": "blob",
+      "at": [
+        0.2426,
+        0.128,
+        0.5882
+      ],
+      "r": [
+        0.072,
+        0.062,
+        0.0776
+      ],
+      "color": "#F9F9F9",
+      "soft": 0.1,
+      "facing": [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      "facing_min": 0.2,
+      "mirror": "x"
+    },
+    {
+      "name": "pupil",
+      "type": "blob",
+      "at": [
+        0.2356,
+        0.122,
+        0.5801
+      ],
+      "r": [
+        0.048,
+        0.036,
+        0.0449
+      ],
+      "color": "#241C20",
+      "soft": 0.1,
+      "facing": [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      "facing_min": 0.2,
+      "mirror": "x"
+    },
+    {
+      "name": "brow",
+      "type": "blob",
+      "at": [
+        0.2526,
+        0.142,
+        0.6699
+      ],
+      "r": [
+        0.078,
+        0.048,
+        0.014
+      ],
+      "color": "#2A2024",
+      "soft": 0.15,
+      "facing": [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      "facing_min": 0.25,
+      "mirror": "x"
+    }
+  ]
+}

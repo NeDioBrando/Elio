@@ -1,0 +1,16 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const source=fs.readFileSync('core/main.js','utf8'),start=source.indexOf('    let exportChatKey ='),end=source.indexOf('    rsInterval(()=>',start);
+let items=[],chat='a',reads=0;
+const context={P:{conversationKey:()=>chat,allItems:()=>items,isUserItem:x=>x.role==='user',isAssistantItem:x=>x.role==='assistant',itemKey:x=>x.id,itemText:x=>{reads++;return x.textContent;}},Map,WeakMap,Date};
+vm.createContext(context);vm.runInContext(source.slice(start,end)+';this.capture=captureExportHistory;this.dirty=()=>{exportDirty=true};this.overflow=()=>exportOverflow;',context);
+const item=(id,text,role='user')=>({id,textContent:text,role});
+items=[item('2','second'),item('3','third')];context.capture();const initial=reads;context.capture();assert.equal(reads,initial);
+items.unshift(item('1','first'));assert.equal(JSON.stringify(context.capture().map(x=>x.text)),JSON.stringify(['first','second','third']));
+items[2].textContent='third streamed';assert.equal(context.capture()[2].text,'third streamed');
+items.push(item('4','fourth','assistant'));assert.equal(context.capture().length,4);
+chat='b';items=[item('1','different chat')];assert.equal(context.capture().length,1);
+chat='long';items=Array.from({length:1500},(_,i)=>item(String(i),'m'+i));assert.equal(context.capture().length,1500);
+reads=0;context.dirty();context.capture(false);assert.equal(reads,0);
+items.push(item('1500','new'));context.dirty();context.capture(false);assert.equal(reads,1);
+chat='too-long';items=Array.from({length:2100},(_,i)=>item(String(i),'m'));assert.equal(context.capture().length,2000);assert(context.overflow());
+console.log('Chat ordering, streaming updates, chat isolation, 1,500-message cache reuse and explicit retention overflow passed.');

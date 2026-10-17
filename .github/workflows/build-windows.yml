@@ -1,0 +1,29 @@
+name: Build synerixcode v1 (Windows x64)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.99.1'
+      - name: Audit, test, compile and package
+        shell: pwsh
+        run: ./Build-Windows.ps1
+      - name: Upload Windows ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: synerixcode-v1-Windows-x64
+          path: dist/synerixcode-v1-Windows-x64.zip
+          if-no-files-found: error

@@ -1,0 +1,14 @@
+# Small harness for the production preference module, without desktop/Roblox dependencies.
+[package]
+name = "synerixcode-native-preference-tests"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"

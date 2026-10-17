@@ -1,0 +1,353 @@
+{
+  "name": "R15 Rear-Hand Uppercut",
+  "fps": 24,
+  "duration": 1.0,
+  "w": 560,
+  "h": 700,
+  "fit": 3.0,
+  "views": {
+    "side": [
+      1.0,
+      0.04,
+      0.0
+    ],
+    "tq": [
+      0.85,
+      1.0,
+      0.0
+    ]
+  },
+  "_calib": "TORSO/UpTorso rot: X=forward lean, Y=TWIST, Z=sideways lean, all 1:1 deg. IK_Hand loc: +X pulls fist inward (locX 0.5 -> hand x 1.00 from rest 1.50), -Y forward, +Z up 1:1. Rest hand (1.5,0,0.28) rel LowerTorso, head top z=2.0. LEFT HAND locX IS INVERTED: negative pulls it inward (right uses positive). Y/Z match.",
+  "keyframes": [
+    {
+      "t": 0.0,
+      "_note": "guard - upright, bladed, both fists up by the chin",
+      "bones": {
+        "IK_Hand.R": {
+          "loc": [
+            0.5,
+            -0.35,
+            1.2
+          ]
+        },
+        "IK_Hand.L": {
+          "loc": [
+            -0.5,
+            -0.55,
+            1.1
+          ]
+        },
+        "TORSO": {
+          "rot": [
+            3,
+            -14,
+            0
+          ]
+        },
+        "UpTorso": {
+          "rot": [
+            2,
+            -8,
+            0
+          ]
+        },
+        "HEAD": {
+          "rot": [
+            -4,
+            6,
+            0
+          ]
+        },
+        "IK_LEG.R": {
+          "loc": [
+            0,
+            0.3,
+            0
+          ]
+        },
+        "IK_LEG.L": {
+          "loc": [
+            0,
+            -0.34,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "t": 0.2,
+      "_note": "coil - torso winds away, rear fist drops low and back, small settle",
+      "bones": {
+        "IK_Hand.R": {
+          "loc": [
+            0.3,
+            0.45,
+            -0.6
+          ]
+        },
+        "IK_Hand.L": {
+          "loc": [
+            -0.52,
+            -0.62,
+            1.15
+          ]
+        },
+        "TORSO": {
+          "rot": [
+            6,
+            -26,
+            0
+          ]
+        },
+        "UpTorso": {
+          "rot": [
+            3,
+            -14,
+            0
+          ]
+        },
+        "HEAD": {
+          "rot": [
+            -2,
+            10,
+            0
+          ]
+        },
+        "IK_LEG.R": {
+          "loc": [
+            0,
+            0.36,
+            -0.06
+          ]
+        },
+        "IK_LEG.L": {
+          "loc": [
+            0,
+            -0.4,
+            -0.06
+          ]
+        }
+      }
+    },
+    {
+      "t": 0.36,
+      "_note": "drive - torso unwinds through, body rises, rear fist rockets up past the chin",
+      "bones": {
+        "IK_Hand.R": {
+          "loc": [
+            0.45,
+            -0.7,
+            1.6
+          ]
+        },
+        "IK_Hand.L": {
+          "loc": [
+            -0.48,
+            -0.2,
+            0.95
+          ]
+        },
+        "TORSO": {
+          "rot": [
+            -2,
+            20,
+            0
+          ]
+        },
+        "UpTorso": {
+          "rot": [
+            -2,
+            14,
+            0
+          ]
+        },
+        "HEAD": {
+          "rot": [
+            -8,
+            -5,
+            0
+          ]
+        },
+        "IK_LEG.R": {
+          "loc": [
+            0,
+            0.24,
+            0.05
+          ]
+        },
+        "IK_LEG.L": {
+          "loc": [
+            0,
+            -0.28,
+            0.03
+          ]
+        }
+      }
+    },
+    {
+      "t": 0.46,
+      "_note": "peak - fist high, body open, weight forward",
+      "bones": {
+        "IK_Hand.R": {
+          "loc": [
+            0.45,
+            -0.65,
+            1.5
+          ]
+        },
+        "IK_Hand.L": {
+          "loc": [
+            -0.49,
+            -0.26,
+            1.0
+          ]
+        },
+        "TORSO": {
+          "rot": [
+            -1,
+            17,
+            0
+          ]
+        },
+        "UpTorso": {
+          "rot": [
+            -1,
+            12,
+            0
+          ]
+        },
+        "HEAD": {
+          "rot": [
+            -7,
+            -4,
+            0
+          ]
+        },
+        "IK_LEG.R": {
+          "loc": [
+            0,
+            0.25,
+            0.04
+          ]
+        },
+        "IK_LEG.L": {
+          "loc": [
+            0,
+            -0.29,
+            0.02
+          ]
+        }
+      }
+    },
+    {
+      "t": 0.7,
+      "_note": "settle back toward guard",
+      "bones": {
+        "IK_Hand.R": {
+          "loc": [
+            0.49,
+            -0.45,
+            1.28
+          ]
+        },
+        "IK_Hand.L": {
+          "loc": [
+            -0.5,
+            -0.48,
+            1.06
+          ]
+        },
+        "TORSO": {
+          "rot": [
+            2,
+            -4,
+            0
+          ]
+        },
+        "UpTorso": {
+          "rot": [
+            1,
+            -2,
+            0
+          ]
+        },
+        "HEAD": {
+          "rot": [
+            -5,
+            1,
+            0
+          ]
+        },
+        "IK_LEG.R": {
+          "loc": [
+            0,
+            0.28,
+            0
+          ]
+        },
+        "IK_LEG.L": {
+          "loc": [
+            0,
+            -0.32,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "t": 1.0,
+      "_note": "recover to guard",
+      "bones": {
+        "IK_Hand.R": {
+          "loc": [
+            0.5,
+            -0.35,
+            1.2
+          ]
+        },
+        "IK_Hand.L": {
+          "loc": [
+            -0.5,
+            -0.55,
+            1.1
+          ]
+        },
+        "TORSO": {
+          "rot": [
+            3,
+            -14,
+            0
+          ]
+        },
+        "UpTorso": {
+          "rot": [
+            2,
+            -8,
+            0
+          ]
+        },
+        "HEAD": {
+          "rot": [
+            -4,
+            6,
+            0
+          ]
+        },
+        "IK_LEG.R": {
+          "loc": [
+            0,
+            0.3,
+            0
+          ]
+        },
+        "IK_LEG.L": {
+          "loc": [
+            0,
+            -0.34,
+            0
+          ]
+        }
+      }
+    }
+  ]
+}

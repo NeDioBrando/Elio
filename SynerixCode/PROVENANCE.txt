@@ -1,0 +1,4 @@
+Upstream source URL: https://github.com/stoveez/PlazCode/releases/download/v1.24.20/PlazCode-source-1.24.20.zip
+SHA256: a359139c301580762d20508f15a02bc52caa1e2383df16d1106fda960a5a0762
+Vani input ZIP SHA256: a1e9d9a48628e63bfe19d20da64ebd2aaf25dcaf3d55750649b4ef6be7bde50f
+Native binary: NOT built for Windows in this environment.

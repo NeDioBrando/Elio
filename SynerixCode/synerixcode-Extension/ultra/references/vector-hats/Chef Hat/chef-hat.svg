@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <style>
+      .cls-1, .cls-2 {
+        fill: #fff;
+      }
+
+      .cls-2 {
+        opacity: 0;
+      }
+
+      .cls-3 {
+        fill: #cef;
+      }
+
+      .cls-4 {
+        fill: #96dbff;
+      }
+    </style>
+  </defs>
+  <g id="Finals">
+    <g id="chef-hat">
+      <rect class="cls-2" width="64" height="64"/>
+      <g>
+        <g>
+          <circle class="cls-1" cx="49.22" cy="23.27" r="10.27"/>
+          <circle class="cls-1" cx="14.76" cy="23.27" r="10.27"/>
+        </g>
+        <path class="cls-3" d="M49.54,27.83c-7.07-8.75-17.55-8.88-17.55-8.88,0,0-10.49,.12-17.55,8.88l-1.45,27.76H50.99l-1.45-27.76Z"/>
+        <path class="cls-1" d="M46.86,17.79c0,7.01-6.66,9.15-14.87,9.15s-14.87-2.14-14.87-9.15,6.66-12.7,14.87-12.7,14.87,5.68,14.87,12.7Z"/>
+        <g>
+          <path class="cls-1" d="M50.99,56.58l-.55-10.62c-1.66-1.92-9.28-3.37-18.45-3.37s-16.79,1.45-18.45,3.37l-.55,10.62H50.99Z"/>
+          <ellipse class="cls-4" cx="31.99" cy="56.58" rx="19" ry="2.33"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

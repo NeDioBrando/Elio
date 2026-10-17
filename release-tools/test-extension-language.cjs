@@ -1,0 +1,35 @@
+// Real Chromium with local ClickUp DOM and mocked extension storage only.
+const {chromium}=require('playwright'),fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const {pageFor}=require('./test-clickup-browser.cjs');
+const root=path.resolve(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
+const screenshotDir=process.env.SYNERIXCODE_LANGUAGE_SCREENSHOTS;
+async function shots(page,name){if(!screenshotDir)return;fs.mkdirSync(screenshotDir,{recursive:true});await page.evaluate(()=>{const menu=document.querySelector('#rs-menu');if(menu)menu.scrollTop=0;});await page.waitForTimeout(100);await page.screenshot({path:path.join(screenshotDir,name+'.png'),fullPage:false});}
+async function storage(page){await page.evaluate(()=>{window.localeStore={};window.localeSaves=[];window.localeListeners=[];window.failLocaleSave=false;chrome.storage.local.get=(keys,cb)=>{const value={...localeStore};if(cb)queueMicrotask(()=>cb(value));return Promise.resolve(value);};chrome.storage.local.set=async update=>{if(failLocaleSave)throw Error('fixture persistence rejected');localeSaves.push(update);const changes={};for(const [key,value]of Object.entries(update)){changes[key]={oldValue:localeStore[key],newValue:value};localeStore[key]=value;}for(const fn of localeListeners)fn(changes,'local');};chrome.storage.onChanged.addListener=fn=>localeListeners.push(fn);window.externalLocale=value=>{localeStore.rsLanguage=value;for(const fn of localeListeners)fn({rsLanguage:{newValue:value}},'local');};});}
+(async()=>{const browser=await chromium.launch({headless:true,...(process.env.SYNERIXCODE_CHROMIUM?{executablePath:process.env.SYNERIXCODE_CHROMIUM}:fs.existsSync('/usr/local/bin/chromium')?{executablePath:'/usr/local/bin/chromium'}:{}),args:['--no-sandbox']});try{
+ const {page,errors}=await pageFor(browser,false);await storage(page);
+ await page.addStyleTag({path:path.join(root,'overlay.css')});
+ const scripts=JSON.parse(read('manifest.json')).content_scripts.find(x=>x.js.includes('providers/clickup.js')).js;
+ for(const file of scripts)if(!['providers/clickup.js','core/parser.js'].includes(file))await page.addScriptTag({content:read(file)});
+ await page.waitForSelector('#rs-bar');await page.locator('#rs-settings-btn').click();
+ const host=page.locator('#rs-menu [data-pc-language-picker]'),select=host.locator('select'),search=host.locator('input');await select.waitFor({state:'visible'});assert.equal(await select.locator('option').count(),15);assert.equal(await select.inputValue(),'en');
+ await search.fill('日本');assert.deepEqual(await select.locator('option').evaluateAll(ns=>ns.map(n=>n.value)),['en','ja']);assert.equal(await page.evaluate(()=>localeSaves.filter(x=>x.rsLanguage).length),0);await search.fill('');
+ await page.evaluate(()=>provider.writeDraft('Home Settings Save — my own draft'));
+ await search.fill('Polski');assert.deepEqual(await select.locator('option').evaluateAll(ns=>ns.map(n=>n.value)),['en','pl']);await search.fill('');
+ await select.selectOption('pl');await page.waitForFunction(()=>synerixcodeI18n.getLanguage()==='pl');assert.equal(await page.evaluate(()=>localeStore.rsLanguage),'pl');assert.equal(await page.evaluate(()=>synerixcodeI18n.t('Settings')),JSON.parse(read('core/locales/pl.json')).Settings);assert.equal(await page.evaluate(()=>provider.editorText()),'Home Settings Save — my own draft');
+ await select.selectOption('es');await page.waitForFunction(()=>synerixcodeI18n.getLanguage()==='es');assert.equal(await page.evaluate(()=>localeStore.rsLanguage),'es');assert.equal(await page.locator('html').getAttribute('dir'),null,'never set host site direction');assert.equal(await page.evaluate(()=>provider.editorText()),'Home Settings Save — my own draft');await shots(page,'bar-settings-es-desktop');
+ await page.evaluate(()=>externalLocale('ar'));await page.waitForFunction(()=>document.querySelector('#rs-root').dir==='rtl');assert.equal(await select.inputValue(),'ar');assert.equal(await page.locator('html').getAttribute('dir'),null);await shots(page,'bar-settings-ar-desktop');
+ await page.setViewportSize({width:390,height:844});await page.waitForTimeout(350);await shots(page,'bar-settings-ar-mobile');
+ const menuBox=await page.locator('#rs-menu').boundingBox();assert(menuBox.x>=0&&menuBox.x+menuBox.width<=390,'menu stays inside viewport');
+ const overflow=await host.evaluate(n=>({width:n.getBoundingClientRect().width,scroll:n.scrollWidth}));assert(overflow.scroll<=overflow.width+2,'language control does not overflow');
+ await page.evaluate(()=>externalLocale('en'));await page.evaluate(()=>failLocaleSave=true);await select.selectOption('fr');await page.waitForFunction(()=>document.querySelector('#rs-menu select[id^="pc-language-"]').value==='en');assert.match(await host.locator('[role=status]').innerText(),/could not be saved/);assert.equal(await page.evaluate(()=>synerixcodeI18n.getLanguage()),'en');assert.deepEqual(errors,[]);await page.close();
+ // Extension popup, all resources served from the local source, no remote calls.
+ const popup=await browser.newPage({viewport:{width:420,height:900}});const popupErrors=[];popup.on('pageerror',e=>popupErrors.push(e.message));
+ await popup.route('https://synerixcode-fixture.invalid/**',route=>{const file=new URL(route.request().url()).pathname.slice(1)||'popup.html';const p=path.join(root,file);if(!p.startsWith(root+path.sep)||!fs.existsSync(p))return route.fulfill({status:404,body:''});return route.fulfill({contentType:file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':'text/html',body:fs.readFileSync(p)});});
+ await popup.addInitScript(()=>{const get=(x,cb)=>{if(cb)cb({});return Promise.resolve({});};window.chrome={runtime:{getManifest:()=>({version:'1.24.18'}),sendMessage:async()=>({ok:true,engine:'roblox',connected:true}),getURL:p=>p,onMessage:{addListener(){}}},tabs:{query:async()=>[{id:1,url:'https://app.clickup.com/1/ai/brain'}],sendMessage:async()=>({ok:true}),create:async()=>{}},storage:{local:{get,set:async()=>{}},onChanged:{addListener(){}}}};});
+ await popup.goto('https://synerixcode-fixture.invalid/popup.html');await storage(popup);
+ // Runtime captured persistence callback reads the live storage API.
+ const ph=popup.locator('#popup-language-picker'),ps=ph.locator('select');await ps.waitFor({state:'visible'});assert.equal(await ps.locator('option').count(),15);
+ for(const code of ['pl','es','ar']){await ps.selectOption(code);await popup.waitForFunction(code=>document.documentElement.lang===code,code);await shots(popup,'popup-'+code);assert.equal(await popup.locator('html').getAttribute('dir'),code==='ar'?'rtl':'ltr');}
+ await popup.setViewportSize({width:390,height:844});await shots(popup,'popup-ar-mobile');assert.equal(popupErrors.length,0,popupErrors.join('\n'));await popup.close();
+ console.log('PASS extension languages: bar/popup search, persistence, external refresh, failure rollback, user draft isolation, scoped RTL, responsive control');
+ }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

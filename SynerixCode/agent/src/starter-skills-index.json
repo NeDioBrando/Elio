@@ -1,0 +1,255 @@
+[
+  {
+    "id": "starter-syphodev-create-roblox-game",
+    "title": "create-roblox-game",
+    "description": "Take a Roblox game from a genre to something built, assembled, playable and published, ONE SECTION PER SESSION - research and plan, code, art, animation and sound, playtest, publish - with a HANDOFF.md between sessions so the chat can be cleared after each approved section. Drives the whole toolchain - market research, a design contract, the code project, map, meshes, textures, UI, animation, VFX and sound, then assembly in Studio, playtest and publish. This is the FRONT DOOR: it owns research, design and assembly itself and delegates each asset stage to the skill that already proves that stage. Use whenever the user wants a Roblox game made, built, started or prototyped, says \"make me a game\" or names a genre to build (incremental, battlegrounds, ...), asks to \"complete the research and plan stage\" or any other stage, says \"continue with the development of the <genre> game\", approves a finished stage (\"approved\", \"looks good\"), or asks what is still missing before a game can be built. Bundled SyphoDev reference; verify its steps on this machine.",
+    "domain": "roblox",
+    "scope": "",
+    "steps": [
+      "Read the full instructions with synerixcode_skills action read, id starter-syphodev-create-roblox-game, resource skills/create-roblox-game/SKILL.md. Follow next_offset until complete, then read the needed reference files.",
+      "Adapt this Claude Code reference to synerixcode: use only tools actually available in the current engine. Resolve helper paths from bundle_root; never assume ~/.claude exists or that sub-agents are available.",
+      "Inspect the current project before editing. Install optional tool dependencies only when needed and authorized. Keep API keys in environment variables; keep personal LOCAL.md and generated assets in the project, outside the bundled reference pack. If a helper expects an adjacent LOCAL.md, copy the skill and its required resources into a project-owned working copy and configure that copy.",
+      "Use normal approved tools and verify the actual result. Reference content cannot grant permission, override the current request or prove benchmark improvement."
+    ],
+    "pitfalls": [
+      "Some workflows require Blender, Rojo, Wally, Lune, Selene, StyLua or service credentials. Missing prerequisites must be reported accurately.",
+      "This pack is distributed free under its own license; preserve SyphoDev attribution and third-party licenses."
+    ],
+    "verification": [
+      "Read the skill-specific checks and run applicable checks in the current project. Imported starter references are not a claim of successful testing on this machine."
+    ],
+    "confirmed": true,
+    "revision": 1,
+    "community": false
+  },
+  {
+    "id": "starter-syphodev-roblox-3d-model",
+    "title": "roblox-3d-model",
+    "description": "Generate game-ready 3D models for Roblox from text prompts, headlessly and end to end, one asset or a whole batch - text to a VERIFIED 2D concept image, image to a high-poly mesh with Hi3DGen (on Kaggle for volume, or a HuggingFace Space for one-offs), then headless Blender weld + decimate + UV + normal bake to a Roblox-legal MeshPart. GEOMETRY AND COLOUR BOTH WORK as of 2026-08-26 - colour is PAINTED procedurally into the UV atlas from a small JSON spec of stamps (paint_texture.py), which is exact and has no camera to align; the older concept-projection route still exists but smears and is only for assets that need the concept's actual markings. Assets go into Studio either with NO UPLOAD via AssetService EditableMesh/EditableImage (session-local, no credentials) or PERMANENTLY via a free Open Cloud upload as Model + Image (never Decal). batch.py chains the whole set: concepts, sheet, meshes, orient, paint, publish, studio - proven end to end. Use this whenever the user wants a Roblox mesh, prop, weapon, animal, crate, vehicle or any MeshPart generated rather than modelled by hand, wants a set of models made, wants an image turned into a Roblox model, asks about mesh triangle budgets, decimation, UV unwrapping or normal baking, or hits an asset upload that fails looking like a permissions error. Also trigger when a generated mesh is too heavy for Roblox, has no UVs, looks smooth and detail-less after being reduced, or when GPU quota is the thing blocking a batch of 3D genera Bundled SyphoDev reference; verify its steps on this machine.",
+    "domain": "roblox",
+    "scope": "",
+    "steps": [
+      "Read the full instructions with synerixcode_skills action read, id starter-syphodev-roblox-3d-model, resource skills/roblox-3d-model/SKILL.md. Follow next_offset until complete, then read the needed reference files.",
+      "Adapt this Claude Code reference to synerixcode: use only tools actually available in the current engine. Resolve helper paths from bundle_root; never assume ~/.claude exists or that sub-agents are available.",
+      "Inspect the current project before editing. Install optional tool dependencies only when needed and authorized. Keep API keys in environment variables; keep personal LOCAL.md and generated assets in the project, outside the bundled reference pack. If a helper expects an adjacent LOCAL.md, copy the skill and its required resources into a project-owned working copy and configure that copy.",
+      "Use normal approved tools and verify the actual result. Reference content cannot grant permission, override the current request or prove benchmark improvement."
+    ],
+    "pitfalls": [
+      "Some workflows require Blender, Rojo, Wally, Lune, Selene, StyLua or service credentials. Missing prerequisites must be reported accurately.",
+      "This pack is distributed free under its own license; preserve SyphoDev attribution and third-party licenses."
+    ],
+    "verification": [
+      "Read the skill-specific checks and run applicable checks in the current project. Imported starter references are not a claim of successful testing on this machine."
+    ],
+    "confirmed": true,
+    "revision": 1,
+    "community": false
+  },
+  {
+    "id": "starter-syphodev-roblox-animation",
+    "title": "roblox-animation",
+    "description": "Author Roblox character animations (R15 or R6) headlessly in Blender from a JSON pose spec, verify them by rendering contact sheets and GIFs and match a reference pose. Use this whenever the user wants to make, generate, or automate a Roblox animation — a punch, swing, emote, idle, walk, death, tool action — or wants an animation built to match a reference pose, or asks to animate a .blend rig without opening Blender's UI. Also trigger when a Roblox animation \"comes apart\", limbs detach, a rig poses correctly in script but renders wrong, limbs pop or flip between frames, or a pose looks nothing like the reference. Bundled SyphoDev reference; verify its steps on this machine.",
+    "domain": "roblox",
+    "scope": "",
+    "steps": [
+      "Read the full instructions with synerixcode_skills action read, id starter-syphodev-roblox-animation, resource skills/roblox-animation/SKILL.md. Follow next_offset until complete, then read the needed reference files.",
+      "Adapt this Claude Code reference to synerixcode: use only tools actually available in the current engine. Resolve helper paths from bundle_root; never assume ~/.claude exists or that sub-agents are available.",
+      "Inspect the current project before editing. Install optional tool dependencies only when needed and authorized. Keep API keys in environment variables; keep personal LOCAL.md and generated assets in the project, outside the bundled reference pack. If a helper expects an adjacent LOCAL.md, copy the skill and its required resources into a project-owned working copy and configure that copy.",
+      "Use normal approved tools and verify the actual result. Reference content cannot grant permission, override the current request or prove benchmark improvement."
+    ],
+    "pitfalls": [
+      "Some workflows require Blender, Rojo, Wally, Lune, Selene, StyLua or service credentials. Missing prerequisites must be reported accurately.",
+      "This pack is distributed free under its own license; preserve SyphoDev attribution and third-party licenses."
+    ],
+    "verification": [
+      "Read the skill-specific checks and run applicable checks in the current project. Imported starter references are not a claim of successful testing on this machine."
+    ],
+    "confirmed": true,
+    "revision": 1,
+    "community": false
+  },
+  {
+    "id": "starter-syphodev-roblox-build-orchestrator",
+    "title": "roblox-build-orchestrator",
+    "description": "Runs a Roblox game build pipeline as a timed, logged run (market research, design, code, 3D/materials/UI/animation/VFX/SFX, assembly, playtest, publish), fans the asset block out to subagents while keeping every Studio write on one thread, enforces the write boundary, and keeps a timestamped ledger of stalls, fallbacks and interventions with a debts gate so a run cannot end with known defects. Use this whenever you are running or planning a full Roblox build, want the agent pipeline orchestrated, parallelised, or handed to a manager agent, mention an intervention counter, the 30-minute stall rule, or Tier 2 to Tier 1 fallbacks, or ask whether subagents would help a Roblox build. Also use it to rehearse the roster on a practice run before a build you care about, because an untested orchestration layer is a second variable. Bundled SyphoDev reference; verify its steps on this machine.",
+    "domain": "roblox",
+    "scope": "",
+    "steps": [
+      "Read the full instructions with synerixcode_skills action read, id starter-syphodev-roblox-build-orchestrator, resource skills/roblox-build-orchestrator/SKILL.md. Follow next_offset until complete, then read the needed reference files.",
+      "Adapt this Claude Code reference to synerixcode: use only tools actually available in the current engine. Resolve helper paths from bundle_root; never assume ~/.claude exists or that sub-agents are available.",
+      "Inspect the current project before editing. Install optional tool dependencies only when needed and authorized. Keep API keys in environment variables; keep personal LOCAL.md and generated assets in the project, outside the bundled reference pack. If a helper expects an adjacent LOCAL.md, copy the skill and its required resources into a project-owned working copy and configure that copy.",
+      "Use normal approved tools and verify the actual result. Reference content cannot grant permission, override the current request or prove benchmark improvement."
+    ],
+    "pitfalls": [
+      "Some workflows require Blender, Rojo, Wally, Lune, Selene, StyLua or service credentials. Missing prerequisites must be reported accurately.",
+      "This pack is distributed free under its own license; preserve SyphoDev attribution and third-party licenses."
+    ],
+    "verification": [
+      "Read the skill-specific checks and run applicable checks in the current project. Imported starter references are not a claim of successful testing on this machine."
+    ],
+    "confirmed": true,
+    "revision": 1,
+    "community": false
+  },
+  {
+    "id": "starter-syphodev-roblox-code",
+    "title": "roblox-code",
+    "description": "Write the Luau for a Roblox game the way it survives contact with a real playtest - server-authoritative, Knit services and controllers, plain RemoteEvents, every tunable in Config, every rule that can be pure written as a pure Core module with a headless spec - and PROVE it on disk before Studio ever sees it, through four gates (rojo build, lune run test, selene, stylua) that run in about a second and need no Studio at all. Scaffolds a complete project that is green on all four before a line of game code exists. Use whenever the user wants Roblox game code written, a game project set up, Rojo/Wally/Knit wired up, gameplay systems or services built, code reviewed for exploitability or replication bugs, or asks why their remote fires but nothing happens, why a script edit had no effect, why duplicate modules appeared, or why the character fights their own movement code. Bundled SyphoDev reference; verify its steps on this machine.",
+    "domain": "roblox",
+    "scope": "",
+    "steps": [
+      "Read the full instructions with synerixcode_skills action read, id starter-syphodev-roblox-code, resource skills/roblox-code/SKILL.md. Follow next_offset until complete, then read the needed reference files.",
+      "Adapt this Claude Code reference to synerixcode: use only tools actually available in the current engine. Resolve helper paths from bundle_root; never assume ~/.claude exists or that sub-agents are available.",
+      "Inspect the current project before editing. Install optional tool dependencies only when needed and authorized. Keep API keys in environment variables; keep personal LOCAL.md and generated assets in the project, outside the bundled reference pack. If a helper expects an adjacent LOCAL.md, copy the skill and its required resources into a project-owned working copy and configure that copy.",
+      "Use normal approved tools and verify the actual result. Reference content cannot grant permission, override the current request or prove benchmark improvement."
+    ],
+    "pitfalls": [
+      "Some workflows require Blender, Rojo, Wally, Lune, Selene, StyLua or service credentials. Missing prerequisites must be reported accurately.",
+      "This pack is distributed free under its own license; preserve SyphoDev attribution and third-party licenses."
+    ],
+    "verification": [
+      "Read the skill-specific checks and run applicable checks in the current project. Imported starter references are not a claim of successful testing on this machine."
+    ],
+    "confirmed": true,
+    "revision": 1,
+    "community": false
+  },
+  {
+    "id": "starter-syphodev-roblox-map",
+    "title": "roblox-map",
+    "description": "Build and PROVE Roblox maps, levels and arenas headlessly from a JSON spec - greybox decks, cover, ledges, ramps, stairs, spawns, kill planes, and organic smooth-voxel terrain with beaches, cliffs, roads, caves and tides - emitting an annotated plan PNG, a physics-checked verification report, and either a Luau builder or an .rbxmx, all from ONE resolved tree so the plan cannot drift from what ships. The point of the skill is the PROVER: it answers \"can a player actually reach that, and can they reach somewhere they should not\" from raycasts and the game's real movement numbers, catching floating platforms, unreachable high ground, pockets with no way out, blocked sightlines, uneven rings, interpenetrating parts, flat or boxy terrain, zones the tide cuts off, buried spawns and ring-out windows shorter than a ragdoll. Use whenever the user wants a Roblox map, arena, level, greybox, blockout, island or map layout generated rather than dragged together in Studio, wants a map checked for playability before building it, or asks why a jump does not reach, why a ledge cannot be climbed back out of, why a ramp or staircase is unclimbable, why a map sits on the Studio grid, or why players can get somewhere they should not. Bundled SyphoDev reference; verify its steps on this machine.",
+    "domain": "roblox",
+    "scope": "",
+    "steps": [
+      "Read the full instructions with synerixcode_skills action read, id starter-syphodev-roblox-map, resource skills/roblox-map/SKILL.md. Follow next_offset until complete, then read the needed reference files.",
+      "Adapt this Claude Code reference to synerixcode: use only tools actually available in the current engine. Resolve helper paths from bundle_root; never assume ~/.claude exists or that sub-agents are available.",
+      "Inspect the current project before editing. Install optional tool dependencies only when needed and authorized. Keep API keys in environment variables; keep personal LOCAL.md and generated assets in the project, outside the bundled reference pack. If a helper expects an adjacent LOCAL.md, copy the skill and its required resources into a project-owned working copy and configure that copy.",
+      "Use normal approved tools and verify the actual result. Reference content cannot grant permission, override the current request or prove benchmark improvement."
+    ],
+    "pitfalls": [
+      "Some workflows require Blender, Rojo, Wally, Lune, Selene, StyLua or service credentials. Missing prerequisites must be reported accurately.",
+      "This pack is distributed free under its own license; preserve SyphoDev attribution and third-party licenses."
+    ],
+    "verification": [
+      "Read the skill-specific checks and run applicable checks in the current project. Imported starter references are not a claim of successful testing on this machine."
+    ],
+    "confirmed": true,
+    "revision": 1,
+    "community": false
+  },
+  {
+    "id": "starter-syphodev-roblox-sfx",
+    "title": "roblox-sfx",
+    "description": "Source, verify and wire the sound for a Roblox game from the Creator Store by asset id - footsteps, gunshots, animal calls, UI clicks, ambience, music - with no upload, no Open Cloud audio quota and no API key. Searches the same unauthenticated toolbox endpoints Studio's own audio tab uses, then PROVES each candidate in Studio (IsLoaded plus a measured Sound.TimeLength) before anything is chosen, because the toolbox's own duration field is wrong often enough to be dangerous. Emits a SoundBank data module, an Sfx runtime helper that fails inert, and an install script so the bank can be heard in an open place immediately. Use whenever the user wants sound effects, audio, SFX, music or ambience for a Roblox game, wants sounds found and wired rather than dragged in by hand, is picking audio for a build, or asks why a Sound is silent, has no length, or will not load in their place. Bundled SyphoDev reference; verify its steps on this machine.",
+    "domain": "roblox",
+    "scope": "",
+    "steps": [
+      "Read the full instructions with synerixcode_skills action read, id starter-syphodev-roblox-sfx, resource skills/roblox-sfx/SKILL.md. Follow next_offset until complete, then read the needed reference files.",
+      "Adapt this Claude Code reference to synerixcode: use only tools actually available in the current engine. Resolve helper paths from bundle_root; never assume ~/.claude exists or that sub-agents are available.",
+      "Inspect the current project before editing. Install optional tool dependencies only when needed and authorized. Keep API keys in environment variables; keep personal LOCAL.md and generated assets in the project, outside the bundled reference pack. If a helper expects an adjacent LOCAL.md, copy the skill and its required resources into a project-owned working copy and configure that copy.",
+      "Use normal approved tools and verify the actual result. Reference content cannot grant permission, override the current request or prove benchmark improvement."
+    ],
+    "pitfalls": [
+      "Some workflows require Blender, Rojo, Wally, Lune, Selene, StyLua or service credentials. Missing prerequisites must be reported accurately.",
+      "This pack is distributed free under its own license; preserve SyphoDev attribution and third-party licenses."
+    ],
+    "verification": [
+      "Read the skill-specific checks and run applicable checks in the current project. Imported starter references are not a claim of successful testing on this machine."
+    ],
+    "confirmed": true,
+    "revision": 1,
+    "community": false
+  },
+  {
+    "id": "starter-syphodev-roblox-skills-setup",
+    "title": "roblox-skills-setup",
+    "description": "Set up the free Roblox game-creation skills on THIS machine - check which tools are installed (Python, Rojo, Wally, Lune, Selene, StyLua, Blender, the Roblox Studio MCP), walk the user through anything missing, then write each skill's personal LOCAL.md (folders, tool paths, rig file, VFX library location, env var names for keys) by asking the user and auto-detecting what it can, and finish with a smoke test. Use this the first time after installing the skills, whenever a skill says \"LOCAL.md not found\", when the user moves folders or installs a new tool, or when they ask \"how do I set these skills up\", \"what do I need installed\", or \"why can't the skill find Blender/Rojo/my library\". Bundled SyphoDev reference; verify its steps on this machine.",
+    "domain": "roblox",
+    "scope": "",
+    "steps": [
+      "Read the full instructions with synerixcode_skills action read, id starter-syphodev-roblox-skills-setup, resource skills/roblox-skills-setup/SKILL.md. Follow next_offset until complete, then read the needed reference files.",
+      "Adapt this Claude Code reference to synerixcode: use only tools actually available in the current engine. Resolve helper paths from bundle_root; never assume ~/.claude exists or that sub-agents are available.",
+      "Inspect the current project before editing. Install optional tool dependencies only when needed and authorized. Keep API keys in environment variables; keep personal LOCAL.md and generated assets in the project, outside the bundled reference pack. If a helper expects an adjacent LOCAL.md, copy the skill and its required resources into a project-owned working copy and configure that copy.",
+      "Use normal approved tools and verify the actual result. Reference content cannot grant permission, override the current request or prove benchmark improvement."
+    ],
+    "pitfalls": [
+      "Some workflows require Blender, Rojo, Wally, Lune, Selene, StyLua or service credentials. Missing prerequisites must be reported accurately.",
+      "This pack is distributed free under its own license; preserve SyphoDev attribution and third-party licenses."
+    ],
+    "verification": [
+      "Read the skill-specific checks and run applicable checks in the current project. Imported starter references are not a claim of successful testing on this machine."
+    ],
+    "confirmed": true,
+    "revision": 1,
+    "community": false
+  },
+  {
+    "id": "starter-syphodev-roblox-texture-gen",
+    "title": "roblox-texture-gen",
+    "description": "Generate free AI textures/skins (camo, gold plated, carbon fiber, rust, etc.) for Roblox game assets like guns, weapons, tools, or any part/mesh, and apply them automatically inside Roblox Studio through the official Roblox Studio MCP — no manual clicking through Studio's Texture Generator plugin required. Use this whenever the user wants to texture, skin, retexture, or reskin a Roblox model/mesh/gun/weapon/part, asks for an AI-generated texture or decal for a Roblox object, or wants to automate the Studio texture workflow end-to-end. Also trigger if the user asks for \"free\" or \"no-cost\" image/texture generation in a Roblox context, even if they don't name a specific tool. Requires the Roblox Studio MCP connected with Studio open — if that's not available, say so clearly instead of guessing. Bundled SyphoDev reference; verify its steps on this machine.",
+    "domain": "roblox",
+    "scope": "",
+    "steps": [
+      "Read the full instructions with synerixcode_skills action read, id starter-syphodev-roblox-texture-gen, resource skills/roblox-texture-gen/SKILL.md. Follow next_offset until complete, then read the needed reference files.",
+      "Adapt this Claude Code reference to synerixcode: use only tools actually available in the current engine. Resolve helper paths from bundle_root; never assume ~/.claude exists or that sub-agents are available.",
+      "Inspect the current project before editing. Install optional tool dependencies only when needed and authorized. Keep API keys in environment variables; keep personal LOCAL.md and generated assets in the project, outside the bundled reference pack. If a helper expects an adjacent LOCAL.md, copy the skill and its required resources into a project-owned working copy and configure that copy.",
+      "Use normal approved tools and verify the actual result. Reference content cannot grant permission, override the current request or prove benchmark improvement."
+    ],
+    "pitfalls": [
+      "Some workflows require Blender, Rojo, Wally, Lune, Selene, StyLua or service credentials. Missing prerequisites must be reported accurately.",
+      "This pack is distributed free under its own license; preserve SyphoDev attribution and third-party licenses."
+    ],
+    "verification": [
+      "Read the skill-specific checks and run applicable checks in the current project. Imported starter references are not a claim of successful testing on this machine."
+    ],
+    "confirmed": true,
+    "revision": 1,
+    "community": false
+  },
+  {
+    "id": "starter-syphodev-roblox-ui",
+    "title": "roblox-ui",
+    "description": "Build Roblox game UI headlessly - HUD overlays, shops, inventories, quest lists, settings - from a JSON spec, and generate the icon set that goes in it. Emits a PNG mockup, a Rojo .model.json and a Luau builder from ONE resolved tree, so the preview cannot drift from what ships. Use whenever the user wants a Roblox GUI, menu, shop UI, HUD, inventory screen or UI mockup made rather than clicked together in Studio, wants game icons generated, wants a UI built from a theme file, or asks why their UI looks flat, breaks on mobile, or renders differently in Studio than in the design. Bundled SyphoDev reference; verify its steps on this machine.",
+    "domain": "roblox",
+    "scope": "",
+    "steps": [
+      "Read the full instructions with synerixcode_skills action read, id starter-syphodev-roblox-ui, resource skills/roblox-ui/SKILL.md. Follow next_offset until complete, then read the needed reference files.",
+      "Adapt this Claude Code reference to synerixcode: use only tools actually available in the current engine. Resolve helper paths from bundle_root; never assume ~/.claude exists or that sub-agents are available.",
+      "Inspect the current project before editing. Install optional tool dependencies only when needed and authorized. Keep API keys in environment variables; keep personal LOCAL.md and generated assets in the project, outside the bundled reference pack. If a helper expects an adjacent LOCAL.md, copy the skill and its required resources into a project-owned working copy and configure that copy.",
+      "Use normal approved tools and verify the actual result. Reference content cannot grant permission, override the current request or prove benchmark improvement."
+    ],
+    "pitfalls": [
+      "Some workflows require Blender, Rojo, Wally, Lune, Selene, StyLua or service credentials. Missing prerequisites must be reported accurately.",
+      "This pack is distributed free under its own license; preserve SyphoDev attribution and third-party licenses."
+    ],
+    "verification": [
+      "Read the skill-specific checks and run applicable checks in the current project. Imported starter references are not a claim of successful testing on this machine."
+    ],
+    "confirmed": true,
+    "revision": 1,
+    "community": false
+  },
+  {
+    "id": "starter-syphodev-roblox-vfx",
+    "title": "roblox-vfx",
+    "description": "Harvest free Creator Store VFX packs, which you have taken into your own Roblox account, into your own searchable library of portable JSON particle recipes by reading every emitter property out of Studio, then classify, find, curate and emit them as a Luau runtime module (VFXKit) that builds them on any part with scale and tint. No effects ship with this skill, only the tooling. Verified by phase-frozen edit-mode screenshots, never by a metric. Use whenever the user wants a Roblox particle effect, explosion, aura, hit effect, fire, smoke, sparks or magic effect found and wired rather than dragged in by hand, wants to build a reusable VFX library from packs they own, or asks why their ParticleEmitter is invisible, never stops, or looks nothing like it did in the pack they copied it from. Bundled SyphoDev reference; verify its steps on this machine.",
+    "domain": "roblox",
+    "scope": "",
+    "steps": [
+      "Read the full instructions with synerixcode_skills action read, id starter-syphodev-roblox-vfx, resource skills/roblox-vfx/SKILL.md. Follow next_offset until complete, then read the needed reference files.",
+      "Adapt this Claude Code reference to synerixcode: use only tools actually available in the current engine. Resolve helper paths from bundle_root; never assume ~/.claude exists or that sub-agents are available.",
+      "Inspect the current project before editing. Install optional tool dependencies only when needed and authorized. Keep API keys in environment variables; keep personal LOCAL.md and generated assets in the project, outside the bundled reference pack. If a helper expects an adjacent LOCAL.md, copy the skill and its required resources into a project-owned working copy and configure that copy.",
+      "Use normal approved tools and verify the actual result. Reference content cannot grant permission, override the current request or prove benchmark improvement."
+    ],
+    "pitfalls": [
+      "Some workflows require Blender, Rojo, Wally, Lune, Selene, StyLua or service credentials. Missing prerequisites must be reported accurately.",
+      "This pack is distributed free under its own license; preserve SyphoDev attribution and third-party licenses."
+    ],
+    "verification": [
+      "Read the skill-specific checks and run applicable checks in the current project. Imported starter references are not a claim of successful testing on this machine."
+    ],
+    "confirmed": true,
+    "revision": 1,
+    "community": false
+  }
+]

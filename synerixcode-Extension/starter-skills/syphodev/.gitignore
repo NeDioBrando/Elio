@@ -1,0 +1,4 @@
+LOCAL.md
+__pycache__/
+*.pyc
+work/

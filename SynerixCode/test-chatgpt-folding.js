@@ -1,0 +1,14 @@
+const {runInContext: runProviderFixture} = require('./test-support/provider-dom.cjs');
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const source=fs.readFileSync('providers/chatgpt.js','utf8'),start=source.indexOf('  let activityControlsStyle;'),end=source.indexOf('  const allItems =',start);
+const style={isConnected:true},document={createElement:()=>style,documentElement:{appendChild(){}}};
+const turn={dataset:{},querySelectorAll(selector){return selector==='roles'?roles:[button];}};
+const item={dataset:{},closest:()=>turn,contains:()=>false};let roles=[item];
+const strip={dataset:{},parentElement:turn,querySelector:()=>null};
+const button={parentElement:strip,closest:()=>item,dataset:{}};
+const context={document,S:{turn:'turn',msg:'roles'}};vm.createContext(context);runProviderFixture(source.slice(start,end)+'this.fold=setActivityFolded;',context);
+context.fold(item,true);assert.equal(item.dataset.rsActivityFolded,'1');assert.equal(strip.dataset.rsActivityControlsFolded,'1');assert.equal(turn.dataset.rsActivityTurnFolded,'1');
+context.fold(item,false);assert.equal(item.dataset.rsActivityFolded,'0');assert.equal(strip.dataset.rsActivityControlsFolded,'0');
+const user={dataset:{rsActivityFolded:'0'}};roles=[item,user];context.fold(item,true);assert.equal(turn.dataset.rsActivityTurnFolded,'0');assert.equal(user.dataset.rsActivityFolded,'0');
+assert(!style.textContent.includes('conversation-turn'));
+console.log('ChatGPT folds message content + its controls, restores on expand, shrinks empty spacing and preserves mixed user turns / virtualized outer wrappers.');

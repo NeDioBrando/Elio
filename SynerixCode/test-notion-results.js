@@ -1,0 +1,16 @@
+const {runInContext: runProviderFixture} = require('./test-support/provider-dom.cjs');
+const fs=require('fs'),assert=require('node:assert/strict'),vm=require('vm');
+const source=fs.readFileSync('providers/notion.js','utf8');
+const literal=source.slice(source.indexOf('  function literalPasteHtml('),source.indexOf('  async function pasteRichText('));
+const profiles=source.slice(source.indexOf('  function normalizedDraft('),source.indexOf('  // Draft-only path'));
+const chunks=source.slice(source.indexOf('  async function setRichTextChunked('),source.indexOf('  async function waitFor('));
+let now=0,insertions=0;const editor={isConnected:true,text:'',focus(){}};const box={Date:{now:()=>now},isStopped:()=>false,_selfWrite:false,edText:el=>el.text,sleep:async()=>{now+=60000;},diag(){},window:{getSelection:()=>({removeAllRanges(){},addRange(){}})},document:{createRange:()=>({selectNodeContents(){},collapse(){}}),execCommand:(_,__,text)=>{editor.text+=text;insertions++;return true;}},setRichText:()=>{editor.text='';}};
+vm.createContext(box);runProviderFixture(literal+profiles+chunks+'globalThis.qa={literalPasteHtml,draftLooksWritten,setRichTextChunked};',box);
+const result="Output of 'script_read':\n1 | local Name = '<tag>& value'\n2 | -- **literal** `code`\n3 | return Name\n###LUA###";
+const html=box.qa.literalPasteHtml(result);assert(html.startsWith('<pre><code>'));assert(html.endsWith('</code></pre>'));assert(html.includes('&lt;tag&gt;&amp;'));assert(html.includes('**literal** `code`'));assert(box.qa.literalPasteHtml('startup prompt').startsWith('<pre><code>'));
+assert.equal(box.qa.draftLooksWritten(result,result),true);assert.equal(box.qa.draftLooksWritten(result.slice(0,50),result),false);const big='a'.repeat(400)+'EXACT_MIDDLE'+'z'.repeat(400);assert.equal(box.qa.draftLooksWritten(big.replace('EXACT_MIDDLE','CORRUPTED___'),big),false);
+(async()=>{assert.equal(await box.qa.setRichTextChunked(editor,'a'.repeat(20000),48),'chunkRejected');assert.equal(insertions,1);console.log('Notion literal script/result HTML, escaping, startup preservation, rejected corruption/truncation and wall-clock chunk deadline pass.');})().catch(e=>{console.error(e);process.exitCode=1;});
+const cleanup=source.slice(source.indexOf('    // Never strand a 20k+'),source.indexOf('  async function recoverInternalError('));
+const failed={text:'incomplete tool draft'},cleanupBox={_sendFailureAmbiguous:false,_sendRetryable:false,isStopped:()=>false,findEditorRaw:()=>failed,edText:e=>e.text,text:'complete tool result',_lockWanted:true,ownedDraft:{editor:failed,text:failed.text},_ownedAttachment:null,draftLooksWritten:(a,b)=>a===b,setRichText:(e,t)=>{e.text=t;},clearPendingDraft(){},clearAttachments(){},diag(){},location:{pathname:'/chat'}};
+vm.createContext(cleanupBox);runProviderFixture('async function cleanup(){'+cleanup+'globalThis.cleanup=cleanup;',cleanupBox);
+(async()=>{assert.equal(await cleanupBox.cleanup(),false);assert.equal(failed.text,'');failed.text='user changed this';assert.equal(await cleanupBox.cleanup(),false);assert.equal(failed.text,'user changed this');console.log('Notion failed-send cleanup removes only unchanged locked owned drafts and preserves changed text.');})().catch(e=>{console.error(e);process.exitCode=1;});

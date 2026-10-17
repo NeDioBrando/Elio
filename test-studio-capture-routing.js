@@ -1,0 +1,11 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict'),acorn=require('acorn');
+const source=fs.readFileSync('core/main.js','utf8'),tree=acorn.parse(source,{ecmaVersion:'latest'});
+let fn;function walk(n){if(!n||typeof n!=='object')return;if(n.type==='FunctionDeclaration'&&n.id?.name==='captureShots')fn=source.slice(n.start,n.end);for(const v of Object.values(n))if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v==='object')walk(v);}walk(tree);assert(fn);
+(async()=>{let requests=[],fail=false;
+const ctx=vm.createContext({activeEngine:()=> 'local',bg:async req=>{requests.push(req);return fail?{ok:false,error:'No Studio connected'}:{ok:true,images:[{mime:'image/png',data:'image'}]};}});vm.runInContext(fn+';this.capture=captureShots;',ctx);
+let result=await ctx.capture('studio',{studio_id:'chosen-studio',checkpointId:'local-checkpoint'});
+assert.equal(requests.length,1);assert.equal(requests[0].engine,'roblox');assert.equal(requests[0].name,'screen_capture');assert.equal(requests[0].arguments.studio_id,'chosen-studio');assert.equal(requests[0].checkpoint_id,undefined);assert.equal(result.shots.length,1);
+requests=[];fail=true;result=await ctx.capture('studio');assert.equal(requests.length,1);assert.equal(result.shots.length,0);assert(result.notes[0].includes('No Studio connected'));
+requests=[];await ctx.capture('tab');assert.equal(requests[0].type,'capture_tab');assert.equal(requests.length,1);
+console.log('PASS requested Studio capture uses Roblox bridge despite AgentScript selection, preserves chosen Studio, does not leak local checkpoint and reports failures without unrelated screen fallback.');
+})().catch(e=>{console.error(e);process.exitCode=1;});

@@ -1,0 +1,290 @@
+[
+  {
+    "id": "bundled-ultra-server-authority",
+    "title": "Ultra internal method: server-authority",
+    "resource": "core-skills/server-authority.md",
+    "use_when": "any feature where a player's action changes game state (damage, purchases, scoring, spawning, inventory, rewards)."
+  },
+  {
+    "id": "bundled-ultra-docs-lookup",
+    "title": "Ultra internal method: docs-lookup",
+    "resource": "core-skills/docs-lookup.md",
+    "use_when": "any Roblox API, property, event, method, enum or service you are not certain of, or any question about what Roblox currently does."
+  },
+  {
+    "id": "bundled-ultra-project-layout",
+    "title": "Ultra internal method: project-layout",
+    "resource": "core-skills/project-layout.md",
+    "use_when": "starting a project, adding a system, or deciding where code belongs."
+  },
+  {
+    "id": "bundled-ultra-map-placement",
+    "title": "Ultra internal method: map-placement",
+    "resource": "core-skills/map-placement.md",
+    "use_when": "placing models, parts or terrain in a world, building a map, or a prop looks wrong in position, size or direction."
+  },
+  {
+    "id": "bundled-ultra-tunables-config",
+    "title": "Ultra internal method: tunables-config",
+    "resource": "core-skills/tunables-config.md",
+    "use_when": "adding a number that a designer might tune: health, speed, prices, wave sizes, timers, spawn rates."
+  },
+  {
+    "id": "bundled-ultra-remote-events",
+    "title": "Ultra internal method: remote-events",
+    "resource": "core-skills/remote-events.md",
+    "use_when": "code that sends data between client and server, or a remote that fires but nothing happens."
+  },
+  {
+    "id": "bundled-ultra-roblox-gotchas",
+    "title": "Ultra internal method: roblox-gotchas",
+    "resource": "core-skills/roblox-gotchas.md",
+    "use_when": "writing Luau for Roblox, or reviewing code for bugs before the user runs it."
+  },
+  {
+    "id": "bundled-ultra-review-for-exploits",
+    "title": "Ultra internal method: review-for-exploits",
+    "resource": "core-skills/review-for-exploits.md",
+    "use_when": "reviewing code or finishing a feature that touches remotes, rewards or Toolbox assets."
+  },
+  {
+    "id": "bundled-ultra-datastore-safety",
+    "title": "Ultra internal method: datastore-safety",
+    "resource": "core-skills/datastore-safety.md",
+    "use_when": "saving or loading player data, leaderboards, inventories or any DataStore use."
+  },
+  {
+    "id": "bundled-ultra-client-ui-safety",
+    "title": "Ultra internal method: client-ui-safety",
+    "resource": "core-skills/client-ui-safety.md",
+    "use_when": "building or changing any UI, HUD, menu or client-side display."
+  },
+  {
+    "id": "bundled-ultra-luau-accuracy",
+    "title": "Ultra internal method: luau-accuracy",
+    "resource": "core-skills/luau-accuracy.md",
+    "use_when": "writing or reviewing any Luau code that calls a Roblox or Luau API."
+  },
+  {
+    "id": "bundled-ultra-luau-performance",
+    "title": "Ultra internal method: luau-performance",
+    "resource": "core-skills/luau-performance.md",
+    "use_when": "a task touches a per-frame loop, a Heartbeat or other tick, a large loop over world objects, any code that runs for every player, or the user reports lag, stutter or low FPS."
+  },
+  {
+    "id": "bundled-ultra-luau-profiling",
+    "title": "Ultra internal method: luau-profiling",
+    "resource": "core-skills/luau-profiling.md",
+    "use_when": "checking whether a change made the game faster or slower, finding what is slow, or before and after any optimization claim."
+  },
+  {
+    "id": "bundled-ultra-parallel-luau",
+    "title": "Ultra internal method: parallel-luau",
+    "resource": "core-skills/parallel-luau.md",
+    "use_when": "a task has heavy computation that could block the main thread, or the user asks for multi-threaded or parallel work, or a server runs too many expensive calculations per tick."
+  },
+  {
+    "id": "bundled-ultra-typed-luau",
+    "title": "Ultra internal method: typed-luau",
+    "resource": "core-skills/typed-luau.md",
+    "use_when": "writing new modules, shared code, remote payloads or config tables, or when the project uses --!strict."
+  },
+  {
+    "id": "bundled-ultra-luau-lint-review",
+    "title": "Ultra internal method: luau-lint-review",
+    "resource": "core-skills/luau-lint-review.md",
+    "use_when": "finishing any Luau code before reporting it, or reviewing code the user gives you."
+  },
+  {
+    "id": "bundled-ultra-lifecycle-cleanup",
+    "title": "Ultra internal method: lifecycle-cleanup",
+    "resource": "core-skills/lifecycle-cleanup.md",
+    "use_when": "any code that creates connections, tasks, Instances or UI for a character, round, match, player or tool that later ends."
+  },
+  {
+    "id": "bundled-ultra-api-watchlist",
+    "title": "Ultra internal method: api-watchlist",
+    "resource": "core-skills/api-watchlist.md",
+    "use_when": "any task that uses one of the APIs listed below, or the first Luau code written in a session."
+  },
+  {
+    "id": "bundled-ultra-check-ui-rules",
+    "title": "Ultra internal method: check-ui-rules",
+    "resource": "core-skills/check-ui-rules.md",
+    "use_when": "EVERY UI task, no exceptions: any screen, button, window, HUD or style change."
+  },
+  {
+    "id": "bundled-ultra-expert-gui",
+    "title": "Ultra internal method: expert-gui",
+    "resource": "core-skills/expert-gui.md",
+    "use_when": "any Roblox interface: architecture, layout, performance, input, responsiveness."
+  },
+  {
+    "id": "bundled-ultra-check-cycle",
+    "title": "Ultra internal method: check-cycle",
+    "resource": "core-skills/check-cycle.md",
+    "use_when": "every item, before it is marked done."
+  },
+  {
+    "id": "bundled-ultra-check-ui-standard",
+    "title": "Ultra internal method: check-ui-standard",
+    "resource": "core-skills/check-ui-standard.md",
+    "use_when": "a cartoon, simulator or tycoon look, or when the user names Check-UI. Full text: references/check-ui/SKILL.md."
+  },
+  {
+    "id": "bundled-ultra-gui-syntax",
+    "title": "Ultra internal method: gui-syntax",
+    "resource": "core-skills/gui-syntax.md",
+    "use_when": "every GUI script, before it is marked done. Example: references/gui-syntax/example.lua."
+  },
+  {
+    "id": "bundled-ultra-gui-verify",
+    "title": "Ultra internal method: gui-verify",
+    "resource": "core-skills/gui-verify.md",
+    "use_when": "any screen before it is called done."
+  },
+  {
+    "id": "bundled-ultra-toolbox",
+    "title": "Ultra internal method: toolbox",
+    "resource": "core-skills/toolbox.md",
+    "use_when": "an item needs a ready-made model, mesh, sound, icon, interface kit or texture, or the user asks to use the Toolbox."
+  },
+  {
+    "id": "bundled-ultra-report-what-you-verified",
+    "title": "Ultra internal method: report-what-you-verified",
+    "resource": "core-skills/report-what-you-verified.md",
+    "use_when": "the end of every UltraLab task."
+  },
+  {
+    "id": "bundled-ultra-reference-library",
+    "title": "Ultra internal method: reference-library",
+    "resource": "core-skills/reference-library.md",
+    "use_when": "any UI, icon, button, art, cosmetic or style task, or whenever you wonder what reference material exists before building."
+  },
+  {
+    "id": "bundled-ultra-vfx-and-animation",
+    "title": "Ultra internal method: vfx-and-animation",
+    "resource": "core-skills/vfx-and-animation.md",
+    "use_when": "any visual effect, particle, trail, beam, highlight, tween, animation, camera shake, screen flash, UI transition or feedback effect."
+  },
+  {
+    "id": "bundled-ultra-studio-verify",
+    "title": "Ultra internal method: studio-verify",
+    "resource": "core-skills/studio-verify.md",
+    "use_when": "any task where Studio can run, show or check the result, including any UI item and any change that should be seen running."
+  },
+  {
+    "id": "bundled-ultra-ul-3d-model",
+    "title": "Ultra internal skill: ul-3d-model",
+    "resource": "skills/ul-3d-model/SKILL.md",
+    "use_when": "Generate game-ready 3D models for Roblox from text prompts, headlessly and end to end, one asset or a whole batch - text to a VERIFIED 2D concept image, image to a high-poly mesh with Hi3DGen (on Kaggle for volume, or a HuggingFace Space for one-offs), then headless Blender weld + decimate + UV + normal bake to a Roblox-legal MeshPart. GEOMETRY AND COLOUR BOTH WORK as of 2026-08-26 - colour is PAINTED procedurally into the UV atlas from a small JSON spec of stamps (paint_texture.py), which is exact and has no camera to align; the older concept-projection route still exists but smears and is only for assets that need the concept's actual markings. Assets go into Studio either with NO UPLOAD via AssetService EditableMesh/EditableImage (session-local, no credentials) or PERMANENTLY via a free Open Cloud upload as Model + Image (never Decal). batch.py chains the whole set: concepts, sheet, meshes, orient, paint, publish, studio - proven end to end. Use this whenever the user wants a Roblox mesh, prop, weapon, animal, crate, vehicle or any MeshPart generated rather than modelled by hand, wants a set of models made, wants an image turned into a Roblox model, asks about mesh triangle budgets, decimation, UV unwrapping or normal baking, or hits an asset upload that fails looking like a permissions error. Also trigger when a generated mesh is too heavy for Roblox, has no UVs, looks smooth and detail-less after being reduced, or when GPU quota is the thing blocking a batch of 3D generations."
+  },
+  {
+    "id": "bundled-ultra-ul-animation",
+    "title": "Ultra internal skill: ul-animation",
+    "resource": "skills/ul-animation/SKILL.md",
+    "use_when": "Author Roblox character animations (R15 or R6) headlessly in Blender from a JSON pose spec, verify them by rendering contact sheets and GIFs and match a reference pose. Use this whenever the user wants to make, generate, or automate a Roblox animation — a punch, swing, emote, idle, walk, death, tool action — or wants an animation built to match a reference pose, or asks to animate a .blend rig without opening Blender's UI. Also trigger when a Roblox animation \"comes apart\", limbs detach, a rig poses correctly in script but renders wrong, limbs pop or flip between frames, or a pose looks nothing like the reference."
+  },
+  {
+    "id": "bundled-ultra-ul-build-orchestrator",
+    "title": "Ultra internal skill: ul-build-orchestrator",
+    "resource": "skills/ul-build-orchestrator/SKILL.md",
+    "use_when": "Runs a Roblox game build pipeline as a timed, logged run (market research, design, code, 3D/materials/UI/animation/VFX/SFX, assembly, playtest, publish), fans the asset block out to subagents while keeping every Studio write on one thread, enforces the write boundary, and keeps a timestamped ledger of stalls, fallbacks and interventions with a debts gate so a run cannot end with known defects. Use this whenever you are running or planning a full Roblox build, want the agent pipeline orchestrated, parallelised, or handed to a manager agent, mention an intervention counter, the 30-minute stall rule, or Tier 2 to Tier 1 fallbacks, or ask whether subagents would help a Roblox build. Also use it to rehearse the roster on a practice run before a build you care about, because an untested orchestration layer is a second variable."
+  },
+  {
+    "id": "bundled-ultra-ul-check-suite",
+    "title": "Ultra internal skill: ul-check-suite",
+    "resource": "skills/ul-check-suite/SKILL.md",
+    "use_when": "Check Suite for Roblox work - one gate for both Check-UI (screens, buttons, windows, HUDs, menus; 13 rules, Shop, Codes, Rebirth, Settings and Daily Rewards archetypes, GothamBlack, slate canvas, responsive UIScale) and Check-Code (Luau scripts, modules, remotes, DataStore, Config, cleanup; 18 rules). Use on every UI change and every Luau change, and whenever someone asks whether UI or code is finished. Writes one table with PASS, FAIL, WARN, NOT APPLICABLE or UNVERIFIED, and runs check_code.py."
+  },
+  {
+    "id": "bundled-ultra-ul-game-pipeline",
+    "title": "Ultra internal skill: ul-game-pipeline",
+    "resource": "skills/ul-game-pipeline/SKILL.md",
+    "use_when": "Take a Roblox game from a genre to something built, assembled, playable and published, ONE SECTION PER SESSION - research and plan, code, art, animation and sound, playtest, publish - with a HANDOFF.md between sessions so the chat can be cleared after each approved section. Drives the whole toolchain - market research, a design contract, the code project, map, meshes, textures, UI, animation, VFX and sound, then assembly in Studio, playtest and publish. This is the FRONT DOOR: it owns research, design and assembly itself and delegates each asset stage to the skill that already proves that stage. Use whenever the user wants a Roblox game made, built, started or prototyped, says \"make me a game\" or names a genre to build (incremental, battlegrounds, ...), asks to \"complete the research and plan stage\" or any other stage, says \"continue with the development of the <genre> game\", approves a finished stage (\"approved\", \"looks good\"), or asks what is still missing before a game can be built."
+  },
+  {
+    "id": "bundled-ultra-ul-luau-code",
+    "title": "Ultra internal skill: ul-luau-code",
+    "resource": "skills/ul-luau-code/SKILL.md",
+    "use_when": "Write the Luau for a Roblox game the way it survives contact with a real playtest - server-authoritative, Knit services and controllers, plain RemoteEvents, every tunable in Config, every rule that can be pure written as a pure Core module with a headless spec - and PROVE it on disk before Studio ever sees it, through four gates (rojo build, lune run test, selene, stylua) that run in about a second and need no Studio at all. Scaffolds a complete project that is green on all four before a line of game code exists. Use whenever the user wants Roblox game code written, a game project set up, Rojo/Wally/Knit wired up, gameplay systems or services built, code reviewed for exploitability or replication bugs, or asks why their remote fires but nothing happens, why a script edit had no effect, why duplicate modules appeared, or why the character fights their own movement code."
+  },
+  {
+    "id": "bundled-ultra-ul-map-builder",
+    "title": "Ultra internal skill: ul-map-builder",
+    "resource": "skills/ul-map-builder/SKILL.md",
+    "use_when": "Build and PROVE Roblox maps, levels and arenas headlessly from a JSON spec - greybox decks, cover, ledges, ramps, stairs, spawns, kill planes, and organic smooth-voxel terrain with beaches, cliffs, roads, caves and tides - emitting an annotated plan PNG, a physics-checked verification report, and either a Luau builder or an .rbxmx, all from ONE resolved tree so the plan cannot drift from what ships. The point of the skill is the PROVER: it answers \"can a player actually reach that, and can they reach somewhere they should not\" from raycasts and the game's real movement numbers, catching floating platforms, unreachable high ground, pockets with no way out, blocked sightlines, uneven rings, interpenetrating parts, flat or boxy terrain, zones the tide cuts off, buried spawns and ring-out windows shorter than a ragdoll. Use whenever the user wants a Roblox map, arena, level, greybox, blockout, island or map layout generated rather than dragged together in Studio, wants a map checked for playability before building it, or asks why a jump does not reach, why a ledge cannot be climbed back out of, why a ramp or staircase is unclimbable, why a map sits on the Studio grid, or why players can get somewhere they should not."
+  },
+  {
+    "id": "bundled-ultra-ul-setup-check",
+    "title": "Ultra internal skill: ul-setup-check",
+    "resource": "skills/ul-setup-check/SKILL.md",
+    "use_when": "Set up the free Roblox game-creation skills on THIS machine - check which tools are installed (Python, Rojo, Wally, Lune, Selene, StyLua, Blender, the Roblox Studio MCP), walk the user through anything missing, then write each skill's personal LOCAL.md (folders, tool paths, rig file, VFX library location, env var names for keys) by asking the user and auto-detecting what it can, and finish with a smoke test. Use this the first time after installing the skills, whenever a skill says \"LOCAL.md not found\", when the user moves folders or installs a new tool, or when they ask \"how do I set these skills up\", \"what do I need installed\", or \"why can't the skill find Blender/Rojo/my library\"."
+  },
+  {
+    "id": "bundled-ultra-ul-sfx-finder",
+    "title": "Ultra internal skill: ul-sfx-finder",
+    "resource": "skills/ul-sfx-finder/SKILL.md",
+    "use_when": "Source, verify and wire the sound for a Roblox game from the Creator Store by asset id - footsteps, gunshots, animal calls, UI clicks, ambience, music - with no upload, no Open Cloud audio quota and no API key. Searches the same unauthenticated toolbox endpoints Studio's own audio tab uses, then PROVES each candidate in Studio (IsLoaded plus a measured Sound.TimeLength) before anything is chosen, because the toolbox's own duration field is wrong often enough to be dangerous. Emits a SoundBank data module, an Sfx runtime helper that fails inert, and an install script so the bank can be heard in an open place immediately. Use whenever the user wants sound effects, audio, SFX, music or ambience for a Roblox game, wants sounds found and wired rather than dragged in by hand, is picking audio for a build, or asks why a Sound is silent, has no length, or will not load in their place."
+  },
+  {
+    "id": "bundled-ultra-ul-texture-gen",
+    "title": "Ultra internal skill: ul-texture-gen",
+    "resource": "skills/ul-texture-gen/SKILL.md",
+    "use_when": "Generate free AI textures/skins (camo, gold plated, carbon fiber, rust, etc.) for Roblox game assets like guns, weapons, tools, or any part/mesh, and apply them automatically inside Roblox Studio through the official Roblox Studio MCP — no manual clicking through Studio's Texture Generator plugin required. Use this whenever the user wants to texture, skin, retexture, or reskin a Roblox model/mesh/gun/weapon/part, asks for an AI-generated texture or decal for a Roblox object, or wants to automate the Studio texture workflow end-to-end. Also trigger if the user asks for \"free\" or \"no-cost\" image/texture generation in a Roblox context, even if they don't name a specific tool. Requires the Roblox Studio MCP connected with Studio open — if that's not available, say so clearly instead of guessing."
+  },
+  {
+    "id": "bundled-ultra-ul-ui-builder",
+    "title": "Ultra internal skill: ul-ui-builder",
+    "resource": "skills/ul-ui-builder/SKILL.md",
+    "use_when": "Build Roblox game UI headlessly - HUD overlays, shops, inventories, quest lists, settings - from a JSON spec, and generate the icon set that goes in it. Emits a PNG mockup, a Rojo .model.json and a Luau builder from ONE resolved tree, so the preview cannot drift from what ships. Use whenever the user wants a Roblox GUI, menu, shop UI, HUD, inventory screen or UI mockup made rather than clicked together in Studio, wants game icons generated, wants a UI built from a theme file, or asks why their UI looks flat, breaks on mobile, or renders differently in Studio than in the design."
+  },
+  {
+    "id": "bundled-ultra-ul-vfx-library",
+    "title": "Ultra internal skill: ul-vfx-library",
+    "resource": "skills/ul-vfx-library/SKILL.md",
+    "use_when": "Harvest free Creator Store VFX packs, which you have taken into your own Roblox account, into your own searchable library of portable JSON particle recipes by reading every emitter property out of Studio, then classify, find, curate and emit them as a Luau runtime module (VFXKit) that builds them on any part with scale and tint. No effects ship with this skill, only the tooling. Verified by phase-frozen edit-mode screenshots, never by a metric. Use whenever the user wants a Roblox particle effect, explosion, aura, hit effect, fire, smoke, sparks or magic effect found and wired rather than dragged in by hand, wants to build a reusable VFX library from packs they own, or asks why their ParticleEmitter is invisible, never stops, or looks nothing like it did in the pack they copied it from."
+  },
+  {
+    "id": "bundled-ultra-ul-agent-animation",
+    "title": "Ultra internal agent: ul-agent-animation",
+    "resource": "agents/ul-agent-animation.md",
+    "use_when": "Authors Roblox R15 animations headlessly in Blender from a pose spec and writes a KeyframeSequence spec plus verification renders to disk. Never touches Roblox Studio. Use when the build orchestrator fans out the asset block and needs animation produced in parallel."
+  },
+  {
+    "id": "bundled-ultra-ul-agent-map",
+    "title": "Ultra internal agent: ul-agent-map",
+    "resource": "agents/ul-agent-map.md",
+    "use_when": "Builds a Roblox level from a map spec headlessly - greybox geometry, terrain and the reachability prover - and writes the build artifacts to disk. Never touches Roblox Studio. Use when the build orchestrator fans out the asset block and needs the map produced in parallel with the other asset stages."
+  },
+  {
+    "id": "bundled-ultra-ul-agent-market-scout",
+    "title": "Ultra internal agent: ul-agent-market-scout",
+    "resource": "agents/ul-agent-market-scout.md",
+    "use_when": "Researches one Roblox genre or game concept against live market data and writes a single findings file with sources. Read-only with respect to the build. Use when the build orchestrator fans market research out across several independent genre candidates."
+  },
+  {
+    "id": "bundled-ultra-ul-agent-mesh",
+    "title": "Ultra internal agent: ul-agent-mesh",
+    "resource": "agents/ul-agent-mesh.md",
+    "use_when": "Generates Roblox mesh assets from a design spec and writes them to disk as files plus a manifest. Never touches Roblox Studio. Use when the build orchestrator fans out the asset block and needs meshes produced in parallel with other asset stages."
+  },
+  {
+    "id": "bundled-ultra-ul-agent-sfx",
+    "title": "Ultra internal agent: ul-agent-sfx",
+    "resource": "agents/ul-agent-sfx.md",
+    "use_when": "Sources or generates sound effects for a Roblox build and writes audio files to disk with a licence note per file. Never touches Roblox Studio and never uploads. Use when the build orchestrator fans out the asset block and needs SFX gathered in parallel."
+  },
+  {
+    "id": "bundled-ultra-ul-agent-ui",
+    "title": "Ultra internal agent: ul-agent-ui",
+    "resource": "agents/ul-agent-ui.md",
+    "use_when": "Builds Roblox GUI from a spec into .model.json instance files, a Luau builder and a PNG mockup, all written to disk. Never touches Roblox Studio. Use when the build orchestrator fans out the asset block and needs UI produced in parallel."
+  },
+  {
+    "id": "bundled-ultra-ul-agent-vfx",
+    "title": "Ultra internal agent: ul-agent-vfx",
+    "resource": "agents/ul-agent-vfx.md",
+    "use_when": "Assembles Roblox visual effects by harvesting from the user's own recipe library and emits the kit plus a manifest to disk. Never touches Roblox Studio. Use when the build orchestrator fans out the asset block and needs VFX produced in parallel with the other asset stages."
+  }
+]

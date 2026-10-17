@@ -1,0 +1,31 @@
+Name: Check-Clean-UI
+
+Description: Ultra-complete Design System and implementation skill for creating production-grade, cartoon/simulator UI in Roblox Studio (Check-UI standard).
+
+Method: Strictly use Enum.Font.GothamBlack for all text, applying a black outline UIStroke proportional to the font size (2.0px to 3.5px).
+Construct all window canvas backgrounds using a solid, opaque slate blue (Color3.fromRGB(59, 88, 102)) with a 4px UICorner and a 3.5px outer UIStroke.
+Build close buttons as an exact 38x38px square featuring a dark burgundy bottom bevel, a crimson/pink gradient face, an inner pastel stroke highlight, and a centered UIScale.
+Implement a 2-tier 3D shadow divider at the bottom of every header, consisting of an upper 3px dark thematic bar and a lower 3px solid black bar.
+Apply a full-height checkerboard texture overlay (rbxassetid://385956923) that fades seamlessly using a vertical UIGradient transparency sequence of 1 -> 0.82 -> 0.35 -> 0.10.
+Use dynamic UIScale responsive calculations based on camera.ViewportSize, clamping the factor between 0.52 and 1.18 for all modal windows and HUDs.
+Set AnchorPoint = Vector2.new(0.5, 0.5) with a child UIScale on ALL interactive elements so hover, click, and scale animations originate from the exact geometric center.
+Base all game interfaces on one of the 5 canonical menu archetypes: Shop, Codes, Rebirth, Settings, or Daily Rewards.
+Create iconless buttons using sharp 90° rectangular geometry without UICorners, implementing a 3px solid #0C141A outer border, a black checkerboard overlay, and triple glass specular inner highlight frames.
+
+Pitfalls & Corrections: Pitfall: Creating generic-looking UI or using semi-transparent window backgrounds. Correction: Never make window backgrounds semi-transparent; always use a solid #3b5866 canvas with intentional cartoon depth, high-contrast borders, and pastel highlight strokes.
+Pitfall: Icons becoming stretched and losing aspect ratio. Correction: Icons must never be stretched; always enforce ScaleType = Enum.ScaleType.Fit.
+Pitfall: Leaving hard cutoff lines on the checkerboard overlay. Correction: Apply a vertical UIGradient transparency sequence to eliminate hard cutoff lines and create a seamless damier fade.
+Pitfall: Animations scaling unevenly or from the wrong origin point. Correction: Guarantee all hover and scale interactions originate from the center by ensuring the AnchorPoint is strictly set to Vector2.new(0.5, 0.5).
+Pitfall: Rounding the corners of standard iconless buttons. Correction: Iconless buttons must strictly follow the canonical standard of sharp 90° geometry with no UICorner applied.
+
+Verification Checks: Font: ALL text uses Enum.Font.GothamBlack — no exceptions.
+Canvas: Window background is solid #3B5866 with BackgroundTransparency = 0.
+Close Button: Uses the exact 38x38 3D beveled square recipe.
+Header Divider: 2-tier shadow (thematic dark line 3px + pure black 3px).
+Damier: Full-height with 4-point vertical UIGradient (no horizontal cutoffs).
+Icons: ScaleType = Enum.ScaleType.Fit — never stretched.
+AnchorPoints: ALL interactive elements use AnchorPoint = (0.5, 0.5) with centered UIScale.
+Button State Triad: Uses the appropriate color/bevel for Claim (Lime), Claimed (Silver), Locked (Red).
+Responsive: Governed by dynamic UIScale based on ViewportSize [0.52, 1.18].
+Sunbursts: Rotating at 20°/sec, paused when hidden.
+Bevels: 3px dark bottom extrusion on all buttons.

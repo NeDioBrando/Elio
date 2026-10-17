@@ -1,0 +1,31 @@
+{
+  "_comment": "One theme, five pages. Numbers come from references/ui-recipes.md: stroke 5, text stroke 4 with Bevel, gradient rotation -90, corner radius as scale. This default theme is a light, warm one (cream ground), because the research says a casual game should NOT default to a dark theme. To make your own theme, copy this file and change the values; see the theme file format in SKILL.md.",
+  "font": "FredokaOne",
+  "stroke": 5,
+  "textStroke": 4,
+  "corner": 0.2,
+  "shadowOffset": 7,
+  "outline": "#231F3C",
+  "backdrop": [
+    "#8FD3F4",
+    "#79B94C"
+  ],
+  "palette": {
+    "panel": "#FFF1D6",
+    "panelAlt": "#F0DCB2",
+    "slot": "#E4CFA6",
+    "wood": "#B4763F",
+    "gold": "#F7BC2E",
+    "green": "#59C93C",
+    "red": "#EC5A4C",
+    "blue": "#4CA6E8",
+    "purple": "#9E63E2",
+    "grey": "#B7BAC7",
+    "dark": "#403A6B",
+    "cream": "#FFF8E9",
+    "ink": "#4A3A22",
+    "inkSoft": "#7A6440",
+    "onDark": "#FFFFFF"
+  },
+  "highlight": false
+}

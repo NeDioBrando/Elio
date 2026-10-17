@@ -1,0 +1,71 @@
+{
+  "_what": "The smallest complete HUD: a coin counter, top-left. Copy this file to start your own. The label ships as the <unbound> sentinel; 'samples' are the longest strings your code will write, so the size check measures those. Add an icon later with {\"type\": \"icon\", \"icon\": \"coin\"} once you have an icons folder (pass it with --icons).",
+  "name": "CoinHud",
+  "theme": "default",
+  "resolution": [
+    1280,
+    720
+  ],
+  "kind": "hud",
+  "children": [
+    {
+      "type": "panel",
+      "name": "CoinCounter",
+      "colour": "panel",
+      "size": [
+        0,
+        220,
+        0,
+        72
+      ],
+      "pos": [
+        0,
+        24,
+        0,
+        24
+      ],
+      "padding": 9,
+      "layout": {
+        "type": "list",
+        "dir": "x",
+        "gap": 8,
+        "align": "start"
+      },
+      "children": [
+        {
+          "type": "label",
+          "name": "CoinTitle",
+          "text": "COINS",
+          "size": [
+            0,
+            70,
+            0,
+            50
+          ],
+          "textColour": "ink",
+          "align": "left",
+          "textScale": 0.6,
+          "textStroke": 0
+        },
+        {
+          "type": "label",
+          "name": "CoinCount",
+          "text": "<unbound>",
+          "samples": [
+            "999,999"
+          ],
+          "size": [
+            0,
+            124,
+            0,
+            50
+          ],
+          "textColour": "ink",
+          "align": "left",
+          "textScale": 0.8,
+          "textStroke": 0
+        }
+      ]
+    }
+  ]
+}

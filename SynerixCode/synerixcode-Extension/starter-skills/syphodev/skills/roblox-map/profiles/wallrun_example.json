@@ -1,0 +1,74 @@
+{
+  "name": "wallrun_example",
+  "source": "Example profile for a game with custom movement: gravity 120, sprint, slide, wall climb and wall jump. The numbers came from one such game's MovementConfig module. Copy this file, rename it, and replace every value with your own game's config (src: config) or with calibrate.lua measurements (src: measured).",
+  "note": "Every value carries a `src`. derived = computed from a config value plus physics. config = read straight out of the game's movement config. assumed = NOT verified, replace by running scripts/luau/calibrate.lua. Abilities with shipped:false are DESIGN INTENT ONLY and the prover reports any surface depending on them as UNVERIFIABLE rather than reachable.",
+
+  "gravity":        { "value": 120,   "src": "config", "note": "Workspace.Gravity as the game sets it" },
+  "jumpPower":      { "value": 50,    "src": "assumed", "note": "Roblox default. The movement config does not set it; jump fatigue scales it but does not replace it" },
+
+  "walkSpeed":      { "value": 16,    "src": "config" },
+  "sprintSpeed":    { "value": 24,    "src": "config" },
+  "crouchSpeed":    { "value": 5,     "src": "config" },
+  "slideEntryCap":  { "value": 32,    "src": "config", "note": "slide max entry speed" },
+  "slideMaxSpeed":  { "value": 60,    "src": "config", "note": "slide max speed, reachable only down a long ramp" },
+  "airWishSpeed":   { "value": 24,    "src": "config", "note": "air wish speed - a cap ALONG the input direction, not on total speed" },
+
+  "jumpApex":       { "value": 10.417, "src": "derived", "note": "jumpPower^2 / (2*gravity) = 2500/240" },
+  "jumpAirtime":    { "value": 0.8333, "src": "derived", "note": "2*jumpPower/gravity = 100/120" },
+
+  "jumpDistance": {
+    "src": "derived",
+    "note": "speed * jumpAirtime. A quoted '~27 studs' gap is the SLIDE-ENTRY case, not a walking jump.",
+    "walk": 13.33,
+    "sprint": 20.0,
+    "slide": 26.67,
+    "slideMax": 50.0
+  },
+
+  "jumpFatigue": {
+    "src": "config",
+    "note": "A jump within minTime of landing gets minHeightFraction of full height, decaying linearly back to full at maxTime. Reachability uses the FULL height only when the source node allows a run-up.",
+    "minTime": 0.15, "maxTime": 0.75, "minHeightFraction": 0.3
+  },
+
+  "autoStep":       { "value": 2.0,   "src": "assumed", "note": "Roblox auto-step. THIS IS THE STAIRS/SLABS NUMBER - a step above it is an unclimbable ladder. Measure it." },
+  "maxWalkSlope":   { "value": 89,    "src": "assumed", "note": "Humanoid.MaxSlopeAngle default; this game never sets it, so almost any ramp is walkable. designMaxSlope below is the number a MAP should honour" },
+  "designMaxSlope": { "value": 45,    "src": "design",  "note": "slide slope acceleration is specified at a full 45-degree slope, so 45 is the intended ceiling" },
+
+  "charHeight":     { "value": 5.0,   "src": "assumed", "note": "R15 standing height" },
+  "charRadius":     { "value": 2.0,   "src": "assumed" },
+  "eyeHeight":      { "value": 4.5,   "src": "assumed", "note": "used for sightline casts" },
+
+  "ragdollRecovery": { "value": 0.5,  "src": "assumed", "note": "about half a second of ragdoll, per the design. Load-bearing for the ring-out check - MEASURE IT." },
+
+  "abilities": {
+    "wallClimb": {
+      "shipped": true, "src": "config",
+      "note": "climb speed * hold time is the total vertical gain bought by ONE ground contact. This is the ring-out dial.",
+      "maxRise": 14.0, "climbSpeed": 14, "hold": 1.0,
+      "maxNormalY": 0.35, "reach": 3.5,
+      "highProbeHeight": 3.0, "ledgeForward": 1.6, "mantleForward": 1.4,
+      "maxMantleRise": 5.0, "mantleTime": 0.32
+    },
+    "wallJump": {
+      "shipped": true, "src": "derived",
+      "note": "Green zone (within 0.35s of contact). rise = upSpeed^2/(2g) = 1600/240; travel = awaySpeed * (2*upSpeed/g)",
+      "rise": 6.67, "travel": 34.67,
+      "miniRise": 2.02, "miniTravel": 11.0,
+      "cost": 0.55, "miniCost": 0.2
+    },
+    "slideJump": {
+      "shipped": true, "src": "config",
+      "note": "Jump velocity stacks on slide speed above the speed threshold or after the minimum slide time",
+      "speedThreshold": 28, "minTime": 0.24
+    },
+    "trimp": {
+      "shipped": true, "src": "config",
+      "note": "Ramp exit converts horizontal speed to vertical, capped",
+      "conversion": 0.5, "maxVertical": 30
+    },
+    "grapple":    { "shipped": false, "src": "design", "note": "The arena design assumes a 120-stud raycast grapple. NOT in the movement config.", "range": 120 },
+    "dash":       { "shipped": false, "src": "design", "note": "Referenced by the design. NOT in the movement config." },
+    "doubleJump": { "shipped": false, "src": "design", "note": "Referenced by the design. NOT in the movement config." }
+  }
+}

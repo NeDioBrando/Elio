@@ -1,0 +1,16 @@
+const assert=require('assert'),Activity=require('./core/activity.js');
+const a=Activity.create();a.sync(true,'chat',1);let group=a.active();
+assert.equal(Activity.progress(group),null);
+a.record(group.id,'plan','assistant','Plan\n- [x] Inspect scripts\n- [ ] Fix the bug\n- [ ] Test\n- [ ] Ship');
+assert.equal(Activity.progress(group),.25);
+a.record(group.id,'plan','assistant','Plan\n- [x] Inspect scripts\n- [x] Fix the bug\n- [ ] Test\n- [ ] Ship');
+assert.equal(Activity.progress(group),.5);
+a.record(group.id,'feedback','result','Plan\n- [x] Inspect scripts\n- [x] Fix the bug');
+assert.equal(Activity.progress(group),.5);
+a.record(group.id,'code','assistant','```md\nPlan\n- [x] Sample\n- [x] Sample\n```');
+assert.equal(Activity.progress(group),.5);
+a.sync(false,'chat',20,{collapse:false});assert.equal(Activity.progress(group),.5);assert(!group.completed);
+a.sync(true,'chat',21);group=a.active();assert.equal(Activity.progress(group),null);
+a.sync(false,'chat',30);assert.equal(Activity.progress(group),1);assert(group.completed);
+a.sync(true,'chat',31);group=a.active();a.sync(true,'other',40);assert.equal(Activity.progress(group),null);assert(!group.completed);
+console.log('Progress uses explicit assistant plan checkboxes, skips tools/code examples, preserves partial stopped work, completes at success, and stays unknown without a plan.');

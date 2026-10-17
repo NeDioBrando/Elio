@@ -1,0 +1,18 @@
+SyphoDev Roblox Skills - free licence
+
+You may use these skills, and anything you make with them, in your own
+projects, including commercial Roblox games. You may change them however you
+like for your own use.
+
+You may not sell these skills, or a modified copy of them, or put them in a
+paid bundle. If you share them for free, link back to the SyphoDev YouTube
+channel as the source.
+
+Fonts in skills/roblox-ui/references/fonts are Fredoka, under the SIL Open
+Font License 1.1 (https://openfontlicense.org).
+
+Third-party tools and AI models the skills call (Blender, Rojo, Kaggle,
+Hugging Face models, Roblox services and others) have their own terms. You
+are responsible for following them.
+
+Provided as is, with no warranty.

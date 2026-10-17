@@ -1,0 +1,20 @@
+{
+  "_what": "The smallest spec the prover accepts: two floating decks with a jumpable gap over a void. Copy it to start your own map. Each field is explained under 'The spec' in SKILL.md.",
+  "name": "Minimal",
+  "profile": "default",
+  "ground_is_parts": "two floating test decks over a void; falling is the fail state",
+  "open_edges": "tiny floating test map, the void is the boundary",
+  "volume": {"bounds": [[-40, -60, -40], [60, 40, 40]], "killPlane": -40, "ringOutOffset": 10, "lift": 8},
+  "parts": [
+    {"id": "SpawnDeck", "size": [12, 4, 12], "pos": [0, -2, 0], "roles": ["arena_floor"]},
+    {"id": "FarDeck", "size": [12, 4, 12], "pos": [16, -2, 0], "roles": ["arena_floor"]}
+  ],
+  "spawns": [[0, 3, 0]],
+  "intent": {
+    "reachable": ["SpawnDeck", "FarDeck"],
+    "transit": [],
+    "reachableOnlyBy": {},
+    "ringOut": {"counterplay": "none", "minWindow": 0.0, "from": ["SpawnDeck", "FarDeck"]}
+  },
+  "sightlines": {"minClearFraction": 0.0, "maxClearFraction": 1.0}
+}

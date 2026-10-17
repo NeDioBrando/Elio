@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),Media=require('./core/media.js');
+assert.equal(Media.mime({name:'Clip.MOV',type:''}),'video/quicktime');
+assert.equal(Media.mime({name:'reference.HEIC',type:'application/octet-stream'}),'image/heic');
+assert.equal(Media.mime({name:'x.webp',type:''}),'image/webp');
+const payload={name:'exact video name.webm',mimeType:'video/webm',data:'AQIDBA=='};
+const file=Media.fileFrom(payload);assert.equal(file.name,payload.name);assert.equal(file.type,'video/webm');assert.equal(file.size,4);
+assert.equal(Media.validate([payload])[0],payload);
+assert.throws(()=>Media.validate([{...payload,data:'bad<script>'}]),/Invalid/);
+assert.throws(()=>Media.validate([{...payload,mimeType:'text/plain'}]),/Invalid/);
+assert.throws(()=>Media.validate(Array(9).fill(payload)),/1–8/);
+assert.throws(()=>Media.validate([{...payload,data:'AAAA'.repeat(Media.MAX_BYTES/3+1)}]),/12 MB/);
+(async()=>{assert.deepEqual([...new Uint8Array(await file.arrayBuffer())],[1,2,3,4]);console.log('Media MIME inference, binary fidelity, exact filenames, original video extension, payload validation and transfer bounds passed.');})().catch(e=>{console.error(e);process.exitCode=1;});

@@ -1,0 +1,11 @@
+{
+ "name": "example",
+ "roles": [
+  { "name": "sheep_bleat", "query": "sheep bleat", "kind": "SoundEffect",
+    "min_len": 0.3, "max_len": 4.0, "volume": 0.5 },
+  { "name": "footstep_grass", "query": "footstep grass", "kind": "SoundEffect",
+    "min_len": 0.1, "max_len": 1.5, "volume": 0.4 },
+  { "name": "ambience", "query": "countryside ambience", "kind": "Music",
+    "min_len": 20, "max_len": 300, "volume": 0.2, "looped": true }
+ ]
+}

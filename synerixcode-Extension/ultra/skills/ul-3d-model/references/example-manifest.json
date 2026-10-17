@@ -1,0 +1,22 @@
+{
+  "_comment": "Example batch manifest. Copy it, rename the assets, and pass it with --manifest. studs = intended longest axis in Roblox studs, sized against a ~5-stud R6 character. Body-shape words are in every prompt on purpose: an early cow came back with horse proportions because nothing told the model otherwise. Optional per-asset keys: tris (triangle budget) and preset (creature or prop).",
+  "preset": "creature",
+  "style": "stylized cartoon game character, clean simple shapes, appealing proportions",
+  "assets": [
+    {
+      "name": "cow",
+      "studs": 6.0,
+      "prompt": "a cartoon Holstein cow seen from the side, rectangular barrel body, four straight short legs, large friendly head with a broad muzzle, small horns, big black patches on white"
+    },
+    {
+      "name": "pig",
+      "studs": 4.0,
+      "prompt": "a cartoon pink pig seen from the side, round barrel body, four short legs, flat snout, floppy ears, curly tail"
+    },
+    {
+      "name": "chicken",
+      "studs": 1.6,
+      "prompt": "ONE single brown hen alone by itself, exactly one chicken, plump oval body, small red comb, short yellow legs, short rounded tail"
+    }
+  ]
+}

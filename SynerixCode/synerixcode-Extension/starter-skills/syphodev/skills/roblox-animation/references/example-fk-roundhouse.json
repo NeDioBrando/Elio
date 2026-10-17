@@ -1,0 +1,663 @@
+{
+  "name": "R15 roundhouse kick - FK, Roblox-native",
+  "fps": 30,
+  "duration": 0.8,
+  "w": 640,
+  "h": 560,
+  "margin": 1.12,
+  "plain": true,
+  "preview": false,
+  "views": {
+    "side": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "tq": [
+      0.92,
+      0.38,
+      0.14
+    ]
+  },
+  "properties": {
+    "ARM_IK_FK.L": 0.0,
+    "ARM_IK_FK.R": 0.0,
+    "LEG_IK_FK.L": 0.0,
+    "LEG_IK_FK.R": 0.0
+  },
+  "_calib": "FK MODE. Every limb rests pointing straight DOWN (0,0,-1). All FK_* bones: X NEGATIVE swings FORWARD (+Y), X positive swings back; Z NEGATIVE swings to the character's LEFT (-X), Z positive to its RIGHT (+X). Exactly 1:1 in degrees, and IDENTICAL on both sides - no mirror inversion. Y is roll about the limb axis. Lower-limb angles are RELATIVE to the parent, so a bent knee is LowerLeg X positive against a forward thigh. TORSO/UpTorso rot: X+ leans BACK, Y twists (+ turns toward the character's left), Z leans sideways. ROOT loc: X and Y inverted, Z 1:1 up.",
+  "_design": "30fps and 0.8s because that is what Roblox actually is: the Animation Editor defaults to 30fps and a combat move runs 0.3-0.7s. The five poses are the standard beat set - idle, anticipation, contact, follow-through, recovery. Easing is per segment: accelerate INTO the strike, decelerate out of it. Angles are deliberately exaggerated past human range, which is what real Roblox combat animation looks like.",
+  "keyframes": [
+    {
+      "t": 0.0,
+      "ease": "out",
+      "_note": "guard - bladed stance, fists up",
+      "bones": {
+        "TORSO": {
+          "rot": [
+            0,
+            -12,
+            0
+          ]
+        },
+        "UpTorso": {
+          "rot": [
+            0,
+            -14,
+            0
+          ]
+        },
+        "HEAD": {
+          "rot": [
+            0,
+            16,
+            0
+          ]
+        },
+        "ROOT": {
+          "loc": [
+            0,
+            0,
+            0
+          ]
+        },
+        "FK_UpperLeg.R": {
+          "rot": [
+            12,
+            0,
+            8
+          ]
+        },
+        "FK_LowerLeg.R": {
+          "rot": [
+            -6,
+            0,
+            0
+          ]
+        },
+        "FK_Foot.R": {
+          "rot": [
+            -6,
+            0,
+            0
+          ]
+        },
+        "FK_UpperLeg.L": {
+          "rot": [
+            -10,
+            0,
+            -6
+          ]
+        },
+        "FK_LowerLeg.L": {
+          "rot": [
+            8,
+            0,
+            0
+          ]
+        },
+        "FK_Foot.L": {
+          "rot": [
+            2,
+            0,
+            0
+          ]
+        },
+        "FK_UpperArm.R": {
+          "rot": [
+            -40,
+            0,
+            -20
+          ]
+        },
+        "FK_LowerArm.R": {
+          "rot": [
+            -70,
+            0,
+            0
+          ]
+        },
+        "FK_UpperArm.L": {
+          "rot": [
+            -34,
+            0,
+            18
+          ]
+        },
+        "FK_LowerArm.L": {
+          "rot": [
+            -72,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "t": 0.13,
+      "ease": "in",
+      "_note": "anticipation - coil away from the target, weight onto the support leg",
+      "bones": {
+        "TORSO": {
+          "rot": [
+            -8,
+            -30,
+            0
+          ]
+        },
+        "UpTorso": {
+          "rot": [
+            -8,
+            -34,
+            0
+          ]
+        },
+        "HEAD": {
+          "rot": [
+            0,
+            30,
+            0
+          ]
+        },
+        "ROOT": {
+          "loc": [
+            0,
+            0,
+            -0.12
+          ]
+        },
+        "FK_UpperLeg.R": {
+          "rot": [
+            34,
+            0,
+            14
+          ]
+        },
+        "FK_LowerLeg.R": {
+          "rot": [
+            -28,
+            0,
+            0
+          ]
+        },
+        "FK_Foot.R": {
+          "rot": [
+            -6,
+            0,
+            0
+          ]
+        },
+        "FK_UpperLeg.L": {
+          "rot": [
+            -6,
+            0,
+            -6
+          ]
+        },
+        "FK_LowerLeg.L": {
+          "rot": [
+            16,
+            0,
+            0
+          ]
+        },
+        "FK_Foot.L": {
+          "rot": [
+            -10,
+            0,
+            0
+          ]
+        },
+        "FK_UpperArm.R": {
+          "rot": [
+            -52,
+            0,
+            -30
+          ]
+        },
+        "FK_LowerArm.R": {
+          "rot": [
+            -80,
+            0,
+            0
+          ]
+        },
+        "FK_UpperArm.L": {
+          "rot": [
+            -46,
+            0,
+            28
+          ]
+        },
+        "FK_LowerArm.L": {
+          "rot": [
+            -80,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "t": 0.32,
+      "ease": "in",
+      "_note": "chamber - knee driven high and out to the side, shin folded hard",
+      "bones": {
+        "TORSO": {
+          "rot": [
+            6,
+            6,
+            0
+          ]
+        },
+        "UpTorso": {
+          "rot": [
+            16,
+            10,
+            0
+          ]
+        },
+        "HEAD": {
+          "rot": [
+            -4,
+            12,
+            0
+          ]
+        },
+        "ROOT": {
+          "loc": [
+            0,
+            0,
+            -0.04
+          ]
+        },
+        "FK_UpperLeg.R": {
+          "rot": [
+            -108,
+            0,
+            14
+          ]
+        },
+        "FK_LowerLeg.R": {
+          "rot": [
+            110,
+            0,
+            0
+          ]
+        },
+        "FK_Foot.R": {
+          "rot": [
+            -34,
+            0,
+            0
+          ]
+        },
+        "FK_UpperLeg.L": {
+          "rot": [
+            -4,
+            0,
+            -4
+          ]
+        },
+        "FK_LowerLeg.L": {
+          "rot": [
+            10,
+            0,
+            0
+          ]
+        },
+        "FK_Foot.L": {
+          "rot": [
+            -6,
+            0,
+            0
+          ]
+        },
+        "FK_UpperArm.R": {
+          "rot": [
+            -14,
+            0,
+            -40
+          ]
+        },
+        "FK_LowerArm.R": {
+          "rot": [
+            -56,
+            0,
+            0
+          ]
+        },
+        "FK_UpperArm.L": {
+          "rot": [
+            -42,
+            0,
+            38
+          ]
+        },
+        "FK_LowerArm.L": {
+          "rot": [
+            -66,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "t": 0.45,
+      "ease": "out",
+      "_note": "CONTACT - leg snaps straight, torso leans back hard and rotates through",
+      "bones": {
+        "TORSO": {
+          "rot": [
+            10,
+            26,
+            0
+          ]
+        },
+        "UpTorso": {
+          "rot": [
+            30,
+            44,
+            0
+          ]
+        },
+        "HEAD": {
+          "rot": [
+            -8,
+            -14,
+            0
+          ]
+        },
+        "ROOT": {
+          "loc": [
+            0,
+            0,
+            0.02
+          ]
+        },
+        "FK_UpperLeg.R": {
+          "rot": [
+            -132,
+            0,
+            8
+          ]
+        },
+        "FK_LowerLeg.R": {
+          "rot": [
+            4,
+            0,
+            0
+          ]
+        },
+        "FK_Foot.R": {
+          "rot": [
+            -56,
+            0,
+            0
+          ]
+        },
+        "FK_UpperLeg.L": {
+          "rot": [
+            4,
+            0,
+            -8
+          ]
+        },
+        "FK_LowerLeg.L": {
+          "rot": [
+            6,
+            0,
+            0
+          ]
+        },
+        "FK_Foot.L": {
+          "rot": [
+            -10,
+            0,
+            0
+          ]
+        },
+        "FK_UpperArm.R": {
+          "rot": [
+            38,
+            0,
+            -34
+          ]
+        },
+        "FK_LowerArm.R": {
+          "rot": [
+            -20,
+            0,
+            0
+          ]
+        },
+        "FK_UpperArm.L": {
+          "rot": [
+            -40,
+            0,
+            46
+          ]
+        },
+        "FK_LowerArm.L": {
+          "rot": [
+            -50,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "t": 0.58,
+      "ease": "smooth",
+      "_note": "follow-through - the leg keeps travelling across and starts to drop",
+      "bones": {
+        "TORSO": {
+          "rot": [
+            8,
+            32,
+            0
+          ]
+        },
+        "UpTorso": {
+          "rot": [
+            26,
+            52,
+            0
+          ]
+        },
+        "HEAD": {
+          "rot": [
+            -6,
+            -20,
+            0
+          ]
+        },
+        "ROOT": {
+          "loc": [
+            0,
+            0,
+            -0.02
+          ]
+        },
+        "FK_UpperLeg.R": {
+          "rot": [
+            -116,
+            0,
+            -14
+          ]
+        },
+        "FK_LowerLeg.R": {
+          "rot": [
+            18,
+            0,
+            0
+          ]
+        },
+        "FK_Foot.R": {
+          "rot": [
+            -44,
+            0,
+            0
+          ]
+        },
+        "FK_UpperLeg.L": {
+          "rot": [
+            6,
+            0,
+            -8
+          ]
+        },
+        "FK_LowerLeg.L": {
+          "rot": [
+            8,
+            0,
+            0
+          ]
+        },
+        "FK_Foot.L": {
+          "rot": [
+            -14,
+            0,
+            0
+          ]
+        },
+        "FK_UpperArm.R": {
+          "rot": [
+            48,
+            0,
+            -28
+          ]
+        },
+        "FK_LowerArm.R": {
+          "rot": [
+            -14,
+            0,
+            0
+          ]
+        },
+        "FK_UpperArm.L": {
+          "rot": [
+            -34,
+            0,
+            42
+          ]
+        },
+        "FK_LowerArm.L": {
+          "rot": [
+            -46,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "t": 0.8,
+      "ease": "smooth",
+      "_note": "recovery to guard (identical to t=0 so the clip loops)",
+      "bones": {
+        "TORSO": {
+          "rot": [
+            0,
+            -12,
+            0
+          ]
+        },
+        "UpTorso": {
+          "rot": [
+            0,
+            -14,
+            0
+          ]
+        },
+        "HEAD": {
+          "rot": [
+            0,
+            16,
+            0
+          ]
+        },
+        "ROOT": {
+          "loc": [
+            0,
+            0,
+            0
+          ]
+        },
+        "FK_UpperLeg.R": {
+          "rot": [
+            12,
+            0,
+            8
+          ]
+        },
+        "FK_LowerLeg.R": {
+          "rot": [
+            -6,
+            0,
+            0
+          ]
+        },
+        "FK_Foot.R": {
+          "rot": [
+            -6,
+            0,
+            0
+          ]
+        },
+        "FK_UpperLeg.L": {
+          "rot": [
+            -10,
+            0,
+            -6
+          ]
+        },
+        "FK_LowerLeg.L": {
+          "rot": [
+            8,
+            0,
+            0
+          ]
+        },
+        "FK_Foot.L": {
+          "rot": [
+            2,
+            0,
+            0
+          ]
+        },
+        "FK_UpperArm.R": {
+          "rot": [
+            -40,
+            0,
+            -20
+          ]
+        },
+        "FK_LowerArm.R": {
+          "rot": [
+            -70,
+            0,
+            0
+          ]
+        },
+        "FK_UpperArm.L": {
+          "rot": [
+            -34,
+            0,
+            18
+          ]
+        },
+        "FK_LowerArm.L": {
+          "rot": [
+            -72,
+            0,
+            0
+          ]
+        }
+      }
+    }
+  ],
+  "report": false
+}

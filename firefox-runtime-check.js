@@ -1,13 +1,13 @@
 // Real Firefox + real native bridge; no signed-in provider account is needed.
 const fs=require('fs'),os=require('os'),path=require('path'),http=require('http'),assert=require('assert'),cp=require('child_process');
 const {Builder}=require('selenium-webdriver'),firefox=require('selenium-webdriver/firefox');
-const root=__dirname,tmp=fs.mkdtempSync(path.join(os.tmpdir(),'synerixcode-firefox-runtime-'));
+const root=__dirname,tmp=fs.mkdtempSync(path.join(os.tmpdir(),'elio-firefox-runtime-'));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 let driver,agent,server;const logs=[];
 async function until(fn,label,ms=20000){const end=Date.now()+ms;while(Date.now()<end){try{const v=await fn();if(v)return v;}catch{}await sleep(150);}throw Error('Timed out: '+label);}
 async function message(value){return driver.executeAsyncScript(`const done=arguments[arguments.length-1];chrome.runtime.sendMessage(arguments[0]).then(done,e=>done({error:String(e)}));`,value);}
 (async()=>{try{
-  cp.execFileSync('python3',[path.join(root,'release-tools/build-firefox.py'),path.join(root,'synerixcode-Extension'),path.join(tmp,'extension'),path.join(tmp,'firefox.zip')]);
+  cp.execFileSync('python3',[path.join(root,'release-tools/build-firefox.py'),path.join(root,'elio-Extension'),path.join(tmp,'extension'),path.join(tmp,'firefox.zip')]);
   const fixtureManifest=JSON.parse(fs.readFileSync(path.join(tmp,'extension/manifest.json')));
   const providers=['chatgpt','claude','deepseek','notion'];
   fixtureManifest.content_scripts=fixtureManifest.content_scripts.filter(s=>s.js.some(f=>providers.some(p=>f==='providers/'+p+'.js'||f==='providers/'+p+'-cm.js'))).map(s=>{
@@ -17,8 +17,8 @@ async function message(value){return driver.executeAsyncScript(`const done=argum
   // Only fixture URL matches change; all runtime script bytes remain original.
   fs.writeFileSync(path.join(tmp,'extension/manifest.json'),JSON.stringify(fixtureManifest));
   cp.execFileSync('python3',['-c',`import pathlib,zipfile;root=pathlib.Path(${JSON.stringify(path.join(tmp,'extension'))});z=zipfile.ZipFile(${JSON.stringify(path.join(tmp,'fixture.zip'))},'w',zipfile.ZIP_DEFLATED);[z.write(p,p.relative_to(root).as_posix()) for p in root.rglob('*') if p.is_file()];z.close()`]);
-  if(process.env.SYNERIXCODE_TEST_NATIVE){
-    agent=cp.spawn(process.env.SYNERIXCODE_TEST_NATIVE,['--headless','--workspace',path.join(tmp,'workspace')],{env:{...process.env,XDG_CONFIG_HOME:path.join(tmp,'config'),LOCALAPPDATA:path.join(tmp,'config'),SYNERIXCODE_UPDATE_FEED:'http://127.0.0.1:9/unavailable'},stdio:['ignore','pipe','pipe']});
+  if(process.env.ELIO_TEST_NATIVE){
+    agent=cp.spawn(process.env.ELIO_TEST_NATIVE,['--headless','--workspace',path.join(tmp,'workspace')],{env:{...process.env,XDG_CONFIG_HOME:path.join(tmp,'config'),LOCALAPPDATA:path.join(tmp,'config'),ELIO_UPDATE_FEED:'http://127.0.0.1:9/unavailable'},stdio:['ignore','pipe','pipe']});
     agent.stdout.on('data',x=>logs.push(String(x)));agent.stderr.on('data',x=>logs.push(String(x)));
     await until(async()=>{const r=await fetch('http://127.0.0.1:3000/api/status',{signal:AbortSignal.timeout(2000)});return r.status===401;},'native bridge listening');
     console.log('Native bridge listening; starting isolated Firefox.');
@@ -30,12 +30,12 @@ async function message(value){return driver.executeAsyncScript(`const done=argum
   server.on('connect',(_req,socket)=>socket.end('HTTP/1.1 403 Forbidden\r\n\r\n'));
   await new Promise(r=>server.listen(0,'127.0.0.1',r));const port=server.address().port;
   const options=new firefox.Options().addArguments('-headless').setPreference('network.proxy.type',1).setPreference('network.proxy.http','127.0.0.1').setPreference('network.proxy.http_port',port).setPreference('network.proxy.ssl','127.0.0.1').setPreference('network.proxy.ssl_port',port).setPreference('network.proxy.no_proxies_on','127.0.0.1,localhost').setPreference('network.trr.mode',5);
-  if(process.env.SYNERIXCODE_TEST_FIREFOX)options.setBinary(process.env.SYNERIXCODE_TEST_FIREFOX);
-  const service=new firefox.ServiceBuilder(process.env.SYNERIXCODE_TEST_GECKODRIVER).setHostname('127.0.0.1').addArguments('--allow-system-access');
+  if(process.env.ELIO_TEST_FIREFOX)options.setBinary(process.env.ELIO_TEST_FIREFOX);
+  const service=new firefox.ServiceBuilder(process.env.ELIO_TEST_GECKODRIVER).setHostname('127.0.0.1').addArguments('--allow-system-access');
   driver=await new Builder().forBrowser('firefox').setFirefoxOptions(options).setFirefoxService(service).build();console.log('Isolated Firefox started.');await driver.manage().setTimeouts({script:30000,pageLoad:20000});await driver.manage().window().setRect({width:1440,height:1000});
-  const id=await driver.installAddon(path.join(tmp,'firefox.zip'),true);assert.equal(id,'synerixcode@synerixcode.local');console.log('Actual Firefox package installed.');
+  const id=await driver.installAddon(path.join(tmp,'firefox.zip'),true);assert.equal(id,'elio@elio.local');console.log('Actual Firefox package installed.');
   await driver.setContext('chrome');let base=await driver.executeScript(`return ChromeUtils.importESModule('resource://gre/modules/ExtensionParent.sys.mjs').ExtensionParent.GlobalManager.getExtension(arguments[0]).baseURI.spec`,id);await driver.setContext('content');
-  await driver.get(base+'popup.html');assert((await driver.executeScript('return document.body.innerText')).includes('SYNERIXCODE'));
+  await driver.get(base+'popup.html');assert((await driver.executeScript('return document.body.innerText')).includes('ELIO'));
   const status=await message({type:'status'});assert.equal(status.type,'rs-status');
   if(agent){
     await until(async()=>{const r=await message({type:'live-status'});return r.ok&&r.bridge_reachable&&r.local_connected;},'Firefox UUID pairing and authenticated native status');console.log('Authenticated native HTTP status passed.');

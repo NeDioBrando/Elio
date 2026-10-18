@@ -4,8 +4,8 @@ const {pageFor}=require('./test-clickup-browser.cjs');
 async function checks(browser,name){
   {const {page}=await pageFor(browser);
     const result=await page.evaluate(async()=>{
-      const text="Output of 'list_commands':\nread_file {path}\n\n(System note: The startup tool call succeeded. Startup is NOT complete until you acknowledge this result. Reply with exactly \"synerixcode is ready.\" and nothing else.)";
-      const button=provider.composerFrame().querySelector('[data-test="refinement-prompt-submit-button"]'),send=button.onclick;nextReply='synerixcode is ready.';
+      const text="Output of 'list_commands':\nread_file {path}\n\n(System note: The startup tool call succeeded. Startup is NOT complete until you acknowledge this result. Reply with exactly \"elio is ready.\" and nothing else.)";
+      const button=provider.composerFrame().querySelector('[data-test="refinement-prompt-submit-button"]'),send=button.onclick;nextReply='elio is ready.';
       button.onclick=e=>{send(e);provider.allItems().filter(provider.isUserItem).at(-1).querySelector('[data-test="quill-delta-to-html__comment"]').textContent='Reformatted startup feedback';};
       return {ok:await provider.typeAndSend(provider.startupFeedbackMessages(text)[0].text),sent:sent.length};
     });
@@ -49,7 +49,7 @@ async function checks(browser,name){
       button.onclick=e=>{send(e);const row=p.allItems().filter(p.isUserItem).at(-1);
         row.querySelector('[data-test="quill-delta-to-html__comment"]').textContent='Rendered differently';
         const reply=p.lastAssistant();
-        if(kind==='wrong-part')reply.querySelector('.ql-editor').textContent='synerixcode startup part 2/3 received.';
+        if(kind==='wrong-part')reply.querySelector('.ql-editor').textContent='elio startup part 2/3 received.';
         if(kind==='old-ack')reply.parentElement.remove();
         if(kind==='optimistic')row.parentElement.dataset.id='optimistic-uuid';
         if(kind==='failed'){row.dataset.state='failed';const label=document.createElement('span');label.className='failedLabel';label.textContent='Too long';row.append(label);}
@@ -96,7 +96,7 @@ async function checks(browser,name){
   }
 }
 (async()=>{for(const [name,engine]of [['chromium',chromium],['firefox',firefox]]){
- if(process.env.SYNERIXCODE_TEST_BROWSER&&process.env.SYNERIXCODE_TEST_BROWSER!==name)continue;
- const browser=await engine.launch({headless:true,...(name==='chromium'&&process.env.SYNERIXCODE_CHROMIUM?{executablePath:process.env.SYNERIXCODE_CHROMIUM}:{}),args:name==='chromium'?['--no-sandbox']:[]});
+ if(process.env.ELIO_TEST_BROWSER&&process.env.ELIO_TEST_BROWSER!==name)continue;
+ const browser=await engine.launch({headless:true,...(name==='chromium'&&process.env.ELIO_CHROMIUM?{executablePath:process.env.ELIO_CHROMIUM}:{}),args:name==='chromium'?['--no-sandbox']:[]});
  try{await checks(browser,name);}finally{await browser.close();}
 }})().catch(e=>{console.error(e);process.exitCode=1;});

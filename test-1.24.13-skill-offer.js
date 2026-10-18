@@ -1,4 +1,4 @@
-// 1.24.13: synerixcode_skills action suggest shows a one-click "Save as skill"
+// 1.24.13: elio_skills action suggest shows a one-click "Save as skill"
 // card; only the user's click saves (enabled, unverified). Automatic task
 // candidates are off and favourites rank first.
 const {JSDOM,VirtualConsole}=require('jsdom');const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
@@ -16,7 +16,7 @@ const flush=()=>new Promise(r=>setTimeout(r,20));
 (async()=>{
  for(const file of manifest.content_scripts.find(x=>x.js.includes('providers/chatgpt.js')&&x.js.includes('core/main.js')).js){let code=fs.readFileSync(file,'utf8');if(file==='core/main.js')code=code.replace('const TOKEN_CHARS = 4;','window.__skillFixture={runToolImpl,A}; const TOKEN_CHARS = 4;');vm.runInContext(code,context,{filename:file});}
  await flush();const fixture=w.__skillFixture;assert(fixture);
- const call=args=>fixture.runToolImpl({tool:'synerixcode_skills',arguments:args});
+ const call=args=>fixture.runToolImpl({tool:'elio_skills',arguments:args});
  const offer=()=>w.document.querySelector('.rs-skill-offer');
  assert.match(String(await call({action:'suggest',title:'',steps:[]})),/needs a short title/);assert.equal(offer(),null);
  let out=String(await call({action:'suggest',title:'Use tabs for indentation',description:'Coding style',steps:['Indent Luau with tabs, never spaces.']}));

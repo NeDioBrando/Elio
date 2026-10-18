@@ -59,7 +59,7 @@ const RSProvider = (() => {
   // bundles map q, aq and defaultUserMessage to an automatically submitted first
   // message, and aiAction/targetConfig can launch a native workspace action.
   // Example seen live: "Summarize this workspace to help me get started" raced
-  // our Roblox bootstrap and became the first turn. A synerixcode session must
+  // our Roblox bootstrap and became the first turn. A elio session must
   // start from the literal, payload-free /ai URL so its only first request is our
   // bootstrap and its first command is list_commands.
   const isCleanAiLanding = () => isAiLanding() && !location.search && !location.hash;
@@ -638,7 +638,7 @@ const RSProvider = (() => {
     if (!key || !root) return;
     const selector = immutableSelector(key);
     const style = document.createElement("style");
-    style.textContent = selector + '{font-size:0!important}' + selector + '>*{display:none!important}' + selector + '::after{content:"synerixcode is ready.";display:block;font:14px/1.5 ui-sans-serif,-apple-system,"Segoe UI",sans-serif;color:inherit}';
+    style.textContent = selector + '{font-size:0!important}' + selector + '>*{display:none!important}' + selector + '::after{content:"elio is ready.";display:block;font:14px/1.5 ui-sans-serif,-apple-system,"Segoe UI",sans-serif;color:inherit}';
     root.appendChild(style);
   }
   function immutableVisual(card) {
@@ -1297,7 +1297,7 @@ const RSProvider = (() => {
   // Notion's short recoveries are useful for ordinary dead turns, but a
   // requested Figma/UI build can legitimately deliberate longer before its
   // first visible command token. Protect only that current human request (or an
-  // already-visible Figma companion command); injected synerixcode result/recovery
+  // already-visible Figma companion command); injected elio result/recovery
   // turns are skipped so they cannot accidentally broaden the exemption. Core
   // applies this to both the ordinary 45-second no-progress path and the separate
   // four-second closed-command thinking-tail path.
@@ -1310,7 +1310,7 @@ const RSProvider = (() => {
       const text = transcriptText(users[i]).trim();
       if (!text) continue;
       if ((typeof ZSParse !== "undefined" && ZSParse.isInjectedFeedback(text)) ||
-          text.includes(RS.SYS_MARKER) || /^\(System .* from synerixcode\b/i.test(text)) continue;
+          text.includes(RS.SYS_MARKER) || /^\(System .* from elio\b/i.test(text)) continue;
       if (RS.isLongUiRequest && RS.isLongUiRequest(text)) return true;
       // A manual "continue" after a provider interruption is still the same UI
       // task. Only walk past an exact short continuation; any substantive newer
@@ -1356,7 +1356,7 @@ const RSProvider = (() => {
   // without shortening a live command or touching Studio's actual tool timeout.
   function softGenerationSettled(item, reply, idleMs) {
     if (!item || stopButton() || activeWorkflowProgress(item)) return false;
-    const readyAcknowledgement = /^(?:SYNERIXCODE_READY|synerixcode is ready)[.!]?$/i.test(String(reply || "").replace(/[`*#]/g, "").trim());
+    const readyAcknowledgement = /^(?:ELIO_READY|elio is ready)[.!]?$/i.test(String(reply || "").replace(/[`*#]/g, "").trim());
     const finalAction = idleMs >= 500 && hasFinalTurnAction(item);
     // A closed, append-only command cannot grow internally after its top-level
     // close token. Plain prose can legitimately continue after a long network
@@ -1875,12 +1875,12 @@ const RSProvider = (() => {
     if (!options.protocolFile && initialEditor && !isTextControl(initialEditor) &&
         (text.length > 2500 || text.split("\n").length > 60)) {
       if (hasPendingAttachment() && !_ownedAttachment) {
-        _sendFailureDetail = "Notion already has draft attachments. Open a fresh Notion AI chat or remove those draft attachments, then Start again. synerixcode kept them unchanged.";
+        _sendFailureDetail = "Notion already has draft attachments. Open a fresh Notion AI chat or remove those draft attachments, then Start again. elio kept them unchanged.";
         diag("notion.protocol.foreignAttachments", {}); return false;
       }
       if (isStopped()) return false;
       const resultFile = /^Output of ['"]/.test(text);
-      const name = `synerixcode_${resultFile ? "tool_result" : "protocol"}_${Date.now()}_${++_imageSeq}.txt`;
+      const name = `elio_${resultFile ? "tool_result" : "protocol"}_${Date.now()}_${++_imageSeq}.txt`;
       const files = [new File([text], name, { type: "text/plain" })];
       if (Array.isArray(images)) {
         if (images.length > 3) { _sendFailureDetail="Notion allows this protocol file with up to three screenshots in one message."; return false; }
@@ -1889,7 +1889,7 @@ const RSProvider = (() => {
       }
       // Notion occasionally ignores a staged file or leaves its upload spinner
       // running. Nothing has been submitted at that point, so retrying is safe:
-      // remove only this exact synerixcode file, pause, and stage it again,
+      // remove only this exact elio file, pause, and stage it again,
       // alternating the file-input and composer-drop transports.
       let attached = false, attempts = 0;
       for (let attempt = 1; attempt <= PROTOCOL_ATTACH_ATTEMPTS; attempt++) {
@@ -1907,14 +1907,14 @@ const RSProvider = (() => {
       }
       if (!attached) {
         diag("notion.protocol.attachFailed", { attempts, reason: _lastAttachFailure });
-        _sendFailureDetail = `Notion did not finish the protocol file upload after ${attempts} attempt${attempts === 1 ? "" : "s"}. synerixcode did not submit or repeat the message. Check the attachment spinner or upload error, remove the stalled synerixcode attachment if it remains, then retry in a fresh Notion AI chat. In Edge or Brave, also verify the extension’s site access.`;
+        _sendFailureDetail = `Notion did not finish the protocol file upload after ${attempts} attempt${attempts === 1 ? "" : "s"}. elio did not submit or repeat the message. Check the attachment spinner or upload error, remove the stalled elio attachment if it remains, then retry in a fresh Notion AI chat. In Edge or Brave, also verify the extension’s site access.`;
         return false;
       }
       const header = /^Output of ['"][^\n]+/.exec(text);
-      const lead = header ? header[0].slice(0,200) : (text.startsWith("⟦RS-SYS⟧") ? "⟦RS-SYS⟧" : "synerixcode protocol message");
+      const lead = header ? header[0].slice(0,200) : (text.startsWith("⟦RS-SYS⟧") ? "⟦RS-SYS⟧" : "elio protocol message");
       const instruction = options.userPrompt
         ? `Follow-up request\nThe complete request is in the attached file ${name}. Read the entire file as the user's exact request and continue the current task with these instructions.`
-        : `${lead}\nThe complete synerixcode message is in the attached file ${name}. Read the entire file as the content of this message, preserve its exact commands and instructions, and respond accordingly. This is protocol context, not a request to edit a Notion page. ${resultFile ? "Use this completed tool result to continue the current handshake or task; do not restart it." : "Do not claim readiness until the enclosed startup handshake is complete."}`;
+        : `${lead}\nThe complete elio message is in the attached file ${name}. Read the entire file as the content of this message, preserve its exact commands and instructions, and respond accordingly. This is protocol context, not a request to edit a Notion page. ${resultFile ? "Use this completed tool result to continue the current handshake or task; do not restart it." : "Do not claim readiness until the enclosed startup handshake is complete."}`;
       diag("notion.protocol.file", { chars:text.length, filename:name });
       const sent = await typeAndSend(instruction, null, { ...options, protocolFile:true });
       if (!sent && _ownedAttachment) clearAttachments();
@@ -2449,7 +2449,7 @@ const RSProvider = (() => {
   const PROTOCOL_RETRY_DELAYS = [1500, 4000, 10000];
   const PROTOCOL_RETRYABLE = new Set(["preview", "busy"]);
   function removeNamedAttachments(names) {
-    // Name-scoped: unique synerixcode filenames never match a user's attachment.
+    // Name-scoped: unique elio filenames never match a user's attachment.
     const nodes = attachmentNodes().filter((node) => {
       const hay = `${_txt(node)} ${ariaOf(node)} ${node.getAttribute && (node.getAttribute("title") || "")}`;
       return names.some((name) => hay.includes(name));
@@ -2507,10 +2507,10 @@ const RSProvider = (() => {
         if (++scanned > 160) break;
         if ((node.closest && node.closest("#rs-root")) || node.contains(findEditorRaw())) continue;
         // Notion may split a filename over spans or replace its middle with an
-        // ellipsis. A reserved synerixcode prefix plus extension identifies that
+        // ellipsis. A reserved elio prefix plus extension identifies that
         // preview without requiring the full unique filename to be visible.
         const labels = [_txt(node), node.getAttribute("title") || "", ariaOf(node)];
-        if (labels.some((label) => label.length < 180 && /^(?:synerixcode_(?:protocol|tool_result|web_capture)_[\w.\u2026 -]+\s*\.(?:txt|png|jpe?g|webp)|pasted text(?:\s*\(\d+\))?(?:\.txt)?)$/i.test(label.trim()))) nodes.push(node);
+        if (labels.some((label) => label.length < 180 && /^(?:elio_(?:protocol|tool_result|web_capture)_[\w.\u2026 -]+\s*\.(?:txt|png|jpe?g|webp)|pasted text(?:\s*\(\d+\))?(?:\.txt)?)$/i.test(label.trim()))) nodes.push(node);
       }
       return [...new Set(nodes)];
     } catch { return []; }
@@ -2543,7 +2543,7 @@ const RSProvider = (() => {
       throw new Error("browser screenshot bytes do not match the declared image type");
     }
     const ext = mime === "image/png" ? "png" : mime === "image/webp" ? "webp" : "jpg";
-    return new File([bytes], `synerixcode_web_capture_${Date.now()}_${index}.${ext}`, { type: mime });
+    return new File([bytes], `elio_web_capture_${Date.now()}_${index}.${ext}`, { type: mime });
   }
   async function attachImages(images, options = {}) {
     if (!Array.isArray(images) || !images.length || images.length > 4) return false;
@@ -2642,7 +2642,7 @@ const RSProvider = (() => {
       diag("notion.attach.previewMissing", { stopped: stopped(), frameTag: frame.tagName,
         scopeTag: scope && scope.tagName, owned: ownedNodes.length,
         labels: scope ? [...scope.querySelectorAll("span, [title], [aria-label]")].filter((node) =>
-          !node.closest("#rs-root") && /synerixcode_|pasted text/i.test(`${_txt(node)} ${node.getAttribute("title") || ""} ${ariaOf(node)}`))
+          !node.closest("#rs-root") && /elio_|pasted text/i.test(`${_txt(node)} ${node.getAttribute("title") || ""} ${ariaOf(node)}`))
           .slice(0, 6).map((node) => ({ text: _txt(node).slice(0, 100), title: (node.getAttribute("title") || "").slice(0, 100) })) : [] });
       _lastAttachFailure = stopped() ? "stopped" : "preview";
       _ownedAttachment = { id: ++_imageSeq, files, names, nodes: ownedNodes };
@@ -2709,7 +2709,7 @@ const RSProvider = (() => {
       if (input) input.value = "";
     } catch {}
     // A stopped upload can mount its preview a tick after the change/drop event.
-    // Run two name-scoped cleanup passes; the unique synerixcode filename means these
+    // Run two name-scoped cleanup passes; the unique elio filename means these
     // can never target a user's unrelated attachment.
     const delayedCleanup = () => {
       const currentFrame = attachmentScope();
@@ -2912,7 +2912,7 @@ const RSProvider = (() => {
     responseRemountGraceMs: 15000,
     emptyReplyGraceMs: 15000,
     // Does not alter ordinary prose-answer speed. It only finalizes a complete,
-    // parseable synerixcode command whose visible text has stopped growing while
+    // parseable elio command whose visible text has stopped growing while
     // Notion incorrectly leaves the card/native thinking state alive.
     closedToolNoProgressMs: 4000,
     thinkingStopWaitMs: 7000,
@@ -2933,7 +2933,7 @@ const RSProvider = (() => {
       "page/database editing, web search...) act on Notion's cloud workspace " +
       "and can NEVER read or change the user's Roblox Studio. ANYTHING Roblox " +
       "- checking studio state, reading/searching/editing scripts, running " +
-      "Luau, inspecting the game tree - happens ONLY through the synerixcode " +
+      "Luau, inspecting the game tree - happens ONLY through the elio " +
       "JSON/###LUA### commands described above; those are intercepted by the " +
       "extension in the user's browser and executed on their machine. A " +
       "Notion tool call aimed at Roblox ALWAYS fails and wastes the turn. " +
@@ -2944,7 +2944,7 @@ const RSProvider = (() => {
       "planning, no commands, no prolonged deliberation. SPEED IS REQUIRED " +
       "for Roblox work too: never restart broad planning or use prolonged/deep " +
       "deliberation between tool results. Think only enough to choose the next " +
-      "safe action, then immediately output exactly one synerixcode command. After " +
+      "safe action, then immediately output exactly one elio command. After " +
       "each result, issue the next command without re-summarizing or re-analyzing " +
       "the whole task. Continue one command per reply until done, then report in " +
       "one short sentence.",

@@ -2,7 +2,7 @@
 // providers/qwen-net.js - Qwen network tap (runs in the MAIN world).
 //
 // WHY THIS EXISTS: Qwen renders assistant replies (and the fenced code blocks
-// that carry synerixcode commands) in a Monaco editor that DISPOSES off-screen
+// that carry elio commands) in a Monaco editor that DISPOSES off-screen
 // blocks - collapsing them to their first line - and can drop the final complete
 // frame for short/fast blocks. Reading the command back from the DOM is therefore
 // unreliable (a `{"command":...}` becomes just `{`, a 50-line execute_luau becomes

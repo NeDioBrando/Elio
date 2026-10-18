@@ -2,7 +2,7 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const main=fs.readFileSync('core/main.js','utf8'),start=main.indexOf('  async function waitForResponse('),end=main.indexOf('\n  // ═',start);
 const parser=new Function(fs.readFileSync('core/parser.js','utf8')+';return RSParse;')();
-const text='{"command":"synerixcode_status","params":{}}';
+const text='{"command":"elio_status","params":{}}';
 async function run(mode){let time=1000,tick=0;const first={},second={};
  const cache={item:first,id:'fresh',text,calls:parser.parseToolCalls(text),chat:'chat-a',session:2,sendToken:'old',at:1000};
  if(mode==='wrong-token')cache.id='different';if(mode==='wrong-chat')cache.chat='other';if(mode==='wrong-session')cache.session=3;if(mode==='wrong-send')cache.sendToken='different';if(mode==='no-source')delete cache.text;

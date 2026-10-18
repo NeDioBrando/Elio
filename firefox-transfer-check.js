@@ -2,9 +2,9 @@
 // handlers that read only native DataTransfer fields, like Notion's own code.
 // Usage: node firefox-transfer-check.js [--without-shim]
 const fs=require('fs'),os=require('os'),path=require('path'),http=require('http'),assert=require('assert'),cp=require('child_process');
-const {Builder}=require(process.env.SYNERIXCODE_SELENIUM||'selenium-webdriver'),firefox=require((process.env.SYNERIXCODE_SELENIUM||'selenium-webdriver')+'/firefox');
-const root=__dirname,ext=path.join(root,'synerixcode-Extension'),withoutShim=process.argv.includes('--without-shim');
-const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'synerixcode-firefox-transfer-'));
+const {Builder}=require(process.env.ELIO_SELENIUM||'selenium-webdriver'),firefox=require((process.env.ELIO_SELENIUM||'selenium-webdriver')+'/firefox');
+const root=__dirname,ext=path.join(root,'elio-Extension'),withoutShim=process.argv.includes('--without-shim');
+const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'elio-firefox-transfer-'));
 const page=`<!doctype html><html><head><style>body{margin:0;background:#191919;color:#eee;font:15px sans-serif}main{height:100vh}#host{position:fixed;left:200px;bottom:40px;width:650px}#composer{display:flex;gap:8px;align-items:center;height:100px;background:#2a2a2a;border-radius:12px;padding:8px;box-sizing:border-box}#composer [role=textbox]{flex:1;min-height:40px;outline:none}#uploads{min-height:10px}</style></head><body><main><div id="rows"></div><section id="host"><div id="uploads"></div><section id="composer"><div role="textbox" contenteditable="true" data-placeholder="Ask Notion AI"></div><div role="button" data-testid="agent-chat-send-button" aria-label="Submit AI message" aria-disabled="true">Send</div></section></section></main>
 <script>
 const ed=document.querySelector('[role=textbox]'),button=document.querySelector('[role=button]'),frame=document.getElementById('composer'),uploads=document.getElementById('uploads');
@@ -29,7 +29,7 @@ out.startupChars=startup.length;const t0=Date.now();out.startup=await p.typeAndS
 out.short=await p.typeAndSend('Short Co-Work follow-up: keep **bold** & C:\\\\path');
 const ed=p.getEditor();ed.focus();document.execCommand('insertText',false,'user draft');out.draftBefore=ed.textContent;
 out.clear=await p.writeDraft('','user draft');out.draftAfter=p.getEditor().textContent;
-out.shim=!!globalThis.__synerixcodeFirefoxShim;
+out.shim=!!globalThis.__elioFirefoxShim;
 const probe=document.getElementById('probe');const sem={};
 let clicks=0;probe.addEventListener('click',()=>clicks++);sem.clickReturn=probe.dispatchEvent(new window.MouseEvent('click',{bubbles:true,cancelable:true}));sem.clicks=clicks;
 const dt=new window.DataTransfer();dt.setData('text/plain','cancel me');const pe=new window.ClipboardEvent('paste',{bubbles:true,cancelable:true,clipboardData:dt});sem.cancelReturn=probe.dispatchEvent(pe);sem.cancelPrevented=pe.defaultPrevented;
@@ -47,11 +47,11 @@ out.sem=sem;}catch(e){out.error=String(e&&e.stack||e);}document.documentElement.
   const isolated=[...(withoutShim?[]:['core/firefox-events.js']),'providers/notion.js','harness.js'];
   const scripts=[{matches:['http://127.0.0.1/*'],js:isolated,run_at:'document_idle'}];
   if(!withoutShim)scripts.unshift({matches:['http://127.0.0.1/*'],js:['core/firefox-events-main.js'],world:'MAIN',run_at:'document_start'});
-  fs.writeFileSync(path.join(dir,'manifest.json'),JSON.stringify({manifest_version:3,name:'synerixcode transfer check',version:'1.0',browser_specific_settings:{gecko:{id:'synerixcode-transfer@synerixcode.local',strict_min_version:'140.0'}},content_scripts:scripts}));
+  fs.writeFileSync(path.join(dir,'manifest.json'),JSON.stringify({manifest_version:3,name:'elio transfer check',version:'1.0',browser_specific_settings:{gecko:{id:'elio-transfer@elio.local',strict_min_version:'140.0'}},content_scripts:scripts}));
   cp.execFileSync('python3',['-c',`import pathlib,zipfile;r=pathlib.Path(${JSON.stringify(dir)});z=zipfile.ZipFile(${JSON.stringify(path.join(tmp,'x.zip'))},'w');[z.write(p,p.relative_to(r).as_posix()) for p in r.rglob('*') if p.is_file()];z.close()`]);
   server=http.createServer((q,s)=>{s.setHeader('Content-Type','text/html');s.end(page);});await new Promise(r=>server.listen(0,'127.0.0.1',r));
-  const o=new firefox.Options().addArguments('-headless');if(process.env.SYNERIXCODE_TEST_FIREFOX)o.setBinary(process.env.SYNERIXCODE_TEST_FIREFOX);
-  driver=await new Builder().forBrowser('firefox').setFirefoxOptions(o).setFirefoxService(new firefox.ServiceBuilder(process.env.SYNERIXCODE_TEST_GECKODRIVER)).build();
+  const o=new firefox.Options().addArguments('-headless');if(process.env.ELIO_TEST_FIREFOX)o.setBinary(process.env.ELIO_TEST_FIREFOX);
+  driver=await new Builder().forBrowser('firefox').setFirefoxOptions(o).setFirefoxService(new firefox.ServiceBuilder(process.env.ELIO_TEST_GECKODRIVER)).build();
   await driver.manage().window().setRect({width:1280,height:900});
   await driver.installAddon(path.join(tmp,'x.zip'),true);await driver.get('http://127.0.0.1:'+server.address().port+'/ai');
   let h=null;const end=Date.now()+150000;while(Date.now()<end&&!h){h=await driver.executeScript("return document.documentElement.getAttribute('data-harness')");if(!h)await new Promise(r=>setTimeout(r,250));}

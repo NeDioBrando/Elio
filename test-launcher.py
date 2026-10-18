@@ -35,11 +35,11 @@ class LauncherTests(unittest.TestCase):
 
 
 
-    def test_synerixcode_agent_pe_is_unshifted(self):
-        """A different-length version stamp in synerixcode.exe shifts PE sections
+    def test_elio_agent_pe_is_unshifted(self):
+        """A different-length version stamp in elio.exe shifts PE sections
         and Windows will not launch the app. File size must match the section table."""
         import struct
-        data = Path(__file__).resolve().parent.joinpath("synerixcode.exe").read_bytes()
+        data = Path(__file__).resolve().parent.joinpath("elio.exe").read_bytes()
         self.assertEqual(data[:2], b"MZ")
         pe = struct.unpack_from("<I", data, 0x3C)[0]
         self.assertEqual(data[pe:pe + 4], b"PE\x00\x00")

@@ -9,7 +9,7 @@ struct Entry { runtime:Arc<Mutex<Runtime>>, touched:u64 }
 #[derive(Default)]struct Registry { entries:HashMap<String,Entry>, tick:u64 }
 static REGISTRY:once_cell::sync::Lazy<Mutex<Registry>>=once_cell::sync::Lazy::new(||Mutex::new(Registry::default()));
 fn key(text:&str)->String {let mut hash=14695981039346656037u64;for byte in text.as_bytes(){hash^=*byte as u64;hash=hash.wrapping_mul(1099511628211);}format!("{hash:016x}")}
-fn data_root()->PathBuf{let base=std::env::var_os("LOCALAPPDATA").or_else(||std::env::var_os("XDG_CONFIG_HOME")).map(PathBuf::from).unwrap_or_else(||PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join(".config"));base.join("synerixcode").join("engram")}
+fn data_root()->PathBuf{let base=std::env::var_os("LOCALAPPDATA").or_else(||std::env::var_os("XDG_CONFIG_HOME")).map(PathBuf::from).unwrap_or_else(||PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join(".config"));base.join("elio").join("engram")}
 fn executable()->anyhow::Result<PathBuf>{
     let root=crate::platform::installation_root();
     let platform=if cfg!(target_os="windows"){"windows"}else if cfg!(target_os="macos"){"darwin"}else{"linux"};
@@ -17,7 +17,7 @@ fn executable()->anyhow::Result<PathBuf>{
     let filename=format!("engram-{platform}-{arch}{}",if cfg!(windows){".exe"}else{""});
     // Older macOS updaters replace the signed app, but do not copy new runtime folders.
     // Prefer the bundled runtime so automatic upgrades carry the matching Engram build.
-    let bundled=root.join("synerixcode.app/Contents/Resources/engram").join(&filename);
+    let bundled=root.join("elio.app/Contents/Resources/engram").join(&filename);
     let path=if cfg!(target_os="macos") && bundled.is_file(){bundled}else{root.join("runtime").join("engram").join(filename)};
     anyhow::ensure!(path.is_file(),"The bundled Engram runtime is unavailable. Existing memory and chat logging remain available.");Ok(path)
 }
@@ -34,14 +34,14 @@ async fn runtime(scope:&str)->anyhow::Result<Arc<Mutex<Runtime>>>{
     if marker.is_file(){let stored:String=serde_json::from_slice(&tokio::fs::read(&marker).await?)?;anyhow::ensure!(stored==scope,"Memory scope collision; refused to open another project's database.");}
     else{tokio::fs::write(&marker,serde_json::to_vec(scope)?).await?;}
     let mut env=HashMap::new();env.insert("ENGRAM_DATA_DIR".into(),dir.to_string_lossy().into_owned());env.insert("ENGRAM_PROJECT".into(),scope.into());env.insert("ENGRAM_CLOUD_AUTOSYNC".into(),"0".into());
-    let process=AddonRuntime::new("synerixcode-engram".into(),ServerSpec{command:path.to_string_lossy().into_owned(),args:vec!["mcp".into(),"--tools=agent,admin".into()],env});
+    let process=AddonRuntime::new("elio-engram".into(),ServerSpec{command:path.to_string_lossy().into_owned(),args:vec!["mcp".into(),"--tools=agent,admin".into()],env});
     let runtime=Arc::new(Mutex::new(Runtime{process,sessions:HashSet::new()}));registry.entries.insert(scope.into(),Entry{runtime:runtime.clone(),touched:tick});Ok(runtime)
 }
 fn string(value:&Value,name:&str,max:usize)->anyhow::Result<String>{let text=value[name].as_str().unwrap_or("");anyhow::ensure!(!text.trim().is_empty()&&text.len()<=max,"Invalid or oversized {name}");Ok(text.into())}
 async fn execute(value:Value)->anyhow::Result<Value>{
     let scope=string(&value,"scope",2000)?;let chat=string(&value,"chat",2000)?;let action=string(&value,"action",30)?;
     if matches!(action.as_str(),"save"|"summary"|"checkpoint") {anyhow::ensure!(crate::memory::STORE.snapshot().automatic,"Automatic memory is off.");}
-    let session=format!("synerixcode-{}",key(&chat));
+    let session=format!("elio-{}",key(&chat));
     let (tool,args)=match action.as_str(){
         "context"=>("mem_context",json!({"project":scope,"scope":"project","max_bytes":12000})),
         "search"=>("mem_search",json!({"project":scope,"scope":"project","query":string(&value,"query",1000)?,"limit":8,"response_format":"compact"})),

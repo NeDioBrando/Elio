@@ -15,9 +15,9 @@ assert.equal(w.blocked(),true);settings.remove();assert.equal(w.blocked(),true,'
 nested.remove();assert.equal(w.blocked(),false,'closing settings restores the bar');
 settings=mount('<div style="display:none"><input placeholder="Search settings"></div>');assert.equal(w.blocked(),false,'unmounted/hidden settings do not block');settings.firstChild.style.display='block';assert.equal(w.blocked(),true);settings.firstChild.hidden=true;assert.equal(w.blocked(),false);settings.remove();
 settings=mount('<div role="dialog" aria-label="Workspace settings"></div>');assert.equal(w.blocked(),true);settings.setAttribute('aria-hidden','true');assert.equal(w.blocked(),false);settings.remove();
-settings=mount('<div id="rs-menu" role="dialog" aria-label="Settings"><input placeholder="Search settings"></div>');assert.equal(w.blocked(),false,'synerixcode settings cannot hide their own bar');settings.remove();
+settings=mount('<div id="rs-menu" role="dialog" aria-label="Settings"><input placeholder="Search settings"></div>');assert.equal(w.blocked(),false,'elio settings cannot hide their own bar');settings.remove();
 settings=mount('<div role="dialog" aria-label="Notion AI"><div contenteditable="true">settings</div></div>');assert.equal(w.blocked(),false,'AI dialogs remain usable');settings.remove();
 settings=mount('<div role="dialog"><h2>Settings</h2></div>');assert.equal(w.blocked(),true);settings.remove();
 const main=fs.readFileSync('core/main.js','utf8');assert(main.includes('P.overlayBlocking && P.overlayBlocking()') || /P\.overlayBlocking\s*&&\s*P\.overlayBlocking\(\)/.test(main));
-assert.deepEqual(fs.readFileSync('providers/notion.js'),fs.readFileSync('synerixcode-Extension/providers/notion.js'));
-dom.window.close();console.log('Notion settings and nested model dialogs hide the bar, close restores it, hidden settings and normal AI/synerixcode dialogs remain usable.');
+assert.deepEqual(fs.readFileSync('providers/notion.js'),fs.readFileSync('elio-Extension/providers/notion.js'));
+dom.window.close();console.log('Notion settings and nested model dialogs hide the bar, close restores it, hidden settings and normal AI/elio dialogs remain usable.');

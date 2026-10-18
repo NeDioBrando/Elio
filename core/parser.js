@@ -369,7 +369,7 @@ const RSParse = (() => {
   // quotes a {"command": …} example that must NOT be read as a real command.
   function isInjectedFeedback(txt) {
     return /^\s*Output of '/.test(txt) ||
-           /^\s*\[synerixcode retained the COMPLETE result\. This is the first page, not truncated source\. Read the rest with synerixcode_result_read \{id:"[a-f0-9-]{36}",offset:\d+\}/.test(txt) ||
+           /^\s*\[elio retained the COMPLETE result\. This is the first page, not truncated source\. Read the rest with elio_result_read \{id:"[a-f0-9-]{36}",offset:\d+\}/.test(txt) ||
            /^\s*ERROR\b/.test(txt) ||
            /^\s*\(System note:/.test(txt);
   }
@@ -378,7 +378,7 @@ const RSParse = (() => {
   function hasCommandShape(txt) {
     return txt.includes(START_M) ||
            LUA_START_RE.test(txt) ||
-           CMD_KEY_RE.test(txt); // command/tool with synerixcode without params (e.g. list_commands)
+           CMD_KEY_RE.test(txt); // command/tool with elio without params (e.g. list_commands)
   }
 
   return {

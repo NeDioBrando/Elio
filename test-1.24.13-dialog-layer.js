@@ -1,5 +1,5 @@
 // 1.24.13: the clarification panel ("<AI> is asking you…") must stay above
-// synerixcode's own "Agent is working…" cover and Tasks button. Notion makes <body>
+// elio's own "Agent is working…" cover and Tasks button. Notion makes <body>
 // its own stacking context, so a panel mounted in <body> was flattened below
 // those <html>-level overlays and they covered the Submit button.
 const fs=require('fs'),assert=require('node:assert/strict'),{JSDOM}=require('jsdom');
@@ -15,7 +15,7 @@ const fs=require('fs'),assert=require('node:assert/strict'),{JSDOM}=require('jsd
  assert.match(main,/overlay\.append\(style, wrap\); document\.documentElement\.append\(overlay\);/,'the screenshot viewer uses the same root layer');
  // Default mount (no mount callback) is the root element too.
  const dom=new JSDOM('<!doctype html><html><body></body></html>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
- w.eval(clarSource+';window.Clarify=synerixcodeClarification;');
+ w.eval(clarSource+';window.Clarify=elioClarification;');
  const c=w.Clarify.create({document:w.document,context:()=>'k',provider:()=>'Notion AI',mount:()=>null});
  const pending=c.request({question:'Moon unlock?',options:[{id:'a',label:'A',scope:'a'},{id:'b',label:'B',scope:'b'}],recommended_id:'b',recommendation:'why',questions:['What happens?']});pending.catch(()=>{});
  const host=w.document.getElementById('rs-clarification-host');assert.equal(host.parentElement,w.document.documentElement);c.cancel();
@@ -32,7 +32,7 @@ const fs=require('fs'),assert=require('node:assert/strict'),{JSDOM}=require('jsd
     const root=document.createElement('div');root.id='rs-root';document.documentElement.appendChild(root);
     const tab=document.createElement('button');tab.id='rs-checklist-show';tab.style.cssText='position:fixed;right:70px;bottom:320px;width:94px;height:36px';root.append(tab);
     const cover=document.createElement('div');cover.id='rs-input-cover';cover.style.cssText='display:flex;left:150px;top:820px;width:640px;height:100px';document.documentElement.appendChild(cover);
-    synerixcodeClarification.create({document,context:()=>'k',provider:()=>'AI',mount:()=>document.documentElement}).request({question:'Q?',options:[{id:'a',label:'A',scope:'a'},{id:'b',label:'B',scope:'b'}],recommended_id:'b',recommendation:'why',questions:['Q?']}).catch(()=>{});
+    elioClarification.create({document,context:()=>'k',provider:()=>'AI',mount:()=>document.documentElement}).request({question:'Q?',options:[{id:'a',label:'A',scope:'a'},{id:'b',label:'B',scope:'b'}],recommended_id:'b',recommendation:'why',questions:['Q?']}).catch(()=>{});
     await new Promise(r=>setTimeout(r,300));const host=document.getElementById('rs-clarification-host');
     const top=(el,dx,dy)=>{const r=el.getBoundingClientRect(),e=document.elementFromPoint(r.left+dx,r.top+dy);return e===host||host.contains(e);};
     return top(cover,320,50)&&top(tab,20,10);

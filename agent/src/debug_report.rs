@@ -1,6 +1,6 @@
 //! 1.22.0: Settings -> Copy debug report.
 //!
-//! The browser extension forwards synerixcode's own errors, warnings and info, the
+//! The browser extension forwards elio's own errors, warnings and info, the
 //! AI site's own errors and failed API calls, and recent agent events
 //! (`POST /api/debug/browser-log`). `GET /api/debug/report` combines them with
 //! the desktop status and log into one Markdown report that can be pasted into
@@ -167,13 +167,13 @@ fn likely_causes(problems: &[Value], info: &[Value], diag: &[(String, String)], 
     let timeouts: Vec<&Value> = bridge.iter().copied().filter(|e| text(e).contains("TimeoutError") || text(e).contains("timed out")).collect();
     let unreachable: Vec<&Value> = bridge.iter().copied().filter(|e| { let t = text(e); t.contains("Failed to fetch") || t.contains("NetworkError") || t.contains("pairing failed") }).collect();
     if !timeouts.is_empty() {
-        causes.push(Cause { title: "synerixcode bridge connected but did not answer".into(),
+        causes.push(Cause { title: "elio bridge connected but did not answer".into(),
             evidence: format!("{} bridge request(s) timed out; last: {}", count(&timeouts), text(timeouts[timeouts.len() - 1])),
             place: "background.js › bridgeFetch; desktop bridge on 127.0.0.1:3000".into(),
-            next: "The desktop app was busy or stuck. Check the desktop log section for what it was doing at that time, then restart synerixcode if it stays stuck." });
+            next: "The desktop app was busy or stuck. Check the desktop log section for what it was doing at that time, then restart elio if it stays stuck." });
     }
     if !unreachable.is_empty() {
-        causes.push(Cause { title: "The extension could not reach the synerixcode bridge".into(),
+        causes.push(Cause { title: "The extension could not reach the elio bridge".into(),
             evidence: format!("{} failed connection(s); last: {}", count(&unreachable), text(unreachable[unreachable.len() - 1])),
             place: "background.js › bridgeFetch / ensurePairing".into(),
             next: "Make sure the desktop app is running and that the browser allows the extension to access localhost (Edge/Brave: site access and local network access)." });
@@ -189,25 +189,25 @@ fn likely_causes(problems: &[Value], info: &[Value], diag: &[(String, String)], 
         (403, "The AI site refused a request (HTTP 403)", "Sign in again; a captcha, region block or account limit can also cause this."),
     ] {
         let hits = pick(&|e| e["source"] == "site" && e["status"].as_u64() == Some(status));
-        if !hits.is_empty() { causes.push(Cause { title: title.into(), evidence: format!("{} response(s); last: {}", count(&hits), text(hits[hits.len() - 1])), place: "AI site (not synerixcode)".into(), next }); }
+        if !hits.is_empty() { causes.push(Cause { title: title.into(), evidence: format!("{} response(s); last: {}", count(&hits), text(hits[hits.len() - 1])), place: "AI site (not elio)".into(), next }); }
     }
     let server = pick(&|e| e["source"] == "site" && e["status"].as_u64().map_or(false, |s| s >= 500));
     if !server.is_empty() {
         causes.push(Cause { title: "The AI service returned server errors (HTTP 5xx)".into(), evidence: format!("{} response(s); last: {}", count(&server), text(server[server.len() - 1])),
-            place: "AI site (not synerixcode)".into(), next: "The AI service had an outage or overload. Retry later; synerixcode cannot fix this." });
+            place: "AI site (not elio)".into(), next: "The AI service had an outage or overload. Retry later; elio cannot fix this." });
     }
     let site_errors = pick(&|e| e["source"] == "site" && (e["kind"] == "error" || e["kind"] == "rejection"));
     if !site_errors.is_empty() {
         causes.push(Cause { title: "The AI site itself reported script errors (can be unrelated)".into(), evidence: format!("{} error(s); last: {}", count(&site_errors), clip(&text(site_errors[site_errors.len() - 1]), 200)),
-            place: first_where(&site_errors), next: "If these line up with the failure, the site changed or broke. Refreshing the tab often helps; a site change may need a synerixcode provider update." });
+            place: first_where(&site_errors), next: "If these line up with the failure, the site changed or broke. Refreshing the tab often helps; a site change may need a elio provider update." });
     }
     let mut seen_places: Vec<String> = Vec::new();
     for entry in problems.iter().filter(|e| e["source"] == "extension" && e["level"] == "error" && e["kind"] != "bridge") {
-        let place = entry["where"].as_array().and_then(|w| w.first()).and_then(|w| w.as_str()).unwrap_or("synerixcode extension").to_string();
+        let place = entry["where"].as_array().and_then(|w| w.first()).and_then(|w| w.as_str()).unwrap_or("elio extension").to_string();
         if seen_places.contains(&place) || seen_places.len() >= 3 { continue; }
         seen_places.push(place.clone());
-        causes.push(Cause { title: format!("synerixcode script error in {}", place), evidence: clip(&text(entry), 240), place,
-            next: "This is a synerixcode bug. The file and function above are where it was thrown; the stack is in the errors section." });
+        causes.push(Cause { title: format!("elio script error in {}", place), evidence: clip(&text(entry), 240), place,
+            next: "This is a elio bug. The file and function above are where it was thrown; the stack is in the errors section." });
     }
     let stalls: Vec<&(String, String)> = diag.iter().filter(|(event, _)| event == "stall.detected").collect();
     if !stalls.is_empty() {
@@ -228,7 +228,7 @@ fn likely_causes(problems: &[Value], info: &[Value], diag: &[(String, String)], 
     }
     match seen_secs {
         None => causes.push(Cause { title: "No browser extension has connected to this desktop app".into(), evidence: "no browser report received since the desktop app started".into(),
-            place: "browser extension".into(), next: "Open an AI chat with the synerixcode extension enabled; reload the extension if it was just updated." }),
+            place: "browser extension".into(), next: "Open an AI chat with the elio extension enabled; reload the extension if it was just updated." }),
         Some(secs) if secs > 60 => causes.push(Cause { title: "The browser extension stopped reporting".into(), evidence: format!("last report {} s ago", secs),
             place: "browser extension / background.js".into(), next: "Check that the browser is open and the extension is enabled; reload it if needed." }),
         _ => {}
@@ -285,9 +285,9 @@ pub fn render(ctx: &Context) -> String {
     }
     let causes = likely_causes(&problems, &info, &diag, &versions, ctx, seen_secs);
     let mut out = String::new();
-    out += "# synerixcode debug report\n\n";
-    out += &format!("Generated {} · synerixcode desktop {} · {} {}\n\n", chrono::Local::now().format("%Y-%m-%d %H:%M:%S %:z"), ctx.desktop_version, std::env::consts::OS, std::env::consts::ARCH);
-    out += "Paste this into an AI chat and ask it to find the cause. Keys, tokens, cookies, query values, user names, e-mail addresses and chat text were removed. \"Where\" shows `file › function` for synerixcode code; AI-site entries come from the site itself.\n\n";
+    out += "# elio debug report\n\n";
+    out += &format!("Generated {} · elio desktop {} · {} {}\n\n", chrono::Local::now().format("%Y-%m-%d %H:%M:%S %:z"), ctx.desktop_version, std::env::consts::OS, std::env::consts::ARCH);
+    out += "Paste this into an AI chat and ask it to find the cause. Keys, tokens, cookies, query values, user names, e-mail addresses and chat text were removed. \"Where\" shows `file › function` for elio code; AI-site entries come from the site itself.\n\n";
     out += "## Likely causes\n\n";
     if causes.is_empty() {
         out += "No known problem pattern matched. Check the errors below.\n";
@@ -308,13 +308,13 @@ pub fn render(ctx: &Context) -> String {
     if dropped > 0 { out += &format!("- {} older entries were dropped to stay within the size limit\n", dropped); }
     let extension_problems: Vec<&Value> = problems.iter().filter(|e| e["source"] == "extension").collect();
     let site_problems: Vec<&Value> = problems.iter().filter(|e| e["source"] == "site").collect();
-    out += &format!("\n## synerixcode errors and warnings ({}, newest last)\n\n", extension_problems.len());
+    out += &format!("\n## elio errors and warnings ({}, newest last)\n\n", extension_problems.len());
     if extension_problems.is_empty() { out += "None recorded.\n"; }
     for entry in extension_problems.iter().rev().take(80).rev() { out += &entry_line(entry); out.push('\n'); }
     out += &format!("\n## AI site errors and failed requests ({}, newest last)\n\n", site_problems.len());
     if site_problems.is_empty() { out += "None recorded.\n"; }
     for entry in site_problems.iter().rev().take(60).rev() { out += &entry_line(entry); out.push('\n'); }
-    out += "\n## synerixcode info (latest 40)\n\n";
+    out += "\n## elio info (latest 40)\n\n";
     if info.is_empty() { out += "None recorded.\n"; }
     for entry in info.iter().rev().take(40).rev() { out += &entry_line(entry); out.push('\n'); }
     out += "\n## Recent agent events (latest 25 per AI tab)\n";
@@ -335,7 +335,7 @@ pub fn reset_for_tests() { *STORE.lock().unwrap_or_else(|e| e.into_inner()) = St
 mod tests {
     use super::*;
     static SERIAL: Mutex<()> = Mutex::new(());
-    fn ctx() -> Context { Context { desktop_version: "1.22.0".into(), status: json!({"studio_running": true, "mcp_alive": false, "bridge_connected": true}), desktop_log: vec!["2026-10-07T03:00:00Z  WARN synerixcode: slow probe".into(), "2026-10-07T03:00:01Z ERROR synerixcode: Studio MCP call failed".into()] } }
+    fn ctx() -> Context { Context { desktop_version: "1.22.0".into(), status: json!({"studio_running": true, "mcp_alive": false, "bridge_connected": true}), desktop_log: vec!["2026-10-07T03:00:00Z  WARN elio: slow probe".into(), "2026-10-07T03:00:01Z ERROR elio: Studio MCP call failed".into()] } }
 
     #[test]
     fn redaction_removes_secrets_and_personal_data() {
@@ -355,14 +355,14 @@ mod tests {
             json!({"t": 2, "source": "extension", "level": "error", "kind": "uncaught", "text": "TypeError: x is undefined", "where": ["core/main.js › sendPrompt"], "tab": "chatgpt.com"}),
             json!({"t": 3, "source": "site", "level": "error", "kind": "http", "status": 429, "text": "HTTP 429 https://chatgpt.com/backend-api/conversation", "tab": "chatgpt.com"}),
             json!({"t": 4, "source": "site", "level": "error", "kind": "error", "text": "Script error", "file": "https://cdn.test/app.js:1:2"}),
-            json!({"t": 5, "source": "extension", "level": "info", "text": "[synerixcode] started token=abcd1234"}),
+            json!({"t": 5, "source": "extension", "level": "info", "text": "[elio] started token=abcd1234"}),
         ];
         for i in 0..500 { entries.push(json!({"t": 10 + i, "source": "extension", "level": "warn", "text": format!("filler {i}")})); }
         let body = json!({"browser_id": "browser-1", "extension_version": "1.21.1", "user_agent": "Chrome/140", "entries": entries,
             "tabs": [{"id": "7", "host": "chatgpt.com", "path": "/c/x", "diag": [{"t": 9, "event": "stall.detected", "data": {"ms": 4000}}]}]});
         assert_eq!(accept(&body).unwrap(), POST_ENTRY_CAP);
         let report = render(&ctx());
-        for needle in ["bridge connected but did not answer", "background.js › bridgeFetch", "synerixcode script error in core/main.js › sendPrompt", "rate-limited requests (HTTP 429)", "AI site itself reported script errors",
+        for needle in ["bridge connected but did not answer", "background.js › bridgeFetch", "elio script error in core/main.js › sendPrompt", "rate-limited requests (HTTP 429)", "AI site itself reported script errors",
                        "AI page froze", "Extension and desktop versions differ", "MCP connection is off", "desktop app logged errors", "3 bridge request(s) timed out", "stall.detected"] {
             assert!(report.contains(needle), "missing {needle}\n{report}");
         }

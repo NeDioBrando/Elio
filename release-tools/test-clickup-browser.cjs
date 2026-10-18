@@ -29,7 +29,7 @@ async function pageFor(browser,agent=false,core=false){
    state.refresh();
    frame.querySelector('form').onsubmit=e=>{e.preventDefault();unwanted++;};
    for(const button of frame.querySelectorAll('button'))if(button.dataset.test!=='refinement-prompt-submit-button')button.onclick=e=>{e.preventDefault();unwanted++;};
-   frame.querySelector('[data-test="refinement-prompt-submit-button"]').onclick=e=>{e.preventDefault();if(sendButton.disabled||(!state.text&&!state.attachments))throw Error('Native fixture Send requires an accepted composer model');const text=state.text;sent.push({text,frame:frame.id,attachments:state.attachments});editor.innerHTML='<p><br></p>';state.refresh();if(!echo)return;addItem('user',text,String(80100000000000+sent.length));if(agent)history.replaceState({},'','/90141771095/chat/r/agent-room/t/thread-1');else history.replaceState({},'','/90141771095/ai/brain?conversationId=brain-1');if(!agent){document.querySelector('#mode-tabs')?.remove();const group=document.querySelector('.ai-agent-builder-input-container');group.style.width='100%';group.style.left='0';}const ack=text.match(/More context follows\. Reply with exactly "([^"]+)"/);if(autoReply)addItem('assistant',nextReply||(ack?ack[1]:sent.length===1?'```json\n{"command":"list_commands"}\n```':'synerixcode is ready.'),'ai-'+sent.length);};
+   frame.querySelector('[data-test="refinement-prompt-submit-button"]').onclick=e=>{e.preventDefault();if(sendButton.disabled||(!state.text&&!state.attachments))throw Error('Native fixture Send requires an accepted composer model');const text=state.text;sent.push({text,frame:frame.id,attachments:state.attachments});editor.innerHTML='<p><br></p>';state.refresh();if(!echo)return;addItem('user',text,String(80100000000000+sent.length));if(agent)history.replaceState({},'','/90141771095/chat/r/agent-room/t/thread-1');else history.replaceState({},'','/90141771095/ai/brain?conversationId=brain-1');if(!agent){document.querySelector('#mode-tabs')?.remove();const group=document.querySelector('.ai-agent-builder-input-container');group.style.width='100%';group.style.left='0';}const ack=text.match(/More context follows\. Reply with exactly "([^"]+)"/);if(autoReply)addItem('assistant',nextReply||(ack?ack[1]:sent.length===1?'```json\n{"command":"list_commands"}\n```':'elio is ready.'),'ai-'+sent.length);};
    frame.querySelector('input[type=file]').onchange=e=>{for(const file of e.target.files){const node=document.createElement('span');node.className='attachment-chip';node.dataset.test='link-preview-element__root';node.innerHTML='<a href="https://attachments.example.invalid/image">Attachment '+file.name+'</a>';frame.querySelector('[contenteditable]').append(node);}};
   }
   const tools=[['execute_luau','roblox','code'],['execute_blender_code','blender','code'],['read_file','local','path'],['write_file','local','path']].map(([name,server,field])=>({name,server,description:'Isolated fixture tool',inputSchema:{type:'object',properties:{[field]:{type:'string'}},required:[field]}}));
@@ -89,10 +89,10 @@ async function checks(browser,name){
   assert(bar.width>100&&bar.bottom<=bar.top,JSON.stringify(bar));if(!agent){const tabHit=await page.evaluate(()=>[...document.querySelectorAll('[role=tab]')].every(t=>{const r=t.getBoundingClientRect(),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return t===hit||t.contains(hit);}));assert(tabHit,'Ask/Agents must stay in front and clickable through the bar cutout');}assert(Math.abs(bar.left-bar.anchorLeft)<=1);assert(Math.abs(bar.width-bar.anchorWidth)<=1);
   const donations=await page.evaluate(()=>[...document.querySelectorAll('#rs-menu .rs-tip-rbx')].map(b=>({url:b.dataset.u,label:b.querySelector('.rs-rbx-amt').textContent})));
   assert.deepEqual(donations,[
-   {url:'https://www.roblox.com/game-pass/2025206972/synerixcode-small-donation',label:'50 Robux'},
-   {url:'https://www.roblox.com/game-pass/2026664687/synerixcode-medium-donation',label:'100 Robux'},
-   {url:'https://www.roblox.com/game-pass/2025386949/synerixcode-Large-Donation',label:'500 Robux'},
-   {url:'https://www.roblox.com/game-pass/2026352931/synerixcode-Massive-Donation-much-love',label:'1,000 Robux'}]);
+   {url:'https://www.roblox.com/game-pass/2025206972/elio-small-donation',label:'50 Robux'},
+   {url:'https://www.roblox.com/game-pass/2026664687/elio-medium-donation',label:'100 Robux'},
+   {url:'https://www.roblox.com/game-pass/2025386949/elio-Large-Donation',label:'500 Robux'},
+   {url:'https://www.roblox.com/game-pass/2026352931/elio-Massive-Donation-much-love',label:'1,000 Robux'}]);
   const overlaps=await page.evaluate(()=>{const controls=[...document.querySelectorAll('#rs-bar button')].filter(b=>{const r=b.getBoundingClientRect();return r.width&&r.height&&getComputedStyle(b).visibility!=='hidden';});const conflicts=[];for(let i=0;i<controls.length;i++)for(let j=i+1;j<controls.length;j++){const a=controls[i].getBoundingClientRect(),b=controls[j].getBoundingClientRect();if(Math.min(a.right,b.right)-Math.max(a.left,b.left)>1&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1)conflicts.push([controls[i].id,controls[j].id]);}return conflicts;});assert.deepEqual(overlaps,[],'toolbar buttons must not overlap');
   await page.evaluate(()=>fixture.startSession());
   let state=await page.evaluate(()=>({started:fixture.A.started,starting:fixture.A.starting,sent:sent.map(x=>x.text),draft:provider.editorText(),editable:provider.getEditor().getAttribute('contenteditable')}));
@@ -133,6 +133,6 @@ async function checks(browser,name){
 }
 module.exports={pageFor};
 if(require.main===module)(async()=>{for(const [name,engine] of [['chromium',chromium],['firefox',firefox]]){
- if(process.env.SYNERIXCODE_TEST_BROWSER&&process.env.SYNERIXCODE_TEST_BROWSER!==name)continue;
- const executable=process.env.SYNERIXCODE_CHROMIUM;const browser=await engine.launch({headless:true,...(name==='chromium'&&executable?{executablePath:executable}:{}),args:name==='chromium'?['--no-sandbox']:[]});try{await checks(browser,name);}finally{await browser.close();}
+ if(process.env.ELIO_TEST_BROWSER&&process.env.ELIO_TEST_BROWSER!==name)continue;
+ const executable=process.env.ELIO_CHROMIUM;const browser=await engine.launch({headless:true,...(name==='chromium'&&executable?{executablePath:executable}:{}),args:name==='chromium'?['--no-sandbox']:[]});try{await checks(browser,name);}finally{await browser.close();}
 }})().catch(e=>{console.error(e);process.exitCode=1;});

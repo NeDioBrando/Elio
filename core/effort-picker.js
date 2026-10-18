@@ -1,5 +1,5 @@
 // Styled, keyboard-accessible effort menu. The original select remains the state/event contract.
-function synerixcodeMountEffortPicker(select){
+function elioMountEffortPicker(select){
  if(!select||select.tagName!=='SELECT')return null;if(select._ultraPicker)return select._ultraPicker;
  const wrap=document.createElement('div');wrap.className='pc-effort-picker';select.before(wrap);wrap.append(select);select.hidden=true;
  const trigger=document.createElement('button');trigger.type='button';trigger.className='pc-effort-trigger';trigger.setAttribute('aria-haspopup','listbox');trigger.setAttribute('aria-expanded','false');
@@ -17,4 +17,4 @@ function synerixcodeMountEffortPicker(select){
  const timer=setInterval(()=>{if(!wrap.isConnected){clearInterval(timer);document.removeEventListener('pointerdown',outside);return;}refresh();},500);refresh();
  return select._ultraPicker={refresh,close};
 }
-if(typeof module!=='undefined')module.exports=synerixcodeMountEffortPicker;
+if(typeof module!=='undefined')module.exports=elioMountEffortPicker;

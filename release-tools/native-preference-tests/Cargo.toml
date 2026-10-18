@@ -1,6 +1,6 @@
 # Small harness for the production preference module, without desktop/Roblox dependencies.
 [package]
-name = "synerixcode-native-preference-tests"
+name = "elio-native-preference-tests"
 version = "0.0.0"
 edition = "2021"
 publish = false

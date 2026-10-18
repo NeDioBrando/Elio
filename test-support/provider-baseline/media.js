@@ -1,5 +1,5 @@
 // Shared provider upload capability probe; site DOM stays in providers/.
-const synerixcodeProviderMedia = {
+const elioProviderMedia = {
   nativeVideo(provider) {
     // These providers document native video attachments. Their upload result
     // still decides success; account/platform restrictions can reject a file.

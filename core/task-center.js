@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-const synerixcodeTaskCenter = (() => {
+const elioTaskCenter = (() => {
   const workflows = [
     ['Build → Test → Fix', 'Complete my current request. Inspect the affected systems, make the smallest change, then use available tools to verify it. Test client and server behavior where relevant and supported. Fix confirmed failures within two review cycles. Report what actually passed and what still needs testing.'],
     ['Refresh project map', 'Inspect this project using the available read-only tools. Build a concise map of the main scripts, systems, remotes, dependencies and naming conventions. Do not modify gameplay. Save durable architecture facts in project memory when enabled; distinguish confirmed facts from assumptions.'],
@@ -10,7 +10,7 @@ const synerixcodeTaskCenter = (() => {
     let busy = false;
     const el = (tag, text, cls) => { const node = document.createElement(tag); if (text) node.textContent = text; if (cls) node.className = cls; return node; };
     // Mixed status messages can contain raw external errors; never catalog-match them.
-    const localize=()=>globalThis.synerixcodeI18n?.mountStatic?.(container);
+    const localize=()=>globalThis.elioI18n?.mountStatic?.(container);
     const user=(tag,text)=>{const n=el(tag,text);n.setAttribute('data-i18n-user-content','');n.dir=tag==='pre'?'ltr':'auto';return n;};
     const status = el('div', '', 'pc-task-status'), list = el('div'), refresh = el('button', 'Refresh task history'); refresh.type = 'button';
     status.setAttribute('data-i18n-user-content','');
@@ -19,8 +19,8 @@ const synerixcodeTaskCenter = (() => {
     for (const [name, prompt] of workflows) { const button = el('button', name); button.type = 'button'; button.onclick = () => launch(prompt); workflowBox.appendChild(button); }
     const custom = el('textarea');custom.dir='auto'; custom.placeholder = 'Save your own workflow prompt…'; custom.maxLength = 8000; custom.setAttribute('aria-label', 'Custom workflow');
     const saveWorkflow = el('button', 'Save workflow'), runWorkflow = el('button', 'Run saved workflow'); saveWorkflow.type = runWorkflow.type = 'button';
-    try { custom.value = localStorage.getItem('synerixcodeSavedWorkflow') || ''; } catch {}
-    saveWorkflow.onclick = () => { try { localStorage.setItem('synerixcodeSavedWorkflow', custom.value);status.textContent = 'Workflow saved on this device.'; } catch { status.textContent = 'Could not save this workflow.'; } };
+    try { custom.value = localStorage.getItem('elioSavedWorkflow') || ''; } catch {}
+    saveWorkflow.onclick = () => { try { localStorage.setItem('elioSavedWorkflow', custom.value);status.textContent = 'Workflow saved on this device.'; } catch { status.textContent = 'Could not save this workflow.'; } };
     runWorkflow.onclick = () => launch(custom.value); workflowBox.append(custom, saveWorkflow, runWorkflow);
     const protectionBox=el('details'),protectionTitle=el('summary','Protected systems');
     const engine=el('select');for(const value of ['local','roblox']){const option=el('option',value==='local'?'AgentScript':'RobloxScript');option.value=value;engine.appendChild(option);}
@@ -89,4 +89,4 @@ const synerixcodeTaskCenter = (() => {
   }
   return {mount, workflows};
 })();
-if (typeof module !== 'undefined' && module.exports) module.exports = synerixcodeTaskCenter;
+if (typeof module !== 'undefined' && module.exports) module.exports = elioTaskCenter;

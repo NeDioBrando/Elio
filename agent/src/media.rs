@@ -24,14 +24,14 @@ async fn run(program: &std::path::Path, args: &[String]) -> anyhow::Result<std::
     #[cfg(windows)] command.creation_flags(0x08000000);
     let output = tokio::time::timeout(Duration::from_secs(30),command.output()).await
         .map_err(|_|anyhow::anyhow!("Media conversion timed out. Try a shorter or smaller video."))?
-        .map_err(|_|anyhow::anyhow!("This codec needs FFmpeg. Install FFmpeg or place ffmpeg.exe and ffprobe.exe in synerixcode/runtimes/ffmpeg, then retry."))?;
+        .map_err(|_|anyhow::anyhow!("This codec needs FFmpeg. Install FFmpeg or place ffmpeg.exe and ffprobe.exe in elio/runtimes/ffmpeg, then retry."))?;
     anyhow::ensure!(output.status.success(),"The local decoder could not convert this media. Try a valid PNG/JPEG or MP4/WebM file.");
     Ok(output)
 }
 async fn convert(bytes: Bytes, video: bool) -> anyhow::Result<serde_json::Value> {
     anyhow::ensure!(!bytes.is_empty() && bytes.len() <= MAX_INPUT,"Local conversion accepts files up to 64 MB.");
     let mut nonce=[0u8;16];getrandom::getrandom(&mut nonce).map_err(|_|anyhow::anyhow!("Cannot create media conversion session."))?;
-    let path=std::env::temp_dir().join(format!("synerixcode-media-{}",nonce.iter().map(|b|format!("{b:02x}")).collect::<String>()));
+    let path=std::env::temp_dir().join(format!("elio-media-{}",nonce.iter().map(|b|format!("{b:02x}")).collect::<String>()));
     std::fs::create_dir(&path)?;let scratch=Scratch(path);
     let input=scratch.0.join("input.bin");tokio::fs::write(&input,bytes).await?;
     let decoder=decoder();let mut filter="scale=1600:1600:force_original_aspect_ratio=decrease".to_string();
@@ -65,16 +65,16 @@ mod tests {
     #[tokio::test]
     async fn actual_decoder_converts_image_and_samples_video() {
         if std::process::Command::new("ffmpeg").arg("-version").output().is_err() { return; }
-        let image=convert(Bytes::from_static(include_bytes!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/icon.png"))),false).await.unwrap();
+        let image=convert(Bytes::from_static(include_bytes!(concat!(env!("ELIO_EXTENSION_ROOT"), "/icon.png"))),false).await.unwrap();
         assert_eq!(image["files"].as_array().unwrap().len(),1);
         assert!(image["files"][0]["data"].as_str().unwrap().starts_with("/9j/"));
-        let path=std::env::temp_dir().join(format!("synerixcode-codec-fixture-{}.webm",std::process::id()));
+        let path=std::env::temp_dir().join(format!("elio-codec-fixture-{}.webm",std::process::id()));
         let output=std::process::Command::new("ffmpeg").args(["-hide_banner","-loglevel","error","-nostdin","-y","-f","lavfi","-i","color=c=red:s=64x64:r=10:d=2","-c:v","libvpx"]).arg(&path).output().unwrap();assert!(output.status.success());
         let bytes=std::fs::read(&path).unwrap();std::fs::remove_file(&path).unwrap();
         let video=convert(Bytes::from(bytes),true).await.unwrap();let frames=video["files"].as_array().unwrap();assert!(!frames.is_empty() && frames.len()<=8);assert!(frames.iter().all(|f|f["data"].as_str().unwrap().starts_with("/9j/")));
     }
     #[test]
     fn scratch_only_removes_its_own_session() {
-        let root=std::env::temp_dir().join(format!("synerixcode-media-test-{}",std::process::id()));std::fs::create_dir_all(&root).unwrap();std::fs::write(root.join("keep"),"keep").unwrap();let child=root.join("convert");std::fs::create_dir(&child).unwrap();std::fs::write(child.join("temporary"),"data").unwrap();drop(Scratch(child.clone()));assert!(!child.exists());assert!(root.join("keep").exists());std::fs::remove_dir_all(root).unwrap();
+        let root=std::env::temp_dir().join(format!("elio-media-test-{}",std::process::id()));std::fs::create_dir_all(&root).unwrap();std::fs::write(root.join("keep"),"keep").unwrap();let child=root.join("convert");std::fs::create_dir(&child).unwrap();std::fs::write(child.join("temporary"),"data").unwrap();drop(Scratch(child.clone()));assert!(!child.exists());assert!(root.join("keep").exists());std::fs::remove_dir_all(root).unwrap();
     }
 }

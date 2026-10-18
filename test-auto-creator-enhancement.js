@@ -1,7 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
 const c=vm.createContext({console,Map,Promise});
 for(const name of ['prompt-enhancer','chat-creators'])vm.runInContext(fs.readFileSync('core/'+name+'.js','utf8'),c);
-vm.runInContext('this.Chat=synerixcodeChatCreators;this.Enhancer=synerixcodeEnhancer',c);
+vm.runInContext('this.Chat=elioChatCreators;this.Enhancer=elioEnhancer',c);
 const raw='Make a UI called ExactShop with 44px buttons, #123456, an exact 250x400 panel. Preview only; do not insert.';
 (async()=>{
  const request=c.Chat.enhancementRequest(raw);assert(request.includes(c.Enhancer.rules));assert(request.endsWith(raw));assert(request.startsWith('(System note:'));
@@ -13,6 +13,6 @@ const raw='Make a UI called ExactShop with 44px buttons, #123456, an exact 250x4
  calls=[];cancelled=false;const changed=helper.perform('request-3',raw);context='other-chat|roblox|1';release();await assert.rejects(()=>changed,/changed/);assert.deepEqual(calls,['rewrite']);
  const empty=c.Chat.createEnhancer({...env,context:()=>context,rewrite:async()=>'',send:async()=>{throw Error('Invalid rewrite must not send');}});await assert.rejects(()=>empty.perform('empty',raw),/empty/);
  await assert.rejects(()=>empty.perform('large','x'.repeat(40001)),/40,000/);
- const main=fs.readFileSync('core/main.js','utf8');assert(main.indexOf('await enhanceCreationBeforeTools(res)')<main.indexOf('const preflight = calls.flatMap'));assert(main.includes('A.creatorPreEnhanced'));assert(main.includes('A.creatorFollowups=texts'));assert.equal(main,fs.readFileSync('synerixcode-Extension/core/main.js','utf8'));
+ const main=fs.readFileSync('core/main.js','utf8');assert(main.indexOf('await enhanceCreationBeforeTools(res)')<main.indexOf('const preflight = calls.flatMap'));assert(main.includes('A.creatorPreEnhanced'));assert(main.includes('A.creatorFollowups=texts'));assert.equal(main,fs.readFileSync('elio-Extension/core/main.js','utf8'));
  console.log('Automatic creator enhancement: existing rules, exact original constraints, rewrite-before-execution, concurrent deduplication, Stop/navigation, invalid results and manual-enhancer reuse passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});

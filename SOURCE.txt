@@ -1,4 +1,7 @@
-synerixcode v1 is a modified GPL-3.0-or-later distribution.
-Complete editable source is included in synerixcode-v1-source.zip.
-See README-RU.md for Windows build and test instructions.
-See UPSTREAM-SOURCE.txt, LICENSE, BRANDING-NOTICE.txt and third-party notices.
+Elio 1.0.1 is a modified GPL-3.0-or-later distribution.
+Complete editable source is supplied in Elio-v1.0.1-full-source.zip.
+See README-RU.md for Windows build/release instructions and ELIO-TEST-REPORT.md for validation limits.
+Repository/update feed: https://github.com/NeDioBrando/Elio.
+New executable: elio.exe; extension: elio-Extension; Cargo package: elio-agent.
+Original product protocol/storage identifiers are renamed; install the matching new application and extension together.
+See UPSTREAM-SOURCE.txt, LICENSE, BRANDING-NOTICE.txt and third-party notices for original authorship and origin.

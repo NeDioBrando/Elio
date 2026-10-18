@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Ollama — elio Local AI</title>
+<link rel="stylesheet" href="overlay.css">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:"Segoe UI Variable","Segoe UI",ui-sans-serif,system-ui,sans-serif;
+    background:#090807;color:#f7f1e8;
+    display:flex;flex-direction:column;height:100vh;overflow:hidden;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(900px 320px at 50% -10%, rgba(232,213,181,.18), transparent 55%),
+      url(ui/hero.jpg) center top / cover no-repeat;
+    opacity:.28;
+  }
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:linear-gradient(180deg, rgba(9,8,7,.35), #090807 42%);
+  }
+  header{
+    height:68px;padding:0 20px;display:flex;align-items:center;gap:12px;
+    background:linear-gradient(180deg,rgba(20,16,12,.9),rgba(12,10,8,.94));
+    backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);
+    border-bottom:1px solid rgba(255,232,204,0.14);
+    position:relative;z-index:50;
+  }
+  .mark{width:36px;height:36px;border-radius:4px;background:#000;border:1px solid rgba(255,232,204,.28);box-shadow:0 0 16px rgba(232,213,181,.28)}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:.16em;text-transform:uppercase}
+  .logo span{background:linear-gradient(90deg,#f3e6d0,#e8d5b5,#c9a27a);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .logo small{font-size:9px;font-weight:800;color:#1a140e;background:linear-gradient(180deg,#f3e6d0,#e8d5b5);padding:3px 8px;border-radius:999px;letter-spacing:.5px}
+  #status{font-size:12px;color:#c4b7a6;display:flex;align-items:center;gap:6px;margin-left:4px;font-weight:650}
+  #status.on{color:#34d399} #status.off{color:#fb7185}
+  #chat{flex:1;overflow-y:auto;padding:28px 16px;display:flex;flex-direction:column;gap:18px;background:transparent;position:relative;z-index:1}
+  #chat:empty::before{content:"What should we build today?";display:block;text-align:center;font-size:34px;font-weight:800;letter-spacing:-.03em;margin:auto;background:linear-gradient(90deg,#f3e6d0,#e8d5b5,#c9a27a);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:sheen 6s linear infinite}
+  @keyframes sheen{to{background-position:200% center}}
+  .message{max-width:768px;width:100%;margin:0 auto;display:flex;gap:12px;animation:msgIn .25s cubic-bezier(.2,.8,.2,1)}
+  @keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .message[data-role="user"]{justify-content:flex-end}
+  .message[data-role="user"] .bubble{
+    background:linear-gradient(180deg,rgba(255,244,230,.14),rgba(255,244,230,.06));
+    color:#f7f1e8;border-radius:6px 6px 2px 6px;padding:12px 16px;font-size:14px;line-height:1.6;max-width:78%;
+    border:1px solid rgba(255,232,204,0.16);box-shadow:0 10px 24px rgba(0,0,0,.25)
+  }
+  .message[data-role="assistant"]{justify-content:flex-start}
+  .message[data-role="assistant"] .bubble{
+    background:rgba(16,14,12,.55);color:#f0e6d8;padding:12px 16px;font-size:14px;line-height:1.7;max-width:100%;
+    border-left:3px solid #e8d5b5;border-radius:2px 6px 6px 6px
+  }
+  .message .markdown{white-space:pre-wrap;word-break:break-word;font-size:14px;line-height:1.7}
+  #composer{padding:16px 16px 22px;background:linear-gradient(180deg, transparent, #090807 32%);position:relative;z-index:50}
+  #composerInner{max-width:768px;margin:0 auto;position:relative}
+  #chatForm{
+    display:flex;align-items:flex-end;gap:10px;
+    background:rgba(16,14,12,.92);border:1px solid rgba(255,232,204,0.18);
+    border-radius:6px;padding:8px 8px 8px 10px;
+    box-shadow:0 16px 40px rgba(0,0,0,0.4);transition:border-color 0.15s
+  }
+  #chatForm:focus-within{border-color:rgba(232,213,181,0.5);box-shadow:0 0 0 3px rgba(232,213,181,0.12),0 12px 28px rgba(0,0,0,0.45)}
+  #chat-input{flex:1;min-height:24px;max-height:120px;resize:none;background:transparent;border:0;color:#f7f1e8;font-size:15px;line-height:1.5;outline:none;padding:8px 0;font-family:inherit}
+  #chat-input::placeholder{color:#8f8374}
+  #composerActions{display:flex;align-items:center;gap:6px}
+  #sendBtn{width:42px;height:42px;border-radius:4px;background:linear-gradient(180deg,#f3e6d0,#e8d5b5);color:#1a140e;border:0;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;transition:filter 0.15s, transform 0.1s}
+  #sendBtn:hover{filter:brightness(1.06);transform:scale(1.02)}
+  #sendBtn:disabled{opacity:0.5;cursor:not-allowed;transform:none;background:#3c2f24;color:#9a9084}
+  #sendBtn svg{width:18px;height:18px}
+  #barModelBtn{display:flex;align-items:center;gap:6px;background:transparent;color:#c4b7a6;border:0;border-radius:999px;padding:8px 12px;font-size:12.5px;font-weight:650;cursor:pointer;flex:none;align-self:center;white-space:nowrap;transition:background 0.15s,color 0.15s}
+  #barModelBtn:hover{background:rgba(232,213,181,0.12);color:#e8d5b5}
+  #barModelBtn svg{opacity:0.7}
+  #barModelBtn .bName{max-width:170px;overflow:hidden;text-overflow:ellipsis}
+  #modelList{position:fixed;display:none;width:320px;max-height:380px;overflow-y:auto;background:#141210;border:1px solid rgba(255,232,204,0.16);border-radius:16px;box-shadow:0 16px 40px rgba(0,0,0,0.55);padding:6px;z-index:2147483647}
+  #modelList.open{display:block}
+  .modelItem{padding:10px 12px;border-radius:12px;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+  .modelItem:hover{background:rgba(255,244,230,0.07)}
+  .modelItem.active{background:rgba(232,213,181,0.16)}
+  .modelItem .mName{font-size:13px;font-weight:650;color:#f7f1e8;display:flex;align-items:center;gap:8px}
+  .modelItem.active .mName::after{content:"✓";margin-left:auto;color:#e8d5b5;font-weight:800}
+  .modelItem .mMeta{font-size:11px;color:#8f8374;padding-left:15px}
+  #hint{max-width:768px;margin:10px auto 0;color:#8f8374;font-size:11px;line-height:1.4;text-align:center}
+  #hint code{background:rgba(255,255,255,0.08);padding:1px 4px;border-radius:4px;font-family:ui-monospace,monospace;font-size:11px}
+  #offlineCard{display:none;max-width:520px;margin:40px auto;background:rgba(16,14,12,.9);border:1px solid rgba(255,232,204,0.16);border-radius:6px;padding:24px;text-align:center;position:relative;z-index:1;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+  #offlineCard h2{margin:0 0 8px;font-size:18px;font-weight:800;color:#f7f1e8;letter-spacing:.04em}
+  #offlineCard p{margin:0 0 16px;font-size:13px;color:#c4b7a6;line-height:1.6}
+  #startOllamaBtn{background:linear-gradient(180deg,#f3e6d0,#e8d5b5);color:#1a140e;border:0;border-radius:999px;padding:10px 22px;font-size:13px;font-weight:800;cursor:pointer}
+  #startOllamaBtn:hover{filter:brightness(1.05)}
+  #startOllamaBtn:disabled{opacity:.6;cursor:wait}
+  html[data-rs-theme="blood-moon"] body::before{background-image:radial-gradient(900px 320px at 50% -10%, rgba(225,29,72,.22), transparent 55%),url(ui/swatch-blood-moon.jpg)}
+  html[data-rs-theme="sakura"] body::before{background-image:radial-gradient(900px 320px at 50% -10%, rgba(244,114,182,.22), transparent 55%),url(ui/swatch-sakura.jpg)}
+  html[data-rs-theme="starglaze"] body::before{background-image:radial-gradient(900px 320px at 50% -10%, rgba(103,232,249,.2), transparent 55%),url(ui/swatch-starglaze.jpg)}
+  html[data-rs-theme="autumn"] body::before{background-image:radial-gradient(900px 320px at 50% -10%, rgba(245,158,11,.22), transparent 55%),url(ui/swatch-autumn.jpg)}
+  html[data-rs-theme] header{border-bottom-color:var(--or-line, rgba(255,232,204,.14))}
+  html[data-rs-theme] #chatForm{border-color:var(--or-line, rgba(255,232,204,.18))}
+  html[data-rs-theme] #sendBtn{background:linear-gradient(180deg, color-mix(in srgb, var(--or-accent,#e8d5b5) 88%, #fff), var(--or-accent,#e8d5b5))}
+  html[data-rs-theme] .message[data-role="assistant"] .bubble{border-left-color:var(--or-accent,#e8d5b5)}
+  html[data-rs-theme="sakura"] .logo small{background:linear-gradient(180deg,#fbcfe8,#f472b6);color:#3b0a22}
+  html[data-rs-theme="blood-moon"] .logo small{background:linear-gradient(180deg,#fda4af,#e11d48);color:#2a0a10}
+  html[data-rs-theme="starglaze"] .logo small{background:linear-gradient(180deg,#a5f3fc,#22d3ee);color:#082f49}
+  html[data-rs-theme="autumn"] .logo small{background:linear-gradient(180deg,#fde68a,#f59e0b);color:#431407}
+  #chat::-webkit-scrollbar{width:8px} #chat::-webkit-scrollbar-thumb{background:rgba(255,232,204,0.18);border-radius:8px}
+  #modelList::-webkit-scrollbar{width:6px} #modelList::-webkit-scrollbar-thumb{background:rgba(255,232,204,0.18);border-radius:6px}
+</style>
+</head>
+<body>
+<header>
+  <img class="mark" src="icon.png" alt="">
+  <div class="logo"><span>Ollama</span> <small>LOCAL</small></div>
+  <span id="status" class="off">● checking</span>
+</header>
+<div id="chat"></div>
+<div id="offlineCard">
+  <h2>Ollama isn't running</h2>
+  <p>One click and we'll start it for you — no API key, fully local.<br>If it fails, install Ollama from <b>ollama.com</b> first.</p>
+  <button id="startOllamaBtn">▶ Start Ollama for me</button>
+</div>
+<div id="composer">
+  <div id="composerInner">
+    <form id="chatForm">
+      <button type="button" id="barModelBtn" title="Switch model">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <span class="bName">Select model</span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <textarea id="chat-input" rows="1" placeholder="Ask Ollama…"></textarea>
+      <div id="composerActions">
+        <button type="submit" id="sendBtn" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+      </div>
+    </form>
+    <div id="hint">Pick a model in the bar · then hit <b>Start</b> in the elio bar below to drive Studio locally.</div>
+  </div>
+</div>
+<div id="modelList"></div>
+<script src="ollama-page.js"></script>
+<script src="core/luau-knowledge.js"></script>
+<script src="core/headless-builder.js"></script>
+<script src="core/motion-tools.js"></script>
+<script src="core/motion-preview.js"></script>
+<script src="core/motion-interchange.js"></script>
+<script src="core/config.js"></script>
+<script src="core/parser.js"></script>
+<script src="core/animlib.js"></script>
+<script src="core/studio_skills.js"></script>
+<script src="core/studio_daily.js"></script>
+<script src="core/studio_gui.js"></script>
+<script src="core/agent_skills.js"></script>
+<script src="providers/ollama.js"></script>
+<script src="core/main.js"></script>
+</body>
+</html>

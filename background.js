@@ -7,7 +7,7 @@
 // Contract with content.js: every sendMessage ALWAYS gets a response object,
 // even when the bridge is offline. The agentic loop must never hang waiting.
 
-const PAIRING_KEY = "synerixcode-pairing-key";
+const PAIRING_KEY = "elio-pairing-key";
 let fullSyncedOnce = false;
 let pairingKey = "";
 let pairingInFlight = null;
@@ -25,7 +25,7 @@ async function ensurePairing(force = false) {
     try {
       const response = await fetch("http://127.0.0.1:3000/api/pair", {
         method: "POST", mode: "cors", credentials: "omit", redirect: "error",
-        headers: { "Content-Type": "application/json", "X-synerixcode-Extension": pairingIdentity() },
+        headers: { "Content-Type": "application/json", "X-elio-Extension": pairingIdentity() },
         body: "{}", signal: controller.signal,
       });
       if (!response.ok) throw new Error("Automatic pairing failed (HTTP "+response.status+"). Update the desktop and extension together, then reload this browser’s extension and AI tab.");
@@ -34,14 +34,14 @@ async function ensurePairing(force = false) {
       pairingKey = data.key;
       try { await chrome.storage.local.set({ [PAIRING_KEY]: pairingKey }); } catch {}
       return pairingKey;
-    } catch(error) { throw new Error("Local bridge pairing failed: "+String(error.message || error)+". In Edge or Brave, check that synerixcode is enabled, its site access includes the AI page and localhost, and local-network access is allowed. Browser permission blocks cannot be fixed by restarting Studio."); }
+    } catch(error) { throw new Error("Local bridge pairing failed: "+String(error.message || error)+". In Edge or Brave, check that Elio is enabled, its site access includes the AI page and localhost, and local-network access is allowed. Browser permission blocks cannot be fixed by restarting Studio."); }
     finally { clearTimeout(timer); }
   })();
   try { return await pairingInFlight; } finally { pairingInFlight = null; }
 }
 function pairingProtocols() {
   if (!/^[a-f0-9]{64}$/i.test(pairingKey)) throw new Error("Agent pairing is not ready");
-  return ["synerixcode", "synerixcode-auth." + pairingKey];
+  return ["elio", "elio-auth." + pairingKey];
 }
 function pairingIdentity() {
   // Firefox's public addon ID differs from its installation-specific origin.
@@ -86,7 +86,7 @@ async function bridgeFetchOnce(url, options = {}) {
 }
 
 // ── Debug report capture ───────────────────────────────────────────────
-// synerixcode's own errors, warnings and "[synerixcode]" info from this worker and
+// elio's own errors, warnings and "[elio]" info from this worker and
 // from every AI tab (core/debug-capture.js, which also relays the AI site's own
 // errors) are kept in capped buffers and forwarded to the desktop app for
 // Settings -> Copy debug report. Uploads only happen while the bridge answers,
@@ -150,7 +150,7 @@ function debugRecord(entry) {
     const level = method === "log" ? "info" : method;
     console[method] = function debugConsole(...args) {
       const result = original.apply(this, args);
-      if (!inside && (method !== "log" || (typeof args[0] === "string" && args[0].startsWith("[synerixcode")))) {
+      if (!inside && (method !== "log" || (typeof args[0] === "string" && args[0].startsWith("[elio")))) {
         inside = true;
         try {
           const err = args.find((a) => a instanceof Error);
@@ -213,6 +213,7 @@ const BLENDER_ADDON_PORT = 9876;
 const RUST_ROBLOX_HTTP = "http://127.0.0.1:3000";
 const ENGINE_KEY = "rs-engine";
 const DESKTOP_PREF_KEYS = [
+  "rsColorMode",
   "rsLanguage",
   "rsWorkMode",
   "rsPermMode",
@@ -306,7 +307,7 @@ async function initialDesktopPreferencesSync() {
     const response = await bridgeFetch("http://127.0.0.1:3000/api/preferences", { method: "GET", signal: AbortSignal.timeout(5000) });
     if (!response.ok) return false;
     const remote = await response.json();
-    if (remote && remote._synerixcodePersisted === true) {
+    if (remote && remote._elioPersisted === true) {
       if (typeof remote.rsCustomPrompt !== "string") {
         const existing = await chrome.storage.local.get("rsCustomPrompt");
         if (typeof existing.rsCustomPrompt === "string") {
@@ -386,7 +387,7 @@ function engineHttpUrl() { return RUST_ROBLOX_HTTP; }
 function engineLabel() { return engine === "local" ? "AgentScript" : "Roblox"; }
 // The primary Roblox socket stays alive when an individual tab uses AgentScript.
 
-// Chat sites where an synerixcode provider content script runs. Status pushes go
+// Chat sites where an elio provider content script runs. Status pushes go
 // to every tab matching these. Add the new provider's URL pattern here (and in
 // manifest.json content_scripts + host_permissions) when integrating another AI.
 const PROVIDER_URLS = ["https://vani.ai/*", "https://www.vani.ai/*", "https://c.vani.ai/*", "https://app.clickup.com/*", "https://chat.deepseek.com/*", "https://deepseek.com/*", "https://chatgpt.com/*", "https://chat.openai.com/*", "https://claude.ai/*", "https://www.claude.ai/*", "https://claude.com/*", "https://www.claude.com/*", "https://gemini.google.com/*", "https://www.kimi.com/*", "https://kimi.com/*", "https://kimi.ai/*", "https://www.kimi.ai/*", "https://chat.z.ai/*", "https://chat.qwen.ai/*", "https://arena.ai/*", "https://www.notion.so/*", "https://app.notion.so/*", "https://www.notion.com/*", "https://notion.com/*", "https://*.notion.com/*", "https://freebuff.ai/*", "https://www.freebuff.ai/*", "https://freebuff.com/*", "https://www.freebuff.com/*", "https://gpt.crax.lol/*", "https://use.ai/*", "https://www.use.ai/*", "https://oxalpha.com/*", "https://www.oxalpha.com/*", "https://oxalpha.org/*", "https://www.oxalpha.org/*", "http://localhost/*", "http://127.0.0.1/*", "https://ollama.com/*", "https://*.ollama.com/*"];
@@ -421,7 +422,7 @@ let studioConnected = null;
 let studioChecking = false;
 // true/false = a Roblox Studio app is connected to the MCP server at all; null =
 // unknown. studioApp=true with studioConnected=false means "Studio open but no
-// place"; studioApp=false means "Studio closed synerixcode its MCP option disabled".
+// place"; studioApp=false means "Studio closed elio its MCP option disabled".
 let studioApp = null;
 // true/false = a Roblox Studio WINDOW/PROCESS exists on this machine (checked
 // bridge-side via tasklist); null = unknown/old bridge. Distinguishes the two
@@ -457,9 +458,9 @@ const BLENDER_TOOLS = [
   btool("get_object_info", "Details for one object in the Blender scene.", { name: { type: "string" } }, ["name"]),
   btool("execute_blender_code", "Run Python (bpy) inside Blender. Prefer the named blender_* tools.", { code: { type: "string" } }, ["code"]),
   btool("get_viewport_screenshot", "Capture the Blender 3D viewport.", { max_size: { type: "integer" } }, []),
-  btool("blender_send_to_studio", "ONE SHOT: dump the live Blender meshes and import them into Roblox Studio as Workspace.SYNERIXCODE_Imported. No filepath needed.", { objects: { type: "array", items: { type: "string" } }, dest: { type: "string" }, scale: { type: "number" } }, []),
+  btool("blender_send_to_studio", "ONE SHOT: dump the live Blender meshes and import them into Roblox Studio as Workspace.ELIO_Imported. No filepath needed.", { objects: { type: "array", items: { type: "string" } }, dest: { type: "string" }, scale: { type: "number" } }, []),
   btool("blender_export_fbx", "Export meshes to an FBX (Forward -Z, Up Y). filepath optional. Also dumps meshes so blender_send_to_studio / asset_bridge_import can run with no path.", { filepath: { type: "string" }, objects: { type: "array", items: { type: "string" } } }, []),
-  btool("blender_import_fbx", "Import an FBX into the live Blender scene. filepath optional — defaults to the last synerixcode export.", { filepath: { type: "string" } }, []),
+  btool("blender_import_fbx", "Import an FBX into the live Blender scene. filepath optional — defaults to the last elio export.", { filepath: { type: "string" } }, []),
   btool("blender_export_obj", "Export selected/all meshes to OBJ. filepath optional.", { filepath: { type: "string" }, objects: { type: "array", items: { type: "string" } } }, []),
   btool("blender_import_obj", "Import an OBJ into the live Blender scene.", { filepath: { type: "string" } }, ["filepath"]),
   btool("blender_add_cube", "Add a cube.", { name: { type: "string" }, size: { type: "number" }, location: { type: "array", items: { type: "number" } } }, []),
@@ -565,7 +566,7 @@ function mergeBlenderTools(tools) {
 }
 
 function log(...a) {
-  console.log("[synerixcode-bg]", ...a);
+  console.log("[elio-bg]", ...a);
 }
 
 // ── WebSocket lifecycle ─────────────────────────────────────────────────
@@ -1009,7 +1010,7 @@ async function readUpdateStatus(force=false){
   if(updateStatusFlight)return updateStatusFlight;
   updateStatusFlight=(async()=>{
     const response=await bridgeFetch("http://127.0.0.1:3000/api/updates/status",{signal:AbortSignal.timeout(5000)});
-    if(!response.ok)throw Error("Обновите приложение SynerixCode до версии с поддержкой обновлятора.");
+    if(!response.ok)throw Error("Обновите приложение Elio до версии с поддержкой обновлятора.");
     const value=await response.json();if(!value.ok)throw Error(value.error||"Не удалось прочитать статус обновления.");
     updateSnapshot=value.update;updateStatusAt=Date.now();return updateSnapshot;
   })().finally(()=>{updateStatusFlight=null;});
@@ -1027,8 +1028,9 @@ async function updateAction(action){
 }
 const browserIdentity = crypto.randomUUID();
 let desktopPinnedTab = null;
-const desktopPinReady = chrome.storage.session.get("synerixcodeDesktopPinnedTab").then(value => {
-  desktopPinnedTab = Number.isInteger(value.synerixcodeDesktopPinnedTab) ? value.synerixcodeDesktopPinnedTab : null;
+let desktopLastTab = null;
+const desktopPinReady = chrome.storage.session.get("elioDesktopPinnedTab").then(value => {
+  desktopPinnedTab = Number.isInteger(value.elioDesktopPinnedTab) ? value.elioDesktopPinnedTab : null;
 }).catch(() => {});
 let desktopAgentReporting = false;
 let desktopAgentError = null;
@@ -1040,18 +1042,23 @@ async function reportDesktopAgentState() {
     let tab;
     if (desktopPinnedTab !== null) {
       try { tab = await chrome.tabs.get(desktopPinnedTab); }
-      catch { desktopPinnedTab = null; await chrome.storage.session.remove("synerixcodeDesktopPinnedTab"); }
+      catch { desktopPinnedTab = null; await chrome.storage.session.remove("elioDesktopPinnedTab"); }
     }
-    if (!tab) tab = (await chrome.tabs.query({ active: true, lastFocusedWindow: true, url: PROVIDER_URLS }))[0];
+    if (!tab) {
+      const focused=await chrome.windows.getLastFocused().catch(()=>null);
+      if(focused?.focused || desktopLastTab===null)tab=(await chrome.tabs.query({active:true,lastFocusedWindow:true,url:PROVIDER_URLS}))[0];
+      if(!tab && desktopLastTab!==null)try{const prior=await chrome.tabs.get(desktopLastTab);if(PROVIDER_URLS.some(pattern=>new RegExp('^'+pattern.replace(/[.+?^${}()|[\]\\]/g,'\\$&').replace(/\*/g,'.*')+'$').test(prior.url||'')))tab=prior;}catch{desktopLastTab=null;}
+      if(tab)desktopLastTab=tab.id;
+    }
     let control = { canStart: false, canStop: false, pageMounted:false, barVisible:false, status: "Select a supported AI chat in your browser." };
     if (tab && Number.isInteger(tab.id)) {
       try {
         const reply = await chrome.tabs.sendMessage(tab.id, { type: "rs-desktop-agent-state" });
         if (reply) {
           control = { ...reply, tab_id: tab.id };
-          if(reply.barVisible===false && !reply.canStop){control.canStart=false;control.status="synerixcode page bar is hidden. Refresh the AI tab after reloading the extension.";}
+          // Desktop controls do not depend on the browser bar being in the viewport.
         }
-      } catch { control.status = "Refresh the selected AI chat to reconnect synerixcode."; }
+      } catch { control.status = "Refresh the selected AI chat to reconnect Elio."; }
     }
     if(tab && Number.isInteger(tab.id))control.tab_id=tab.id;
     control.canChatPin=Number.isInteger(control.tab_id);
@@ -1079,8 +1086,8 @@ async function dispatchDesktopAgentAction(msg) {
     if (msg.action === "chat-pin") {
       await desktopPinReady;
       desktopPinnedTab = msg.prompt === "off" ? null : msg.tab_id;
-      if (desktopPinnedTab === null) await chrome.storage.session.remove("synerixcodeDesktopPinnedTab");
-      else await chrome.storage.session.set({synerixcodeDesktopPinnedTab:desktopPinnedTab});
+      if (desktopPinnedTab === null) await chrome.storage.session.remove("elioDesktopPinnedTab");
+      else await chrome.storage.session.set({elioDesktopPinnedTab:desktopPinnedTab});
       reply = {ok:true,pinned:desktopPinnedTab !== null};
     } else reply = await chrome.tabs.sendMessage(msg.tab_id, { type: "rs-desktop-agent-action", action: msg.action, prompt: msg.prompt, request_id: msg.request_id, expected_chat:msg.expected_chat });
     actionResult = reply;
@@ -1144,8 +1151,8 @@ function broadcastStatus() {
 
 // ── Web tools (search + fetch) ──────────────────────────────────────────────
 // Health notes (why this is not one DDG call anymore):
-//  * html.duckduckgo.com/html/ is the endpoint synerixcode used to scrape with a
-//    "synerixcode/1.0" UA. DDG now treats that as an anomaly: it answers 202/403 with a
+//  * html.duckduckgo.com/html/ is the endpoint elio used to scrape with a
+//    "elio/1.0" UA. DDG now treats that as an anomaly: it answers 202/403 with a
 //    challenge page that contains ZERO .result__a anchors, so the old parser
 //    returned [] and the tool reported "no results" on every query.
 //  * A browser UA + Accept-Language + Referer is required for the same URL to
@@ -1389,7 +1396,7 @@ async function readerFallback(url, maxChars) {
 
 
 // ── Blender (one-shot TCP 9876 via AgentScript) ─────────────────────────
-// Native synerixcode.exe rejects add_server/uvx. Chrome cannot open raw TCP.
+// Native elio.exe rejects add_server/uvx. Chrome cannot open raw TCP.
 // Connect is a short PowerShell/Python probe of the blender-mcp addon the
 // user already started. Tool calls write a JSON request, run blender_once,
 // then read the JSON response. No daemon, so the agent console is not
@@ -1418,7 +1425,7 @@ async function sendLocalEngine(obj, timeout = 25000) {
   return await new Promise((resolve) => {
     let sock;
     try { sock = new WebSocket(`ws://127.0.0.1:${PORT_LOCAL}`, pairingProtocols()); }
-    catch (e) { resolve({ ok: false, error: "synerixcode.exe is not running" }); return; }
+    catch (e) { resolve({ ok: false, error: "elio.exe is not running" }); return; }
     const id = 800000 + Math.floor(Math.random() * 99999);
     let settled = false;
     const done = (v) => {
@@ -1428,8 +1435,8 @@ async function sendLocalEngine(obj, timeout = 25000) {
       try { sock.close(); } catch {}
       resolve(v);
     };
-    const timer = setTimeout(() => done({ ok: false, error: "synerixcode.exe did not answer — is it running?" }), timeout);
-    sock.onerror = () => done({ ok: false, error: "AgentScript connection failed. Start synerixcode and allow the extension access to localhost in this browser." });
+    const timer = setTimeout(() => done({ ok: false, error: "elio.exe did not answer — is it running?" }), timeout);
+    sock.onerror = () => done({ ok: false, error: "AgentScript connection failed. Start elio and allow the extension access to localhost in this browser." });
     sock.onopen = () => {
       try { sock.send(JSON.stringify({ ...obj, id })); }
       catch (e) { done({ ok: false, error: String(e) }); }
@@ -1549,13 +1556,13 @@ async function probeBlenderTcp() {
     last = text;
     if (/BLENDER_UP/.test(text)) return { ok: true };
     if (r && r.ok === false && /not running|not connected|timeout/i.test(text)) {
-      return { ok: false, error: "synerixcode.exe is not running — start it, then Connect Blender again." };
+      return { ok: false, error: "elio.exe is not running — start it, then Connect Blender again." };
     }
   }
   const down = /BLENDER_DOWN/.test(last);
   const err = down
     ? "Blender addon is not on port 9876. In Blender: press N → MCP for Blender → Start MCP Server."
-    : (last && last.slice(0, 220)) || "Could not reach Blender. Run synerixcode.exe, then Start MCP Server in Blender.";
+    : (last && last.slice(0, 220)) || "Could not reach Blender. Run elio.exe, then Start MCP Server in Blender.";
   return { ok: false, error: err };
 }
 
@@ -1662,33 +1669,33 @@ const BLENDER_CMD = {
 
 async function blenderOpsCode(cmd, args) {
   let py = await extText("blender_ops.py");
-  const status = "synerixcode_status.json";
-  const mesh = "synerixcode_mesh.json";
-  py = py.split("__SYNERIXCODE_CMD__").join(String(cmd || ""));
-  py = py.split("__SYNERIXCODE_ARGS__").join(JSON.stringify(args || {}));
-  py = py.split("__SYNERIXCODE_OUT__").join(JSON.stringify(status || "synerixcode_status.json"));
-  py = py.split("__SYNERIXCODE_MESH__").join(JSON.stringify(mesh || "synerixcode_mesh.json"));
+  const status = "elio_status.json";
+  const mesh = "elio_mesh.json";
+  py = py.split("__ELIO_CMD__").join(String(cmd || ""));
+  py = py.split("__ELIO_ARGS__").join(JSON.stringify(args || {}));
+  py = py.split("__ELIO_OUT__").join(JSON.stringify(status || "elio_status.json"));
+  py = py.split("__ELIO_MESH__").join(JSON.stringify(mesh || "elio_mesh.json"));
   return { py, status, mesh };
 }
 
 function wrapBlenderUserCode(code) {
   const src = String(code || "");
   if (!src.trim()) return src;
-  if (src.indexOf("_synerixcode_items") >= 0 && src.indexOf("_synerixcode_src =") >= 0) return src;
+  if (src.indexOf("_elio_items") >= 0 && src.indexOf("_elio_src =") >= 0) return src;
   return [
-    "import bpy, re as _synerixcode_re",
-    "_synerixcode_src = " + JSON.stringify(src),
+    "import bpy, re as _elio_re",
+    "_elio_src = " + JSON.stringify(src),
     "try:",
-    "    _synerixcode_items = set(getattr(it, 'identifier', str(it)) for it in bpy.context.scene.render.bl_rna.properties['engine'].enum_items)",
+    "    _elio_items = set(getattr(it, 'identifier', str(it)) for it in bpy.context.scene.render.bl_rna.properties['engine'].enum_items)",
     "except Exception:",
-    "    _synerixcode_items = set()",
-    "if 'BLENDER_EEVEE_NEXT' not in _synerixcode_items and 'BLENDER_EEVEE' in _synerixcode_items:",
-    "    _synerixcode_src = _synerixcode_src.replace('BLENDER_EEVEE_NEXT', 'BLENDER_EEVEE')",
-    "elif 'BLENDER_EEVEE' not in _synerixcode_items and 'BLENDER_EEVEE_NEXT' in _synerixcode_items:",
-    "    _synerixcode_src = _synerixcode_re.sub(r'BLENDER_EEVEE(?!_NEXT)', 'BLENDER_EEVEE_NEXT', _synerixcode_src)",
+    "    _elio_items = set()",
+    "if 'BLENDER_EEVEE_NEXT' not in _elio_items and 'BLENDER_EEVEE' in _elio_items:",
+    "    _elio_src = _elio_src.replace('BLENDER_EEVEE_NEXT', 'BLENDER_EEVEE')",
+    "elif 'BLENDER_EEVEE' not in _elio_items and 'BLENDER_EEVEE_NEXT' in _elio_items:",
+    "    _elio_src = _elio_re.sub(r'BLENDER_EEVEE(?!_NEXT)', 'BLENDER_EEVEE_NEXT', _elio_src)",
     "if not hasattr(bpy.context.scene, 'eevee_next') and hasattr(bpy.context.scene, 'eevee'):",
-    "    _synerixcode_src = _synerixcode_src.replace('.eevee_next', '.eevee')",
-    "exec(compile(_synerixcode_src, '<or_blender>', 'exec'))",
+    "    _elio_src = _elio_src.replace('.eevee_next', '.eevee')",
+    "exec(compile(_elio_src, '<or_blender>', 'exec'))",
   ].join("\n");
 }
 
@@ -1739,7 +1746,7 @@ function blenderShotCode(filepath, maxSize) {
     "    except Exception:",
     "        flat = [v / 255.0 for v in buf]",
     "        for i in range(3, len(flat), 4): flat[i] = 1.0",
-    "    img = bpy.data.images.new('_synerixcode_shot', W2, H2, alpha=True)",
+    "    img = bpy.data.images.new('_elio_shot', W2, H2, alpha=True)",
     "    try:",
     "        img.pixels.foreach_set(flat)",
     "        img.filepath_raw = FP; img.file_format = 'PNG'; img.save()",
@@ -1757,7 +1764,7 @@ function blenderShotCode(filepath, maxSize) {
     "raw = open(FP, 'rb').read()",
     "res['bytes'] = len(raw); res['sha1'] = hashlib.sha1(raw).hexdigest()[:12]; res['size'] = [W2, H2]",
     "res['taken'] = time.strftime('%H:%M:%S')",
-    "print('SYNERIXCODE_SHOT_JSON:' + json.dumps(res))",
+    "print('ELIO_SHOT_JSON:' + json.dumps(res))",
   ].join("\n");
 }
 
@@ -1768,7 +1775,7 @@ async function blenderPayload(name, args) {
   if (bare === "get_object_info" || bare === "blender_get_object_info") return { type: "get_object_info", params: { name: a.name || a.object_name || "" } };
   if (bare === "execute_blender_code" || bare === "execute_code" || bare === "blender_execute_code") return { type: "execute_code", params: { code: wrapBlenderUserCode(a.code || "") } };
   if (bare === "get_viewport_screenshot" || bare === "blender_screenshot") {
-    const relativeShot = "synerixcode_blender_shot_" + crypto.randomUUID() + ".png";
+    const relativeShot = "elio_blender_shot_" + crypto.randomUUID() + ".png";
     let shot = relativeShot;
     const root = await agentWorkspaceRoot();
     if (root) shot = root.replace(/[\\/]+$/, "") + "/" + relativeShot;
@@ -1807,7 +1814,7 @@ async function blenderCall(name, args, timeout) {
   if (blenderCallRunning) {
     const until = Date.now() + 45000;
     while (blenderCallRunning && Date.now() < until) await new Promise(resolve => setTimeout(resolve, 250));
-    if (blenderCallRunning) return { ok: false, error: "Blender is still processing another synerixcode command (from this or another chat). Wait for it to finish, then send this command again. Nothing was queued or repeated." };
+    if (blenderCallRunning) return { ok: false, error: "Blender is still processing another elio command (from this or another chat). Wait for it to finish, then send this command again. Nothing was queued or repeated." };
   }
   if (!blenderAddon) {
     return { ok: false, error: "Blender is not connected. Click Connect Blender (Blender: N → MCP for Blender → Start MCP Server)." };
@@ -1828,16 +1835,16 @@ async function blenderCall(name, args, timeout) {
     }
     let result = (data && Object.prototype.hasOwnProperty.call(data, "result")) ? data.result : data;
     const rawText = typeof result === "string" ? result : typeof result?.result === "string" ? result.result : "";
-    const marker = String(rawText).indexOf("SYNERIXCODE_MESH_JSON:");
+    const marker = String(rawText).indexOf("ELIO_MESH_JSON:");
     let inlineResult = false;
     if (marker >= 0) {
-      try { result = JSON.parse(String(rawText).slice(marker + "SYNERIXCODE_MESH_JSON:".length).split(/\r?\n/)[0]); inlineResult = true; } catch {}
+      try { result = JSON.parse(String(rawText).slice(marker + "ELIO_MESH_JSON:".length).split(/\r?\n/)[0]); inlineResult = true; } catch {}
     }
     if (result && result.ok === false) {
       return { ok: false, error: result.error || "Blender FBX failed" };
     }
     if (statusPath && !inlineResult) {
-      return { ok: false, error: "Blender answered but did not return the current synerixcode operation receipt. No cached status file was substituted. The edit may have run; inspect Blender before retrying." };
+      return { ok: false, error: "Blender answered but did not return the current elio operation receipt. No cached status file was substituted. The edit may have run; inspect Blender before retrying." };
     }
     if (result && result.ok === false) {
       return { ok: false, error: result.error || "Blender command failed" };
@@ -1859,7 +1866,7 @@ async function blenderCall(name, args, timeout) {
     // ── Screenshot → real image bytes ──────────────────────────────────────
     // The blender-mcp addon WRITES the viewport capture to a PNG path and
     // answers with that path as text. A Chrome extension cannot read a local
-    // path, so this used to hand back images:[] and synerixcode_screenshot silently fell
+    // path, so this used to hand back images:[] and elio_screenshot silently fell
     // through to a tab capture (the AI got a picture of its own chat window).
     // The path IS inside the AgentScript workspace, so read it back as base64
     // through the bridge and return it as a real attachment.
@@ -1869,7 +1876,7 @@ async function blenderCall(name, args, timeout) {
       "";
     let shotInfo = null;
     if (payload._orIsShot) {
-      const m = String(rawText).match(/SYNERIXCODE_SHOT_JSON:(\{.*\})/);
+      const m = String(rawText).match(/ELIO_SHOT_JSON:(\{.*\})/);
       if (m) { try { shotInfo = JSON.parse(m[1]); } catch {} }
       if (!shotInfo) return { ok: false, error: "Blender did not confirm a fresh viewport capture. " + String(rawText || "").slice(0, 400) };
     }
@@ -1895,7 +1902,7 @@ async function blenderCall(name, args, timeout) {
         (shotInfo.offscreen_error ? " [off-screen render failed: " + shotInfo.offscreen_error + "]" : "");
     }
     if (payload._orIsShot && !images.length) {
-      textOut += "\n\n[synerixcode: the viewport image could not be read back from disk" +
+      textOut += "\n\n[elio: the viewport image could not be read back from disk" +
         (shotPath ? ` (${shotPath})` : "") + " — the capture file may be missing or unreadable.]";
     }
     return { ok: true, text: textOut, images, meshFile: mf, filepath: result && result.filepath, meshes: meshes || undefined };
@@ -2377,9 +2384,9 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
           const truncated = origLen > maxChars;
           if (truncated) text = text.slice(0, maxChars) + `\n\n…[truncated ${origLen - maxChars} chars]`;
           const suffix = via === "reader"
-            ? `\n\n[synerixcode: the page served no readable text directly (${notes.join("; ") || "blocked"}), so it was read through a rendering proxy — layout/menus may be missing.]`
+            ? `\n\n[elio: the page served no readable text directly (${notes.join("; ") || "blocked"}), so it was read through a rendering proxy — layout/menus may be missing.]`
             : (wasShell
-              ? `\n\n[synerixcode: this page returned almost no readable text${notes.length ? " (" + notes.join("; ") + ")" : ""} — it is served by JavaScript or blocks non-browser readers, so the text above is all there is. Use web_search for a text source instead of relying on this page.]`
+              ? `\n\n[elio: this page returned almost no readable text${notes.length ? " (" + notes.join("; ") + ")" : ""} — it is served by JavaScript or blocks non-browser readers, so the text above is all there is. Use web_search for a text source instead of relying on this page.]`
               : "");
           sendResponse({ ok: true, text: searchNote + text + suffix, truncated, status, url, content_type: ctype, via });
         } catch (e) { sendResponse({ ok: false, error: String(e && e.message || e) }); }
@@ -2417,7 +2424,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         if (!r || r.error === "bridge not connected") {
           // Engine bridge down? try the other port by flipping engine briefly is
           // too invasive; instead just report so popup can hint to run robloxscript-agent.exe.
-          sendResponse({ ok: false, up: false, error: "bridge offline - run synerixcode.exe first" });
+          sendResponse({ ok: false, up: false, error: "bridge offline - run elio.exe first" });
           break;
         }
         sendResponse(r);

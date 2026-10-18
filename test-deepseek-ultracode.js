@@ -1,6 +1,6 @@
 const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
 let level='ultracode';const c=vm.createContext({window:{__rsThinkingLevel:()=>level}});
-vm.runInContext(fs.readFileSync('core/ultracode-deepseek.js','utf8')+'\n'+fs.readFileSync('core/ultracode.js','utf8')+'\n'+fs.readFileSync('core/config.js','utf8')+';this.mode=synerixcodeUltracode;this.config=RS;',c);
+vm.runInContext(fs.readFileSync('core/ultracode-deepseek.js','utf8')+'\n'+fs.readFileSync('core/ultracode.js','utf8')+'\n'+fs.readFileSync('core/config.js','utf8')+';this.mode=elioUltracode;this.config=RS;',c);
 const names=['server-authority','docs-lookup','toolbox','project-layout','map-placement','tunables-config','remote-events','roblox-gotchas','review-for-exploits','datastore-safety','client-ui-safety','luau-accuracy','report-what-you-verified'];
 const selected=c.config.buildSystemPrompt({engine:'roblox',providerId:'deepseek'});
 for(const name of names)assert(selected.includes('技能：'+name));
@@ -15,5 +15,5 @@ c.mode.confirm('unrelated feedback','roblox','deepseek','chat-1');assert.equal(c
 c.mode.confirm(first,'roblox','deepseek','chat-1');assert(c.mode.turn('roblox','deepseek','chat-1').length<200);assert.equal(c.mode.turn('roblox','deepseek','chat-2'),first);
 const manifest=JSON.parse(fs.readFileSync('manifest.json'));
 for(const entry of manifest.content_scripts.filter(e=>e.js.includes('core/ultracode.js')))assert(entry.js.indexOf('core/ultracode-deepseek.js')<entry.js.indexOf('core/ultracode.js'));
-assert.equal(fs.readFileSync('core/ultracode-deepseek.js','utf8'),fs.readFileSync('synerixcode-Extension/core/ultracode-deepseek.js','utf8'));
+assert.equal(fs.readFileSync('core/ultracode-deepseek.js','utf8'),fs.readFileSync('elio-Extension/core/ultracode-deepseek.js','utf8'));
 console.log(`PASS DeepSeek-only Roblox Ultracode, all 13 skills, user-language rule, plan checkpoint, global/local isolation, selection-only activation and delivery-confirmed short reminders. DeepSeek method pack: ${first.length} characters.`);

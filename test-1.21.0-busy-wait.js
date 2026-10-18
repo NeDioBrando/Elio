@@ -2,7 +2,7 @@
 const fs=require("fs"),path=require("path"),assert=require("assert");
 const R=__dirname;let pass=0,fail=0;
 function t(n,f){try{f();pass++;console.log("ok",n);}catch(e){fail++;console.log("FAIL",n,e.message);}}
-for(const base of ["","synerixcode-Extension"]){
+for(const base of ["","elio-Extension"]){
  const main=fs.readFileSync(path.join(R,base,"core/main.js"),"utf8");
  const ds=fs.readFileSync(path.join(R,base,"providers/deepseek.js"),"utf8");
  t(base+" loop waits on busy",()=>{assert(main.includes('diag("loop.busyWait"'));assert(main.includes('kind: "busy"'));});

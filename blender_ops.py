@@ -1,4 +1,4 @@
-# Sent to Blender as execute_code. Tokens CMD / ARGS / OUT / MESH are filled by synerixcode.
+# Sent to Blender as execute_code. Tokens CMD / ARGS / OUT / MESH are filled by elio.
 import bpy
 import json
 import math
@@ -6,16 +6,16 @@ import os
 import traceback
 from mathutils import Vector
 
-CMD = """__SYNERIXCODE_CMD__"""
-ARGS = json.loads(r"""__SYNERIXCODE_ARGS__""")
+CMD = """__ELIO_CMD__"""
+ARGS = json.loads(r"""__ELIO_ARGS__""")
 if not isinstance(ARGS, dict):
     ARGS = {}
-OUT = __SYNERIXCODE_OUT__
-MESH = __SYNERIXCODE_MESH__
+OUT = __ELIO_OUT__
+MESH = __ELIO_MESH__
 if not OUT:
-    OUT = "synerixcode_status.json"
+    OUT = "elio_status.json"
 if not MESH:
-    MESH = "synerixcode_mesh.json"
+    MESH = "elio_mesh.json"
 result = None
 
 
@@ -32,9 +32,9 @@ def emit(payload):
         pass
     try:
         slim = dict(payload)
-        print("SYNERIXCODE_MESH_JSON:" + json.dumps(slim, ensure_ascii=False, separators=(",", ":")), flush=True)
+        print("ELIO_MESH_JSON:" + json.dumps(slim, ensure_ascii=False, separators=(",", ":")), flush=True)
     except Exception:
-        print("SYNERIXCODE_MESH_JSON:{\"ok\":false}", flush=True)
+        print("ELIO_MESH_JSON:{\"ok\":false}", flush=True)
     return payload
 
 
@@ -102,7 +102,7 @@ def enable_io():
 
 
 def default_dir():
-    folder = os.path.join(os.path.expanduser("~"), "Documents", "synerixcode")
+    folder = os.path.join(os.path.expanduser("~"), "Documents", "elio")
     os.makedirs(folder, exist_ok=True)
     return folder
 
@@ -130,7 +130,7 @@ def resolve_objects(names):
     return [o for o in bpy.data.objects if o.type == "MESH"]
 
 
-def named_synerixcode_sel():
+def named_elio_sel():
     return resolve_objects(ARGS.get("objects") or ([ARGS.get("name")] if ARGS.get("name") else None))
 
 
@@ -382,7 +382,7 @@ def try_import_obj(fp):
 def cmd_export_fbx():
     fp = str(ARGS.get("filepath") or ARGS.get("path") or "").strip()
     if not fp:
-        fp = os.path.join(default_dir(), "synerixcode_export.fbx")
+        fp = os.path.join(default_dir(), "elio_export.fbx")
     if not fp.lower().endswith(".fbx"):
         fp += ".fbx"
     folder = os.path.dirname(fp)
@@ -425,7 +425,7 @@ def cmd_export_fbx():
 def cmd_import_fbx():
     fp = str(ARGS.get("filepath") or ARGS.get("path") or ARGS.get("asset") or "").strip()
     if not fp:
-        fp = os.path.join(default_dir(), "synerixcode_export.fbx")
+        fp = os.path.join(default_dir(), "elio_export.fbx")
     if not os.path.isfile(fp):
         return emit({"ok": False, "error": "FBX not found: " + fp, "filepath": fp})
     before = set(bpy.data.objects.keys())
@@ -555,7 +555,7 @@ def cmd_parent():
 
 
 def cmd_unparent():
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     names = []
     for o in objs:
         if o.parent:
@@ -582,7 +582,7 @@ def cmd_join():
 
 def cmd_move_to_collection():
     name = str(ARGS.get("collection") or ARGS.get("name") or "Collection")
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     coll = bpy.data.collections.get(name) or bpy.data.collections.new(name)
     if coll.name not in bpy.context.scene.collection.children:
         try:
@@ -625,7 +625,7 @@ def cmd_list_objects():
 
 def cmd_delete():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     names = [o.name for o in objs]
     select_only(objs)
     try:
@@ -641,7 +641,7 @@ def cmd_delete():
 
 def cmd_duplicate():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     if not objs:
         return emit({"ok": False, "error": "nothing to duplicate"})
     select_only(objs)
@@ -668,7 +668,7 @@ def cmd_rename():
 
 
 def cmd_select():
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     n = select_only(objs)
     return emit({"ok": True, "selected": [o.name for o in objs], "count": n})
 
@@ -692,7 +692,7 @@ def cmd_invert_selection():
 
 
 def cmd_select_children():
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     kids = []
     for o in objs:
         kids.extend(list(o.children_recursive) if hasattr(o, "children_recursive") else list(o.children))
@@ -708,7 +708,7 @@ def cmd_get_selection():
 
 def cmd_transform():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     if not objs:
         return emit({"ok": False, "error": "no objects to transform"})
     loc = ARGS.get("location")
@@ -741,7 +741,7 @@ def cmd_transform():
 
 def cmd_translate():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     off = vec3("offset", vec3("location", (0, 0, 0)))
     for o in objs:
         o.location = Vector(o.location) + Vector(off)
@@ -750,7 +750,7 @@ def cmd_translate():
 
 def cmd_rotate_deg():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     d = vec3("rotation_deg", vec3("degrees", (0, 0, 0)))
     add = bool(ARGS.get("add", False))
     for o in objs:
@@ -764,7 +764,7 @@ def cmd_rotate_deg():
 
 def cmd_set_dimensions():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     dim = ARGS.get("dimensions") or ARGS.get("size")
     if dim is None:
         return emit({"ok": False, "error": "dimensions [x,y,z] required"})
@@ -778,7 +778,7 @@ def cmd_set_dimensions():
 
 def cmd_apply_transforms():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     select_only(objs)
     run_op(bpy.ops.object.transform_apply, location=bool(ARGS.get("location", False)),
            rotation=bool(ARGS.get("rotation", True)), scale=bool(ARGS.get("scale", True)))
@@ -787,7 +787,7 @@ def cmd_apply_transforms():
 
 def cmd_set_origin():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     select_only(objs)
     kind = str(ARGS.get("type") or "ORIGIN_GEOMETRY")
     run_op(bpy.ops.object.origin_set, type=kind)
@@ -796,7 +796,7 @@ def cmd_set_origin():
 
 def cmd_origin_to_bottom():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     done = []
     scene = bpy.context.scene
     for obj in objs:
@@ -816,7 +816,7 @@ def cmd_origin_to_bottom():
 
 def cmd_drop_to_ground():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     done = []
     for obj in objs:
         if obj.type != "MESH" or obj.data is None or len(obj.data.vertices) == 0:
@@ -832,7 +832,7 @@ def cmd_drop_to_ground():
 
 def cmd_center():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     for o in objs:
         o.location = (0.0, 0.0, 0.0)
     return emit({"ok": True, "objects": [o.name for o in objs]})
@@ -840,7 +840,7 @@ def cmd_center():
 
 def cmd_snap_to_grid():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     step = float(ARGS.get("step") or 1)
     for o in objs:
         o.location = Vector((round(o.location.x / step) * step, round(o.location.y / step) * step, round(o.location.z / step) * step))
@@ -849,7 +849,7 @@ def cmd_snap_to_grid():
 
 def cmd_shade_smooth():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     select_only(objs)
     try:
         run_op(bpy.ops.object.shade_smooth)
@@ -863,7 +863,7 @@ def cmd_shade_smooth():
 
 def cmd_shade_flat():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     select_only(objs)
     try:
         run_op(bpy.ops.object.shade_flat)
@@ -877,11 +877,11 @@ def cmd_shade_flat():
 
 def cmd_set_material():
     name = str(ARGS.get("name") or ARGS.get("object") or "")
-    objs = named_synerixcode_sel() if not name else [bpy.data.objects.get(name) or active()]
+    objs = named_elio_sel() if not name else [bpy.data.objects.get(name) or active()]
     objs = [o for o in objs if o is not None]
     if not objs:
         return emit({"ok": False, "error": "mesh object required"})
-    mat_name = str(ARGS.get("material") or ((objs[0].name if objs else "synerixcode") + "_Mat"))
+    mat_name = str(ARGS.get("material") or ((objs[0].name if objs else "elio") + "_Mat"))
     color = ARGS.get("color") or ARGS.get("rgb") or [0.8, 0.8, 0.8, 1]
     if len(color) == 3:
         color = list(color) + [1]
@@ -973,7 +973,7 @@ MATERIAL_PRESETS = {
     "roblox_glass": {"color": [0.9, 0.95, 1.0], "alpha": 0.4, "roughness": 0.05, "blend": "BLEND", "transmission": 0.7},
 }
 
-_SYNERIXCODE_PREFIX = "SYNERIXCODE_"
+_ELIO_PREFIX = "ELIO_"
 
 
 def _color(v, default=(0.8, 0.8, 0.8, 1.0)):
@@ -1095,10 +1095,10 @@ def _blend_mode(mat, mode):
     return applied
 
 
-def _purge_synerixcode_nodes(mat):
-    """Remove the nodes a previous synerixcode texture call added (idempotent restyle)."""
+def _purge_elio_nodes(mat):
+    """Remove the nodes a previous elio texture call added (idempotent restyle)."""
     tree = mat.node_tree
-    doomed = [n for n in tree.nodes if str(n.name).startswith(_SYNERIXCODE_PREFIX)]
+    doomed = [n for n in tree.nodes if str(n.name).startswith(_ELIO_PREFIX)]
     for n in doomed:
         try:
             tree.nodes.remove(n)
@@ -1126,7 +1126,7 @@ def _target_objects():
     one = str(ARGS.get("name") or ARGS.get("object") or "").strip()
     if one:
         return [o for o in [bpy.data.objects.get(one)] if o is not None]
-    return [o for o in named_synerixcode_sel() if o is not None]
+    return [o for o in named_elio_sel() if o is not None]
 
 
 def _tex_node(mat, kind, params):
@@ -1147,8 +1147,8 @@ def _tex_node(mat, kind, params):
         node = tree.nodes.new("ShaderNodeTexGradient")
     else:
         return None
-    node.name = _SYNERIXCODE_PREFIX + k
-    node.label = "synerixcode " + k
+    node.name = _ELIO_PREFIX + k
+    node.label = "elio " + k
     node.location = (-620, -180)
     for key, sock in (("scale", "Scale"), ("detail", "Detail"), ("roughness", "Roughness"),
                       ("distortion", "Distortion"), ("randomness", "Randomness"),
@@ -1212,7 +1212,7 @@ def _apply_material(mat, spec, report):
             ARGS.clear()
             ARGS.update(noise)
             ARGS["material"] = mat.name
-            removed = _purge_synerixcode_nodes(mat)
+            removed = _purge_elio_nodes(mat)
             _wire_texture(mat, report)
             if removed:
                 report["removed_previous_nodes"] = removed
@@ -1238,7 +1238,7 @@ def _wire_texture(mat, report):
     record = {"type": str(kind), "affect": affect, "node": node.name}
     if affect in ("bump", "normal", "height"):
         bump = tree.nodes.new("ShaderNodeBump")
-        bump.name = _SYNERIXCODE_PREFIX + "bump"
+        bump.name = _ELIO_PREFIX + "bump"
         bump.location = (-300, -260)
         _set_node_input(bump, "Strength", min(max(strength, 0.0), 1.0))
         try:
@@ -1261,7 +1261,7 @@ def _wire_texture(mat, report):
             pass
     elif affect in ("emission", "emissive"):
         node2 = tree.nodes.new("ShaderNodeMath")
-        node2.name = _SYNERIXCODE_PREFIX + "emission_mul"
+        node2.name = _ELIO_PREFIX + "emission_mul"
         node2.operation = "MULTIPLY"
         node2.location = (-300, -400)
         _set_node_input(node2, "1", max(strength, 0.0) if strength else 1.0)
@@ -1273,7 +1273,7 @@ def _wire_texture(mat, report):
         record["strength"] = strength
     else:  # base_color / color / mix
         ramp = tree.nodes.new("ShaderNodeValToRGB")
-        ramp.name = _SYNERIXCODE_PREFIX + "ramp"
+        ramp.name = _ELIO_PREFIX + "ramp"
         ramp.location = (-320, 20)
         try:
             ramp.color_ramp.elements[0].position = 0.35
@@ -1300,7 +1300,7 @@ def cmd_material_create():
                 "sheen", "anisotropic", "subsurface", "blend", "noise"):
         if ARGS.get(key) is not None:
             spec[key] = ARGS.get(key)
-    name = str(ARGS.get("material") or ARGS.get("material_name") or ARGS.get("name") or "SYNERIXCODE_Material")
+    name = str(ARGS.get("material") or ARGS.get("material_name") or ARGS.get("name") or "ELIO_Material")
     mat = bpy.data.materials.get(name)
     if mat is None:
         mat = bpy.data.materials.new(name)
@@ -1308,7 +1308,7 @@ def cmd_material_create():
     report = {"material": mat.name, "preset": ARGS.get("preset") or None}
     if not spec:
         spec = {"color": [0.8, 0.8, 0.8]}
-    _purge_synerixcode_nodes(mat)
+    _purge_elio_nodes(mat)
     _apply_material(mat, spec, report)
     assigned = []
     objs = _target_objects()
@@ -1499,7 +1499,7 @@ def cmd_material_noise():
     if mat is None:
         return emit({"ok": False, "error": "material required (material:\"<name>\")"})
     mat.use_nodes = True
-    removed = _purge_synerixcode_nodes(mat) if ARGS.get("replace", True) else 0
+    removed = _purge_elio_nodes(mat) if ARGS.get("replace", True) else 0
     report = {"material": mat.name, "removed_previous_nodes": removed}
     _wire_texture(mat, report)
     if "texture" not in report:
@@ -1529,7 +1529,7 @@ def cmd_material_image():
     tree = mat.node_tree
     img = bpy.data.images.load(path, check_existing=True)
     node = tree.nodes.new("ShaderNodeTexImage")
-    node.name = _SYNERIXCODE_PREFIX + "image"
+    node.name = _ELIO_PREFIX + "image"
     node.label = os.path.basename(path)
     node.location = (-460, 120)
     node.image = img
@@ -1557,7 +1557,7 @@ def cmd_material_image():
         elif slot in ("normal", "bump"):
             img.colorspace_settings.name = "Non-Color"
             nmap = tree.nodes.new("ShaderNodeNormalMap")
-            nmap.name = _SYNERIXCODE_PREFIX + "normal_map"
+            nmap.name = _ELIO_PREFIX + "normal_map"
             nmap.location = (-260, -140)
             tree.links.new(node.outputs["Color"], nmap.inputs["Color"])
             tree.links.new(nmap.outputs["Normal"], bsdf.inputs["Normal"])
@@ -1588,7 +1588,7 @@ def cmd_material_pbr():
     if not files:
         return emit({"ok": False, "error": "pass at least base_color/albedo (optional orm/roughness/metallic/normal)"})
     mat.use_nodes = True
-    _purge_synerixcode_nodes(mat)
+    _purge_elio_nodes(mat)
     saved = dict(ARGS)
     built = []
     try:
@@ -1613,9 +1613,9 @@ def _material_image_into(mat, path, slot, report):
     tree = mat.node_tree
     img = bpy.data.images.load(path, check_existing=True)
     node = tree.nodes.new("ShaderNodeTexImage")
-    node.name = _SYNERIXCODE_PREFIX + "img_" + str(slot)
+    node.name = _ELIO_PREFIX + "img_" + str(slot)
     node.label = os.path.basename(path)
-    node.location = (-520, 200 - 60 * len([n for n in tree.nodes if str(n.name).startswith(_SYNERIXCODE_PREFIX + "img_")]))
+    node.location = (-520, 200 - 60 * len([n for n in tree.nodes if str(n.name).startswith(_ELIO_PREFIX + "img_")]))
     node.image = img
     if slot in ("base_color", "color", "albedo"):
         node.image.colorspace_settings.name = "sRGB"
@@ -1632,7 +1632,7 @@ def _material_image_into(mat, path, slot, report):
     elif slot == "normal":
         img.colorspace_settings.name = "Non-Color"
         nmap = tree.nodes.new("ShaderNodeNormalMap")
-        nmap.name = _SYNERIXCODE_PREFIX + "nm_" + os.path.basename(path)
+        nmap.name = _ELIO_PREFIX + "nm_" + os.path.basename(path)
         nmap.location = (-260, -160)
         tree.links.new(node.outputs["Color"], nmap.inputs["Color"])
         tree.links.new(nmap.outputs["Normal"], bsdf.inputs["Normal"])
@@ -1648,7 +1648,7 @@ def _material_image_into(mat, path, slot, report):
 def cmd_add_modifier():
     obj = bpy.data.objects.get(str(ARGS.get("name") or ARGS.get("object") or "")) or active()
     if obj is None:
-        objs = named_synerixcode_sel()
+        objs = named_elio_sel()
         obj = objs[0] if objs else None
     if obj is None:
         return emit({"ok": False, "error": "object required"})
@@ -1700,7 +1700,7 @@ def cmd_boolean():
 
 def cmd_apply_modifiers():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     applied = []
     for obj in objs:
         select_only([obj])
@@ -1717,7 +1717,7 @@ def cmd_apply_modifiers():
 
 
 def cmd_remove_modifier():
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     kind = str(ARGS.get("type") or ARGS.get("modifier") or "").upper()
     removed = []
     for obj in objs:
@@ -1729,7 +1729,7 @@ def cmd_remove_modifier():
 
 
 def cmd_triangulate():
-    objs = [o for o in named_synerixcode_sel() if o.type == "MESH"]
+    objs = [o for o in named_elio_sel() if o.type == "MESH"]
     if not objs:
         return emit({"ok": False, "error": "no mesh"})
     in_edit(objs, lambda: run_op(bpy.ops.mesh.quads_convert_to_tris))
@@ -1743,7 +1743,7 @@ def cmd_decimate():
 
 
 def cmd_merge():
-    objs = [o for o in named_synerixcode_sel() if o.type == "MESH"]
+    objs = [o for o in named_elio_sel() if o.type == "MESH"]
     dist = float(ARGS.get("distance") or 0.0001)
     def _m():
         try:
@@ -1758,19 +1758,19 @@ def cmd_merge():
 
 
 def cmd_recalc_normals():
-    objs = [o for o in named_synerixcode_sel() if o.type == "MESH"]
+    objs = [o for o in named_elio_sel() if o.type == "MESH"]
     in_edit(objs, lambda: run_op(bpy.ops.mesh.normals_make_consistent, inside=bool(ARGS.get("inside", False))))
     return emit({"ok": True, "objects": [o.name for o in objs]})
 
 
 def cmd_flip_normals():
-    objs = [o for o in named_synerixcode_sel() if o.type == "MESH"]
+    objs = [o for o in named_elio_sel() if o.type == "MESH"]
     in_edit(objs, lambda: run_op(bpy.ops.mesh.flip_normals))
     return emit({"ok": True, "objects": [o.name for o in objs]})
 
 
 def cmd_separate_loose():
-    objs = [o for o in named_synerixcode_sel() if o.type == "MESH"]
+    objs = [o for o in named_elio_sel() if o.type == "MESH"]
     if not objs:
         return emit({"ok": False, "error": "no mesh"})
     before = set(bpy.data.objects.keys())
@@ -1780,14 +1780,14 @@ def cmd_separate_loose():
 
 
 def cmd_subdivide():
-    objs = [o for o in named_synerixcode_sel() if o.type == "MESH"]
+    objs = [o for o in named_elio_sel() if o.type == "MESH"]
     cuts = int(ARGS.get("cuts") or ARGS.get("levels") or 1)
     in_edit(objs, lambda: run_op(bpy.ops.mesh.subdivide, number_cuts=cuts))
     return emit({"ok": True, "objects": [o.name for o in objs], "cuts": cuts})
 
 
 def cmd_uv_unwrap():
-    objs = [o for o in named_synerixcode_sel() if o.type == "MESH"]
+    objs = [o for o in named_elio_sel() if o.type == "MESH"]
     if not objs:
         return emit({"ok": False, "error": "no mesh"})
     def _u():
@@ -1801,7 +1801,7 @@ def cmd_uv_unwrap():
 
 def cmd_array():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     count = int(ARGS.get("count") or 3)
     offset = Vector(vec3("offset", (2, 0, 0)))
     unique = bool(ARGS.get("unique", True))
@@ -1822,7 +1822,7 @@ def cmd_array():
 
 def cmd_mirror():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     axis = str(ARGS.get("axis") or "X").upper()
     idx = {"X": 0, "Y": 1, "Z": 2}.get(axis, 0)
     created = []
@@ -1847,7 +1847,7 @@ def cmd_mirror():
 
 
 def cmd_hide():
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     for o in objs:
         try:
             o.hide_set(True)
@@ -1909,7 +1909,7 @@ def cmd_redo():
 
 
 def cmd_frame_selected():
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     select_only(objs)
     try:
         run_op(bpy.ops.view3d.view_selected)
@@ -1920,7 +1920,7 @@ def cmd_frame_selected():
 
 def cmd_stats():
     items = []
-    for o in named_synerixcode_sel() or list(bpy.data.objects):
+    for o in named_elio_sel() or list(bpy.data.objects):
         verts = faces = 0
         if o.type == "MESH" and o.data:
             verts = len(o.data.vertices)
@@ -1959,7 +1959,7 @@ def cmd_look_at():
 
 def cmd_convert_to_mesh():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     select_only(objs)
     try:
         run_op(bpy.ops.object.convert, target="MESH")
@@ -2011,7 +2011,7 @@ def cmd_add_text():
     obj = active()
     set_name(obj, ARGS.get("name") or "Text")
     if obj and obj.data:
-        obj.data.body = str(ARGS.get("text") or ARGS.get("body") or "synerixcode")
+        obj.data.body = str(ARGS.get("text") or ARGS.get("body") or "elio")
         if ARGS.get("extrude") is not None:
             try:
                 obj.data.extrude = float(ARGS.get("extrude"))
@@ -2160,7 +2160,7 @@ def cmd_set_camera_lens():
 
 def cmd_scale():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     s = vec3("scale", vec3("factor", (1.0, 1.0, 1.0)))
     mul = ARGS.get("multiply")
     if mul is None:
@@ -2176,7 +2176,7 @@ def cmd_scale():
 
 
 def cmd_bevel():
-    objs = [o for o in named_synerixcode_sel() if o.type == "MESH"]
+    objs = [o for o in named_elio_sel() if o.type == "MESH"]
     width = float(ARGS.get("width") or ARGS.get("offset") or 0.05)
     segs = int(ARGS.get("segments") or 2)
     if not objs:
@@ -2187,7 +2187,7 @@ def cmd_bevel():
 
 def cmd_solidify():
     thickness = float(ARGS.get("thickness") or 0.1)
-    objs = [o for o in named_synerixcode_sel() if o.type == "MESH"]
+    objs = [o for o in named_elio_sel() if o.type == "MESH"]
     if not objs:
         return emit({"ok": False, "error": "no mesh selected"})
     names = []
@@ -2199,7 +2199,7 @@ def cmd_solidify():
 
 
 def cmd_extrude():
-    objs = [o for o in named_synerixcode_sel() if o.type == "MESH"]
+    objs = [o for o in named_elio_sel() if o.type == "MESH"]
     dist = float(ARGS.get("distance") or ARGS.get("offset") or 0.5)
     if not objs:
         return emit({"ok": False, "error": "no mesh selected"})
@@ -2232,7 +2232,7 @@ def cmd_keyframe_insert():
     scene = bpy.context.scene
     frame = int(ARGS.get("frame") if ARGS.get("frame") is not None else scene.frame_current)
     data_path = str(ARGS.get("data_path") or "location")
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     try:
         scene.frame_set(frame)
     except Exception:
@@ -2276,7 +2276,7 @@ def cmd_track_to():
     target = bpy.data.objects.get(str(ARGS.get("target") or ""))
     if target is None:
         return emit({"ok": False, "error": "target object required"})
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     names = []
     for o in objs:
         if o == target:
@@ -2293,7 +2293,7 @@ def cmd_track_to():
 
 
 def cmd_cursor_to_selected():
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     if not objs:
         return emit({"ok": False, "error": "nothing selected"})
     acc = Vector((0.0, 0.0, 0.0))
@@ -2306,7 +2306,7 @@ def cmd_cursor_to_selected():
 
 def cmd_randomize_transform():
     import random
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     loc_amt = float(ARGS.get("location") or 0.5)
     rot_amt = float(ARGS.get("rotation") or 0.0)
     scl_amt = float(ARGS.get("scale") or 0.0)
@@ -2329,7 +2329,7 @@ def cmd_randomize_transform():
 
 
 def cmd_hide_render():
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     hide = ARGS.get("hide")
     if hide is None:
         hide = True
@@ -2341,7 +2341,7 @@ def cmd_hide_render():
 def cmd_subdivision():
     levels = int(ARGS.get("levels") or 2)
     render_levels = int(ARGS.get("render_levels") or max(levels, 2))
-    objs = [o for o in named_synerixcode_sel() if o.type == "MESH"]
+    objs = [o for o in named_elio_sel() if o.type == "MESH"]
     if not objs:
         return emit({"ok": False, "error": "no mesh selected"})
     names = []
@@ -2355,7 +2355,7 @@ def cmd_subdivision():
 
 def cmd_origin_to_geometry():
     ensure_object_mode()
-    objs = named_synerixcode_sel()
+    objs = named_elio_sel()
     if not objs:
         return emit({"ok": False, "error": "nothing selected"})
     select_only(objs)

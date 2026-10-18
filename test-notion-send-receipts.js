@@ -17,7 +17,7 @@ const source=fs.readFileSync('providers/notion.js','utf8');
      let row=w.document.querySelector('[data-agent-service-scroll-anchor=old-user]');
      if(scenario!=='reused-row') { const replacement=row.cloneNode();row.replaceWith(replacement);row=replacement; }
      row.setAttribute('data-agent-service-scroll-anchor','new-user');
-     row.textContent=scenario==='unrelated-row'?'A different message':scenario==='attachment-label'?'synerixcode_tool_result.txt '+prompt:prompt;
+     row.textContent=scenario==='unrelated-row'?'A different message':scenario==='attachment-label'?'elio_tool_result.txt '+prompt:prompt;
      w.p.invalidateItems();
     };
     if(scenario==='delayed-row')w.setTimeout(acknowledge,4600);else acknowledge();

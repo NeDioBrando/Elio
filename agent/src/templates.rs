@@ -55,7 +55,7 @@ impl Store {
             "remove"=>{let index=catalog.templates.iter().position(|t|t.id==id).ok_or_else(||anyhow::anyhow!("Template not found."))?;let template=catalog.templates.remove(index);
                 if let Err(error)=self.save(&catalog){catalog.templates.insert(index,template);return Err(error);}let _=std::fs::remove_dir_all(self.original(&template).parent().unwrap());Ok(json!({"ok":true}))},
             "open"=>{let template=catalog.templates.iter().find(|t|t.id==id).ok_or_else(||anyhow::anyhow!("Template not found."))?;let original=self.original(template);anyhow::ensure!(original.is_file(),"Original template file is missing.");
-                #[cfg(windows)] {use std::os::windows::process::CommandExt;std::process::Command::new("rundll32.exe").arg("url.dll,FileProtocolHandler").arg(original).creation_flags(0x08000000).spawn()?;Ok(json!({"ok":true,"message":"Open requested through the Windows Roblox file association. Select the desired Studio session in synerixcode after it opens."}))}
+                #[cfg(windows)] {use std::os::windows::process::CommandExt;std::process::Command::new("rundll32.exe").arg("url.dll,FileProtocolHandler").arg(original).creation_flags(0x08000000).spawn()?;Ok(json!({"ok":true,"message":"Open requested through the Windows Roblox file association. Select the desired Studio session in elio after it opens."}))}
                 #[cfg(not(windows))] {anyhow::bail!("Opening a template in Studio requires Windows.")}
             },
             _=>anyhow::bail!("Unknown template action.")
@@ -65,7 +65,7 @@ impl Store {
 fn terms(text:&str)->Vec<String>{
     let mut expanded=String::with_capacity(text.len());let mut previous=' ';
     for c in text.chars(){if c.is_uppercase() && previous.is_lowercase(){expanded.push(' ');}expanded.push(c);previous=c;}
-    let stops=["the","and","for","local","function","return","then","end","with","from","this","that","have","want","make","game","system","script","server","client","player","players","should","please","using","create","could","like","into","else","true","false","self","nil","not","new","task","request","original","synerixcode","inspect","preserve","changes","work","same","your","you","can","will"];
+    let stops=["the","and","for","local","function","return","then","end","with","from","this","that","have","want","make","game","system","script","server","client","player","players","should","please","using","create","could","like","into","else","true","false","self","nil","not","new","task","request","original","elio","inspect","preserve","changes","work","same","your","you","can","will"];
     let mut set=HashSet::new();for raw in expanded.split(|c:char|!c.is_alphanumeric()) {let mut word=raw.to_lowercase();if word.len()<3||stops.contains(&word.as_str()){continue;}if word.ends_with('s') && !word.ends_with("ss") && !word.ends_with("us") && word.len()>4 {word.pop();}
         word=match word.as_str(){"backpack"|"inventorie"|"inventory"=>"inventory","fighting"|"fight"|"battle"|"combat"=>"combat","shop"|"store"|"purchase"|"buy"=>"shop","coin"|"money"|"currency"=>"currency","equip"|"loadout"|"hotbar"=>"loadout",_=>&word}.to_string();set.insert(word);}
     let mut result=set.into_iter().collect::<Vec<_>>();result.sort();result
@@ -88,7 +88,7 @@ fn matching_with_limit(catalog:&Catalog,query:&str,limit:usize)->Vec<Value>{
     for (score,template,script) in found {let n=counts.entry(&template.id).or_insert(0);if *n>=limit{continue;}*n+=1;result.push(json!({"id":template.id,"name":template.name,"script_id":script.script_id,"path":script.path,"class":script.class,"score":score,"source":script.source.chars().take(24000/limit.max(1).min(8)).collect::<String>(),"preview_limited":script.source.chars().count()>24000/limit.max(1).min(8)}));if result.len()==limit{break;}}
     result
 }
-pub static STORE:once_cell::sync::Lazy<Store>=once_cell::sync::Lazy::new(||{let root=std::env::var_os("LOCALAPPDATA").or_else(||std::env::var_os("XDG_CONFIG_HOME")).map(PathBuf::from).unwrap_or_else(||PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join(".config"));Store::new(root.join("synerixcode").join("templates"))});
+pub static STORE:once_cell::sync::Lazy<Store>=once_cell::sync::Lazy::new(||{let root=std::env::var_os("LOCALAPPDATA").or_else(||std::env::var_os("XDG_CONFIG_HOME")).map(PathBuf::from).unwrap_or_else(||PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join(".config"));Store::new(root.join("elio").join("templates"))});
 pub async fn post(axum::Json(req):axum::Json<Value>)->axum::response::Response {reply(tokio::task::spawn_blocking(move||STORE.request(&req)).await.unwrap_or_else(|e|Err(anyhow::anyhow!("Template request failed: {e}"))))}
 #[derive(Deserialize)]pub struct Import {name:String,#[serde(default)]description:String}
 pub async fn import(axum::extract::Query(req):axum::extract::Query<Import>,bytes:axum::body::Bytes)->axum::response::Response {let permit=match INDEXING.clone().try_acquire_owned(){Ok(p)=>p,Err(_)=>return reply(Err(anyhow::anyhow!("Another template is being indexed. Try again when it finishes.")))};let result=tokio::task::spawn_blocking(move||{let _permit=permit;STORE.import(&req.name,&req.description,&bytes)}).await;reply(result.unwrap_or_else(|e|Err(anyhow::anyhow!("Template indexing failed: {e}"))))}
@@ -98,7 +98,7 @@ fn reply(result:anyhow::Result<Value>)->axum::response::Response{use axum::respo
     #[test]fn described_systems_match_code_and_ignore_unrelated_metadata(){let script=Script{script_id:"script-0".into(),path:"game.ServerScriptService.Handler".into(),class:"ModuleScript".into(),source:"return {CooldownUnique=true}".into(),terms:terms("return {CooldownUnique=true}"),path_terms:terms("game.ServerScriptService.Handler")};let template=Template{id:"test".into(),name:"Combat template".into(),description:"Combat economy".into(),extension:"rbxmx".into(),scripts:vec![script],instances:1};let catalog=Catalog{templates:vec![template]};assert_eq!(matching_with_limit(&catalog,"cooldown",6).len(),1);assert!(matching_with_limit(&catalog,"combat economy",6).is_empty());}
 
     #[test]fn binary_and_xml_templates_persist_match_and_read_without_execution(){
-        let root=std::env::temp_dir().join(format!("synerixcode-template-test-{}",std::process::id()));let _=std::fs::remove_dir_all(&root);let store=Store::new(root.clone());
+        let root=std::env::temp_dir().join(format!("elio-template-test-{}",std::process::id()));let _=std::fs::remove_dir_all(&root);let store=Store::new(root.clone());
         let source="local Inventory={}\nfunction Inventory:AddItem(Item) return Item.Name end\nreturn Inventory";
         let dom=WeakDom::new(InstanceBuilder::new("DataModel").with_child(InstanceBuilder::new("ServerScriptService").with_child(InstanceBuilder::new("ModuleScript").with_name("InventoryService").with_property("Source",source)).with_child(InstanceBuilder::new("ModuleScript").with_name("InventoryService").with_property("Source","return {Duplicate=true}"))));
         let refs=dom.root().children();let mut binary=Vec::new();rbx_binary::to_writer(&mut binary,&dom,refs).unwrap();let mut xml=Vec::new();rbx_xml::to_writer(&mut xml,&dom,refs,Default::default()).unwrap();
@@ -114,7 +114,7 @@ fn reply(result:anyhow::Result<Value>)->axum::response::Response{use axum::respo
         assert!(store.import("bad.exe","",b"bad").is_err());assert!(store.import("bad.rbxl","",b"bad").is_err());let empty=WeakDom::new(InstanceBuilder::new("DataModel").with_child(InstanceBuilder::new("Part")));let mut bytes=Vec::new();rbx_binary::to_writer(&mut bytes,&empty,empty.root().children()).unwrap();assert!(store.import("empty.rbxl","",&bytes).is_err());let _=std::fs::remove_dir_all(root);
     }
     #[test]fn desktop_accepts_large_places_with_small_script_indexes(){
-        let root=std::env::temp_dir().join(format!("synerixcode-large-template-test-{}",std::process::id()));let _=std::fs::remove_dir_all(&root);let store=Store::new(root.clone());
+        let root=std::env::temp_dir().join(format!("elio-large-template-test-{}",std::process::id()));let _=std::fs::remove_dir_all(&root);let store=Store::new(root.clone());
         let mut xml=b"<roblox version=\"4\"><!--".to_vec();xml.resize(33*1024*1024,b' ');xml.extend_from_slice(b"--><Item class=\"ModuleScript\" referent=\"RBX1\"><Properties><string name=\"Name\">Inventory</string><ProtectedString name=\"Source\">return {Inventory=true}</ProtectedString></Properties></Item></roblox>");
         assert!(xml.len()>32*1024*1024);assert!(store.import("Large.rbxlx","Inventory",&xml).is_ok());assert_eq!(store.request(&json!({"action":"list"})).unwrap()["templates"][0]["scripts"],1);let _=std::fs::remove_dir_all(root);
     }

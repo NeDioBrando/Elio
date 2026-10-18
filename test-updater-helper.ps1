@@ -2,7 +2,7 @@
 # Windows-only isolated integration tests. No production folder or account used.
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
-$root=Join-Path ([IO.Path]::GetTempPath()) ('synerixcode-update-test-'+[guid]::NewGuid().ToString('N'))
+$root=Join-Path ([IO.Path]::GetTempPath()) ('elio-update-test-'+[guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $root | Out-Null
 $helper=Join-Path $PSScriptRoot 'updater\apply-update.ps1'
 function Assert($Condition,[string]$Message){if(!$Condition){throw $Message}}
@@ -16,7 +16,7 @@ using System.Reflection;
 using System.Diagnostics;
 public class $Name {
  public static int Main(string[] args) {
-  if(args.Length>0 && args[0]=="--version") { Console.WriteLine("synerixcode-agent $Version");return 0; }
+  if(args.Length>0 && args[0]=="--version") { Console.WriteLine("elio-agent $Version");return 0; }
   var home=Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
   File.WriteAllText(Path.Combine(home,"fixture.pid"),Process.GetCurrentProcess().Id.ToString());
   $body
@@ -27,18 +27,18 @@ public class $Name {
  return $exe
 }
 function Run-Case([string]$Name,[string]$NewExe,[string]$ManifestVersion,[string]$Mode,[bool]$Success){
- $case=Join-Path $root $Name;$install=Join-Path $case 'install';$bundle=Join-Path $case 'bundle\synerixcode';$stage=Join-Path $case 'stage'
- New-Item -ItemType Directory -Path $install,(Join-Path $bundle 'synerixcode-Extension'),$stage -Force|Out-Null
- Copy-Item -LiteralPath $old -Destination (Join-Path $install 'synerixcode.exe')
+ $case=Join-Path $root $Name;$install=Join-Path $case 'install';$bundle=Join-Path $case 'bundle\elio';$stage=Join-Path $case 'stage'
+ New-Item -ItemType Directory -Path $install,(Join-Path $bundle 'elio-Extension'),$stage -Force|Out-Null
+ Copy-Item -LiteralPath $old -Destination (Join-Path $install 'elio.exe')
  [IO.File]::WriteAllText((Join-Path $install 'config.json'),'user-config')
- Copy-Item -LiteralPath $NewExe -Destination (Join-Path $bundle 'synerixcode.exe')
- [IO.File]::WriteAllText((Join-Path $bundle 'synerixcode-Extension\manifest.json'),('{"version":"'+$ManifestVersion+'"}'))
+ Copy-Item -LiteralPath $NewExe -Destination (Join-Path $bundle 'elio.exe')
+ [IO.File]::WriteAllText((Join-Path $bundle 'elio-Extension\manifest.json'),('{"version":"'+$ManifestVersion+'"}'))
  [IO.File]::WriteAllText((Join-Path $bundle 'WebView2Loader.dll'),'fixture-only')
  [IO.File]::WriteAllText((Join-Path $bundle 'config.json'),'do-not-overwrite-user')
  $zip=Join-Path $stage 'release.zip';[IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $case 'bundle'),$zip)
  if($Mode -eq 'traversal'){
   $z=[IO.Compression.ZipFile]::Open($zip,[IO.Compression.ZipArchiveMode]::Update)
-  try{$e=$z.CreateEntry('synerixcode/../escape.txt');$stream=$e.Open();$bytes=[Text.Encoding]::UTF8.GetBytes('bad');$stream.Write($bytes,0,$bytes.Length);$stream.Dispose()}finally{$z.Dispose()}
+  try{$e=$z.CreateEntry('elio/../escape.txt');$stream=$e.Open();$bytes=[Text.Encoding]::UTF8.GetBytes('bad');$stream.Write($bytes,0,$bytes.Length);$stream.Dispose()}finally{$z.Dispose()}
  }
  $sha=(Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant();if($Mode -eq 'bad-hash'){$sha='0'*64}
  $receipt=Join-Path $stage 'ready-fixture'
@@ -46,8 +46,8 @@ function Run-Case([string]$Name,[string]$NewExe,[string]$ManifestVersion,[string
  $exit=$LASTEXITCODE
  Assert (($exit -eq 0) -eq $Success) "$Name returned unexpected exit code $exit"
  Assert ((Get-Content -LiteralPath (Join-Path $install 'config.json') -Raw) -eq 'user-config') "$Name overwrote user config"
- $actual=& (Join-Path $install 'synerixcode.exe') --version
- Assert ($actual -eq $(if($Success){'synerixcode-agent 1.0.2'}else{'synerixcode-agent 1.0.1'})) "$Name did not preserve expected executable"
+ $actual=& (Join-Path $install 'elio.exe') --version
+ Assert ($actual -eq $(if($Success){'elio-agent 1.0.2'}else{'elio-agent 1.0.1'})) "$Name did not preserve expected executable"
  Assert (!(Test-Path -LiteralPath (Join-Path $case 'escape.txt'))) "$Name escaped ZIP staging"
  $pidFile=Join-Path $install 'fixture.pid'
  if(Test-Path -LiteralPath $pidFile){$fixturePid=[int](Get-Content -LiteralPath $pidFile -Raw);Stop-Process -Id $fixturePid -Force -ErrorAction SilentlyContinue}

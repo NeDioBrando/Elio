@@ -1,6 +1,6 @@
-const synerixcodeClarification = (() => {
-  const INSTRUCTION = '\nBEFORE ACTING: Assess the request, existing project and constraints first. For a clear task, proceed with targeted work. If materially unclear choices would change the scope, call synerixcode_clarify BEFORE changing anything. Provide 2–3 distinct options with labels and scope, recommend one with a reason, and ask 1–3 necessary questions. This opens a user panel and waits for their answer. Do not pick an option yourself, send reminders, repeat the question, or run other actions while waiting. Continue only from the returned answer. Do not ask for hidden reasoning; give concise practical scope and tradeoffs.\n';
-  const DESCRIPTION = 'synerixcode_clarify {question:string, options:[{id:string,label:string,scope:string}] (2–3), recommended_id:string, recommendation:string, questions:[string] (1–3)} — clarify materially unclear work before acting; waits indefinitely without reminders for an explicit answer.';
+const elioClarification = (() => {
+  const INSTRUCTION = '\nBEFORE ACTING: Assess the request, existing project and constraints first. For a clear task, proceed with targeted work. If materially unclear choices would change the scope, call elio_clarify BEFORE changing anything. Provide 2–3 distinct options with labels and scope, recommend one with a reason, and ask 1–3 necessary questions. This opens a user panel and waits for their answer. Do not pick an option yourself, send reminders, repeat the question, or run other actions while waiting. Continue only from the returned answer. Do not ask for hidden reasoning; give concise practical scope and tradeoffs.\n';
+  const DESCRIPTION = 'elio_clarify {question:string, options:[{id:string,label:string,scope:string}] (2–3), recommended_id:string, recommendation:string, questions:[string] (1–3)} — clarify materially unclear work before acting; waits indefinitely without reminders for an explicit answer.';
   // Models often guess near-miss field names (recommend/reason, title/description,
   // a single question string). Map the unambiguous aliases onto the schema so a
   // valid intent is not rejected, and name the exact fields when it still fails.
@@ -102,11 +102,11 @@ const synerixcodeClarification = (() => {
         try {
         // 1.24.13: mount at the root stacking context. A page that turns <body>
         // into its own stacking context (Notion) flattened a body child below
-        // synerixcode's <html>-level "Agent is working" cover and Tasks button.
+        // elio's <html>-level "Agent is working" cover and Tasks button.
         (mount()||document.documentElement).append(host);changed(true);
         // Site capture handlers see a closed-shadow host as a non-editable div.
         // A script-free frame isolates native answers from page keyboard locks.
-        const frame=document.createElement('iframe');frame.title='synerixcode clarification';frame.setAttribute('sandbox','allow-same-origin allow-forms');frame.style.cssText='position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent';
+        const frame=document.createElement('iframe');frame.title='elio clarification';frame.setAttribute('sandbox','allow-same-origin allow-forms');frame.style.cssText='position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent';
         frame.addEventListener('load',()=>{
           if(!pending||pending.host!==host)return;
           try{const pane=frame.contentDocument,sheet=style.cloneNode(true);sheet.textContent=sheet.textContent.replace(':host{','html{')+'body{margin:0}';pane.head.append(sheet);for(const key of ['--rs-text','--rs-muted','--rs-bg','--rs-accent','--pc-bg','--pc-accent']){const value=host.style.getPropertyValue(key);if(value)pane.documentElement.style.setProperty(key,value);}pane.body.append(shade);heading.focus();}catch{try{frame.remove();heading.focus();}catch(error){finish(null,error);}}
@@ -118,4 +118,4 @@ const synerixcodeClarification = (() => {
   }
   return {create,validate,normalize,INSTRUCTION,DESCRIPTION};
 })();
-if (typeof module !== 'undefined' && module.exports) module.exports = synerixcodeClarification;
+if (typeof module !== 'undefined' && module.exports) module.exports = elioClarification;

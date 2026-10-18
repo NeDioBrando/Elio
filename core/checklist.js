@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-const synerixcodeChecklist = (() => {
+const elioChecklist = (() => {
   function userText(item, read) {
     try {
       const clone=item.cloneNode(true);
@@ -15,7 +15,7 @@ const synerixcodeChecklist = (() => {
     } catch { return ''; }
   }
   function mount({root, getGroup, getBar, blocked, getDetached=()=>false, storage}) {
-    const key='synerixcode.checklistHidden',positionKey='synerixcode.checklistPosition'; let collapsed=false, signature='',position=null,drag=null;
+    const key='elio.checklistHidden',positionKey='elio.checklistPosition'; let collapsed=false, signature='',position=null,drag=null;
     try { if(!storage)storage=window.sessionStorage;collapsed=storage.getItem(key)==='1';const saved=JSON.parse(storage.getItem(positionKey));if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y))position={x:saved.x,y:saved.y}; } catch {}
     const panel=document.createElement('section');panel.id='rs-task-checklist';panel.hidden=true;panel.setAttribute('aria-label','Task checklist');
     panel.innerHTML='<header><span class="rs-checklist-ring" role="progressbar" aria-label="Task plan progress" aria-valuemin="0" aria-valuemax="100"><svg viewBox="0 0 32 32" aria-hidden="true"><circle class="rs-checklist-track" cx="16" cy="16" r="12"/><circle class="rs-checklist-fill" cx="16" cy="16" r="12" pathLength="100" stroke-dasharray="100" transform="rotate(-90 16 16)"/></svg><span class="rs-checklist-percent"></span></span><span class="rs-checklist-heading"><strong>Task checklist</strong><small></small></span><button type="button" class="rs-checklist-hide" aria-label="Hide task checklist" title="Hide checklist — the AI keeps working">−</button></header><ol></ol>';
@@ -82,4 +82,4 @@ const synerixcodeChecklist = (() => {
   }
   return {mount,userText};
 })();
-if(typeof module!=='undefined'&&module.exports)module.exports=synerixcodeChecklist;
+if(typeof module!=='undefined'&&module.exports)module.exports=elioChecklist;

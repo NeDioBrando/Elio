@@ -28,7 +28,7 @@ pub struct Journal { #[serde(default)] pub projects: std::collections::HashMap<S
 pub static STORE: once_cell::sync::Lazy<tokio::sync::Mutex<Journal>> = once_cell::sync::Lazy::new(|| {
     let root = std::env::var_os("LOCALAPPDATA").or_else(|| std::env::var_os("XDG_CONFIG_HOME")).map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join(".config"));
-    tokio::sync::Mutex::new(Journal::load(root.join("synerixcode").join("checkpoints.json")))
+    tokio::sync::Mutex::new(Journal::load(root.join("elio").join("checkpoints.json")))
 });
 impl Journal {
     fn load(path: PathBuf) -> Self {
@@ -157,7 +157,7 @@ impl Journal {
     pub fn record_script(&mut self,id:&str,before:&Value,after:&Value,studio_id:Value)->anyhow::Result<()> {
         let path=before["path"].as_str().ok_or_else(||anyhow::anyhow!("Snapshot path missing"))?;
         let class=before["class"].as_str().unwrap_or("");let source=before["source"].as_str().unwrap_or("");let changed=after["source"].as_str().ok_or_else(||anyhow::anyhow!("Snapshot source missing"))?;
-        anyhow::ensure!(before["synerixcode_script"]==true && after["synerixcode_script"]==true && after["path"]==path && after["class"]==class && source.len()<=FILE_LIMIT as usize && changed.len()<=FILE_LIMIT as usize,"Script identity or snapshot size changed.");
+        anyhow::ensure!(before["elio_script"]==true && after["elio_script"]==true && after["path"]==path && after["class"]==class && source.len()<=FILE_LIMIT as usize && changed.len()<=FILE_LIMIT as usize,"Script identity or snapshot size changed.");
         let task=self.task_mut(id)?;
         if let Some(existing)=task.scripts.iter_mut().find(|s|s.path==path&&s.studio_id==studio_id){anyhow::ensure!(existing.after==source,"Script changed outside this task; selective snapshot not updated.");existing.after=changed.into();}
         else{anyhow::ensure!(task.scripts.len()<40,"At most 40 script snapshots per task.");task.scripts.push(ScriptChange{path:path.into(),class:class.into(),before:source.into(),after:changed.into(),studio_id,session:SNAPSHOT_SESSION.clone()});}
@@ -212,39 +212,39 @@ pub fn script_target(path:&str)->String {
     let raw=serde_json::to_string(path).unwrap();
     format!("local Path={raw}\nlocal Target=game\nPath=Path:gsub('^game%.','')\nfor Name in Path:gmatch('[^%.]+') do local Found=nil for _,Child in Target:GetChildren() do if Child.Name==Name then if Found then error('Ambiguous script path') end Found=Child end end if not Found then error('Script path missing') end Target=Found end\nif not Target:IsA('LuaSourceContainer') then error('Target is not a script') end\n")
 }
-pub fn script_snapshot(path:&str)->String {format!("{}if #Target.Source>4194304 then error('Script snapshot exceeds 4 MB') end\nreturn game:GetService('HttpService'):JSONEncode({{synerixcode_script=true,path=Target:GetFullName(),class=Target.ClassName,source=Target.Source}})",script_target(path))}
+pub fn script_snapshot(path:&str)->String {format!("{}if #Target.Source>4194304 then error('Script snapshot exceeds 4 MB') end\nreturn game:GetService('HttpService'):JSONEncode({{elio_script=true,path=Target:GetFullName(),class=Target.ClassName,source=Target.Source}})",script_target(path))}
 pub fn script_restore(snapshot:&ScriptChange)->String {
     let payload=serde_json::to_string(&json!({"before":snapshot.before,"after":snapshot.after,"class":snapshot.class})).unwrap();let literal=serde_json::to_string(&payload).unwrap();
-    format!("if game:GetService('RunService'):IsRunning() then error('Stop Play before restoring a script') end\n{}local Snapshot=game:GetService('HttpService'):JSONDecode({literal})\nif Target.ClassName~=Snapshot.class or Target.Source~=Snapshot.after then error('Conflict: script changed after this task. Nothing restored.') end\nlocal History=game:GetService('ChangeHistoryService')\nHistory:SetWaypoint('Before synerixcode selective script restore')\nTarget.Source=Snapshot.before\nHistory:SetWaypoint('synerixcode selective script restore')\nreturn 'SYNERIXCODE_SCRIPT_RESTORED'",script_target(&snapshot.path))
+    format!("if game:GetService('RunService'):IsRunning() then error('Stop Play before restoring a script') end\n{}local Snapshot=game:GetService('HttpService'):JSONDecode({literal})\nif Target.ClassName~=Snapshot.class or Target.Source~=Snapshot.after then error('Conflict: script changed after this task. Nothing restored.') end\nlocal History=game:GetService('ChangeHistoryService')\nHistory:SetWaypoint('Before elio selective script restore')\nTarget.Source=Snapshot.before\nHistory:SetWaypoint('elio selective script restore')\nreturn 'ELIO_SCRIPT_RESTORED'",script_target(&snapshot.path))
 }
-pub fn parse_snapshot(text:&str)->Option<Value>{let a=text.find('{')?;let z=text.rfind('}')?;let value:Value=serde_json::from_str(&text[a..=z]).ok()?;(value["synerixcode_script"]==true).then_some(value)}
+pub fn parse_snapshot(text:&str)->Option<Value>{let a=text.find('{')?;let z=text.rfind('}')?;let value:Value=serde_json::from_str(&text[a..=z]).ok()?;(value["elio_script"]==true).then_some(value)}
 pub fn studio_mark(label: &str) -> String {
     format!("local Chs=game:GetService('ChangeHistoryService')\nif game:GetService('RunService'):IsRunning() then error('Stop Play before checkpointing') end\nChs:SetWaypoint({})\nlocal Available,Name=Chs:GetCanUndo()\nreturn game:GetService('HttpService'):JSONEncode({{available=Available,name=Name}})", serde_json::to_string(label).unwrap())
 }
 pub fn studio_revert(labels: &[String]) -> String {
     let labels = serde_json::to_string(labels).unwrap();
-    format!("local Chs=game:GetService('ChangeHistoryService')\nif game:GetService('RunService'):IsRunning() then error('Stop Play before reverting') end\nlocal Labels=game:GetService('HttpService'):JSONDecode([==[{labels}]==])\nlocal Undone=0\nfor Index=#Labels,1,-1 do\n local Available,Name=Chs:GetCanUndo()\n if not Available or Name~=Labels[Index] then\n  for Restore=1,Undone do Chs:Redo() end\n  error('Conflict: Studio history changed. Task restore cancelled.')\n end\n Chs:Undo()\n Undone+=1\nend\nreturn 'SYNERIXCODE_TASK_REVERTED'")
+    format!("local Chs=game:GetService('ChangeHistoryService')\nif game:GetService('RunService'):IsRunning() then error('Stop Play before reverting') end\nlocal Labels=game:GetService('HttpService'):JSONDecode([==[{labels}]==])\nlocal Undone=0\nfor Index=#Labels,1,-1 do\n local Available,Name=Chs:GetCanUndo()\n if not Available or Name~=Labels[Index] then\n  for Restore=1,Undone do Chs:Redo() end\n  error('Conflict: Studio history changed. Task restore cancelled.')\n end\n Chs:Undo()\n Undone+=1\nend\nreturn 'ELIO_TASK_REVERTED'")
 }
 #[cfg(test)]
 mod tests {
     use super::*;
     #[tokio::test]
     async fn selective_restore_preserves_other_files_and_rejects_conflicts() {
-        let dir=std::env::temp_dir().join(format!("synerixcode-selective-{}",std::process::id()));let ws=Workspace::new(dir.to_str()).unwrap();let mut j=Journal::load(dir.join("history.json"));let id=j.begin(&json!({"engine":"local"})).unwrap();
+        let dir=std::env::temp_dir().join(format!("elio-selective-{}",std::process::id()));let ws=Workspace::new(dir.to_str()).unwrap();let mut j=Journal::load(dir.join("history.json"));let id=j.begin(&json!({"engine":"local"})).unwrap();
         for name in ["a.lua","b.lua"]{std::fs::write(dir.join(name),b"before").unwrap();let paths=j.prepare_files(&ws,&id,"edit_file",&json!({"path":name})).unwrap();std::fs::write(dir.join(name),b"after").unwrap();j.commit_files(&ws,&id,&paths).unwrap();}
         j.finish(&id,true).unwrap();std::fs::write(dir.join("a.lua"),b"manual").unwrap();assert!(j.revert_file(&ws,&id,"a.lua").is_err());assert_eq!(std::fs::read(dir.join("b.lua")).unwrap(),b"after");
         j.revert_file(&ws,&id,"b.lua").unwrap();assert_eq!(std::fs::read(dir.join("a.lua")).unwrap(),b"manual");assert_eq!(std::fs::read(dir.join("b.lua")).unwrap(),b"before");assert_eq!(Journal::load(dir.join("history.json")).task(&id).unwrap().files.len(),1);std::fs::remove_dir_all(dir).unwrap();
     }
     #[test]
     fn studio_source_snapshots_preserve_literals_and_refuse_changed_identity() {
-        let dir=std::env::temp_dir().join(format!("synerixcode-script-snapshot-{}",std::process::id()));let mut j=Journal::load(dir.join("journal.json"));let id=j.begin(&json!({"engine":"roblox"})).unwrap();
-        let before=json!({"synerixcode_script":true,"path":"ServerScriptService.Exact","class":"Script","source":"local x = \" ]==] \"\n"});let mut after=before.clone();after["source"]=json!("local x = 2");j.record_script(&id,&before,&after,json!("studio-exact")).unwrap();
+        let dir=std::env::temp_dir().join(format!("elio-script-snapshot-{}",std::process::id()));let mut j=Journal::load(dir.join("journal.json"));let id=j.begin(&json!({"engine":"roblox"})).unwrap();
+        let before=json!({"elio_script":true,"path":"ServerScriptService.Exact","class":"Script","source":"local x = \" ]==] \"\n"});let mut after=before.clone();after["source"]=json!("local x = 2");j.record_script(&id,&before,&after,json!("studio-exact")).unwrap();
         let snapshot=&j.task(&id).unwrap().scripts[0];assert_eq!(snapshot.before,before["source"]);let code=script_restore(snapshot);assert!(code.find("Target.Source~=Snapshot.after").unwrap()<code.find("Target.Source=Snapshot.before").unwrap());assert!(code.contains("IsRunning()"));assert!(code.contains("Ambiguous script path"));assert!(parse_snapshot(&format!("Result: {}",before)).is_some());
         let mut wrong=after.clone();wrong["path"]=json!("ServerScriptService.Other");assert!(j.record_script(&id,&before,&wrong,json!("studio-exact")).is_err());assert!(j.record_script(&id,&before,&after,json!("studio-exact")).is_err());j.finish(&id,true).unwrap();assert_eq!(j.details(&id).unwrap()["files"][0]["kind"],"roblox");std::fs::remove_dir_all(dir).unwrap();
     }
     #[tokio::test]
     async fn checkpoint_survives_restart_and_refuses_later_edits() {
-        let dir=std::env::temp_dir().join(format!("synerixcode-checkpoint-test-{}",std::process::id()));let _=std::fs::remove_dir_all(&dir);
+        let dir=std::env::temp_dir().join(format!("elio-checkpoint-test-{}",std::process::id()));let _=std::fs::remove_dir_all(&dir);
         let ws=Workspace::new(dir.to_str()).unwrap(); let path=dir.join("code.txt");std::fs::write(&path,b"before\r\n").unwrap();
         let mut journal=Journal::load(dir.join("history.json"));let id=journal.begin(&json!({"engine":"local"})).unwrap();
         let paths=journal.prepare_files(&ws,&id,"edit_file",&json!({"path":"code.txt"})).unwrap();std::fs::write(&path,b"after\r\n").unwrap();journal.commit_files(&ws,&id,&paths).unwrap();journal.finish(&id,true).unwrap();
@@ -253,7 +253,7 @@ mod tests {
     }
     #[tokio::test]
     async fn multifile_restore_is_prevalidated_and_protection_persists() {
-        let dir=std::env::temp_dir().join(format!("synerixcode-checkpoint-multi-{}",std::process::id()));let _=std::fs::remove_dir_all(&dir);
+        let dir=std::env::temp_dir().join(format!("elio-checkpoint-multi-{}",std::process::id()));let _=std::fs::remove_dir_all(&dir);
         let ws=Workspace::new(dir.to_str()).unwrap();let a=dir.join("a.txt");let b=dir.join("b.txt");std::fs::write(&a,b"original").unwrap();
         let mut journal=Journal::load(dir.join("history.json"));let id=journal.begin(&json!({"engine":"local","chat":"chatgpt|/c/a"})).unwrap();
         for path in ["a.txt","b.txt"] {let paths=journal.prepare_files(&ws,&id,"write_file",&json!({"path":path})).unwrap();std::fs::write(dir.join(path),b"changed").unwrap();journal.commit_files(&ws,&id,&paths).unwrap();}
@@ -267,7 +267,7 @@ mod tests {
     }
     #[test]
     fn studio_restore_checks_every_waypoint_and_rolls_back_on_a_gap() {
-        let code=studio_revert(&["synerixcode task-a 1".into(),"synerixcode task-a 2".into()]);
+        let code=studio_revert(&["elio task-a 1".into(),"elio task-a 2".into()]);
         assert!(code.contains("Name~=Labels[Index]"));assert!(code.contains("Chs:Redo()"));assert!(code.contains("IsRunning()"));
     }
 }

@@ -1,9 +1,9 @@
 const {chromium,firefox}=require('playwright'),fs=require('fs'),assert=require('node:assert/strict');
 const main=fs.readFileSync('core/main.js','utf8');
 const session=main.slice(main.indexOf('  const startedSessions = new Set();'),main.indexOf('  // Schedule a debounced sweep.'));
-const proof=main.slice(main.indexOf('        // A confirmed internal result'),main.indexOf('        if(typeof synerixcodeUltracode',main.indexOf('        // A confirmed internal result')));
+const proof=main.slice(main.indexOf('        // A confirmed internal result'),main.indexOf('        if(typeof elioUltracode',main.indexOf('        // A confirmed internal result')));
 (async()=>{for(const [name,engine] of [['chromium',chromium],['firefox',firefox]]){
- if(process.env.SYNERIXCODE_TEST_BROWSER&&process.env.SYNERIXCODE_TEST_BROWSER!==name)continue;
+ if(process.env.ELIO_TEST_BROWSER&&process.env.ELIO_TEST_BROWSER!==name)continue;
  const browser=await engine.launch({headless:true});
  try{const page=await browser.newPage();await page.route('https://app.notion.com/**',r=>r.fulfill({contentType:'text/html',body:`<div id="rs-root"></div><main>
  <div id="request" style="display:flex;justify-content:flex-end">Fix movement</div>
@@ -27,7 +27,7 @@ const proof=main.slice(main.indexOf('        // A confirmed internal result'),ma
   check(getComputedStyle(item,'::before').content.includes('script_read · result'),'Visible result card');
   check(P.itemText(item).includes('exact source'),'Parser can still read hidden feedback');
   P.syncImmutableChips();check(P.immutableChipPresent(item),'Cleanup retains whole card');
-  const copy=item.cloneNode(true);copy.removeAttribute('data-synerixcode-notion-card');item.replaceWith(copy);P.invalidateItems();P.renderImmutableChip(copy,{whole:true,label:'script_read · result',phase:'result'});
+  const copy=item.cloneNode(true);copy.removeAttribute('data-elio-notion-card');item.replaceWith(copy);P.invalidateItems();P.renderImmutableChip(copy,{whole:true,label:'script_read · result',phase:'result'});
   check(Array.from(copy.children).every(el=>getComputedStyle(el).display==='none'),'Remounted result stays hidden');
   // Confirmed delivery proof survives removal of every injected marker before
   // the idle sweep; a new empty conversation still requires its own startup.

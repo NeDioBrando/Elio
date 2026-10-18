@@ -8,7 +8,7 @@ const A={sessionGen:4,sendToken:'before'};
 const P={conversationKey:()=>chat,lastAssistantId:()=>token,lastAssistant:()=>item,itemText:()=>live};
 const box={A,P,assistantIdx:el=>el===item?0:-1,turnKey:()=>String(token)};
 vm.createContext(box);vm.runInContext(fence+memory+';this.verify=verifyResponseOwner;this.remember=rememberExecuted;this.records=executed;',box);
-const cmd='{"command":"synerixcode_status","params":{}}';
+const cmd='{"command":"elio_status","params":{}}';
 const make=()=>({item:first,text:cmd,responseOwner:{session:4,sendToken:'before',token:0,chat:'chat-a',item:first}});
 let count=0;function check(name,fn){fn();count++;console.log('PASS',name);}
 check('numeric zero identity and verified remount',()=>{item=second;const r=make();assert(box.verify(r));assert.equal(r.item,second);});

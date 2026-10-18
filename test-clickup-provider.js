@@ -7,7 +7,7 @@ assert(scripts.some(x=>x.run_at==='document_start'&&x.js.includes('core/input-is
 const provider=scripts.find(x=>x.js.includes('providers/clickup.js'));assert(provider&&provider.js.includes('core/main.js'));
 for(const file of provider.js)assert(fs.existsSync(file),file);
 for(const file of ['popup.js','background.js','core/main.js'])assert(fs.readFileSync(file,'utf8').includes('app.clickup.com'),file);
-for(const file of ['providers/clickup.js','core/main.js','background.js','manifest.json'])assert.equal(fs.readFileSync(file,'utf8'),fs.readFileSync('synerixcode-Extension/'+file,'utf8'),file+' extension copy');
+for(const file of ['providers/clickup.js','core/main.js','background.js','manifest.json'])assert.equal(fs.readFileSync(file,'utf8'),fs.readFileSync('elio-Extension/'+file,'utf8'),file+' extension copy');
 const code=fs.readFileSync('providers/clickup.js','utf8');assert(code.includes('authoritativeSendResult:true'));assert(code.includes('compactStartup:true'));assert(code.includes('sendRetryable:()=>false'));assert(code.includes('barOutside:true'));
 assert(!code.includes('90141771095'),'no private workspace identifier in shipped source');
 assert.equal(manifest.version,'1.0.0');assert.match(fs.readFileSync('agent/Cargo.toml','utf8'),/version = "1\.24\.20"/);

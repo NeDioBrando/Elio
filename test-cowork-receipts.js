@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict'), fs = require('fs'), vm = require('vm');
-const {JSDOM} = require(process.env.SYNERIXCODE_TEST_JSDOM || 'jsdom');
+const {JSDOM} = require(process.env.ELIO_TEST_JSDOM || 'jsdom');
 const Cowork = require('./core/cowork');
 (async () => {
   const dom = new JSDOM('<main><div role="log"><article id="assistant">Existing AI response</article></div></main>');

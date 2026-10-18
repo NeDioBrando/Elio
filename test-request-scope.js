@@ -15,7 +15,7 @@ async function checkpointCase(text,existing=false){
  const d=new JSDOM('<div id="user"></div>');d.window.document.getElementById('user').textContent=text;
  const activity=Activity.create();if(existing){activity.sync(true,'chat');activity.task('Fix startup and verify tools','goal');activity.checklist([{label:'Fix startup',status:'pending'}]);activity.sync(false,'chat',undefined,{collapse:false});}
  const calls=[],A={},P={id:'fixture',allItems:()=>[d.window.document.getElementById('user')],isUserItem:()=>true,itemText:e=>e.textContent,conversationKey:()=> 'chat',itemKey:()=> 'user'};
- const context=vm.createContext({A,P,synerixcodeActivity:Activity,synerixcodeChecklist:Checklist,RSParse:{isInjectedFeedback:()=>false},RS:{SYS_MARKER:'SYS'},activity,projectChecked:0,activeEngine:()=> 'local',refreshPersonalMemory:async()=>{calls.push('memory');},recallEngram:()=>{calls.push('engram');},engramScope:()=> 'project',bg:async r=>{calls.push(r);return r.type==='checkpoints'?{ok:true,id:'checkpoint'}:{ok:true};},ui:{toast:assert.fail},synerixcodeTemplates:{reference:()=>''}});
+ const context=vm.createContext({A,P,elioActivity:Activity,elioChecklist:Checklist,RSParse:{isInjectedFeedback:()=>false},RS:{SYS_MARKER:'SYS'},activity,projectChecked:0,activeEngine:()=> 'local',refreshPersonalMemory:async()=>{calls.push('memory');},recallEngram:()=>{calls.push('engram');},engramScope:()=> 'project',bg:async r=>{calls.push(r);return r.type==='checkpoints'?{ok:true,id:'checkpoint'}:{ok:true};},ui:{toast:assert.fail},elioTemplates:{reference:()=>''}});
  vm.runInContext(main.slice(start,end)+';this.begin=beginTaskCheckpoint',context);await context.begin();d.window.close();return {A,calls,activity};
 }
 (async()=>{

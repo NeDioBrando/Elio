@@ -1,10 +1,10 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const {JSDOM}=require('jsdom'),main=fs.readFileSync('core/main.js','utf8');
 const expected=[
- [50,'2025206972','https://www.roblox.com/game-pass/2025206972/synerixcode-small-donation'],
- [100,'2026664687','https://www.roblox.com/game-pass/2026664687/synerixcode-medium-donation'],
- [500,'2025386949','https://www.roblox.com/game-pass/2025386949/synerixcode-Large-Donation'],
- [1000,'2026352931','https://www.roblox.com/game-pass/2026352931/synerixcode-Massive-Donation-much-love']];
+ [50,'2025206972','https://www.roblox.com/game-pass/2025206972/elio-small-donation'],
+ [100,'2026664687','https://www.roblox.com/game-pass/2026664687/elio-medium-donation'],
+ [500,'2025386949','https://www.roblox.com/game-pass/2025386949/elio-Large-Donation'],
+ [1000,'2026352931','https://www.roblox.com/game-pass/2026352931/elio-Massive-Donation-much-love']];
 const array=main.match(/const ROBUX_PASSES = \[[\s\S]*?\n  \];/)[0];
 const render=main.slice(main.indexOf('      let passes = "";'),main.indexOf('      const esc = (s) =>',main.indexOf('      let passes = "";')));
 const html=vm.runInNewContext(array+'\n'+render+'\npasses');
@@ -13,7 +13,7 @@ assert.equal(buttons.length,4);
 for(let i=0;i<4;i++){const [amount,id,url]=expected[i],b=buttons[i],label=amount.toLocaleString('en-US')+' Robux';assert.equal(b.dataset.u,url);assert.equal(b.dataset.pass,id);assert.equal(b.querySelector('.rs-rbx-amt').textContent,label);assert.equal(b.getAttribute('aria-label'),'Donate '+label);}
 assert(!main.includes('fillRobuxPrices'),'no failed network lookup may erase configured amount');
 assert(!/1941228530|1941336506|1940736510|1941672495/.test(main),'old donation links removed');
-assert.equal(main,fs.readFileSync('synerixcode-Extension/core/main.js','utf8'));
+assert.equal(main,fs.readFileSync('elio-Extension/core/main.js','utf8'));
 console.log('PASS all four exact donation URLs and immediately readable amounts in shared bar settings');
 const htmlSource=fs.readFileSync('agent/src/desktop.html','utf8'),rust=fs.readFileSync('agent/src/gui.rs','utf8');
 const desktop=new JSDOM(htmlSource),nav=[...desktop.window.document.querySelectorAll('.navbtn')].map(n=>n.dataset.page);

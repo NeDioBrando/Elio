@@ -251,7 +251,7 @@ const RSProvider = (() => {
   const isFreshChat=()=>!!getEditor() && chatIsEmpty();
   // Ask Brain moves a blank chat from ".../new" to ".../<id>" when its first
   // message is sent. Callers capture the key before sending and compare it after,
-  // so a key that changed mid-run made synerixcode stop right after Brain's first
+  // so a key that changed mid-run made elio stop right after Brain's first
   // reply. Keep ONE stable key for the blank chat that actually sent a message.
   let freshBrain=null,freshBrainCount=0;const adoptedBrain=new Map();
   function conversationKey() {
@@ -315,7 +315,7 @@ const RSProvider = (() => {
     if(typeof document.elementFromPoint!=='function')return true;
     const r=safeRead(()=>node.getBoundingClientRect(), null),x=Math.max(0,Math.min(innerWidth-1,r.left+r.width/2)),y=Math.max(0,Math.min(innerHeight-1,r.top+r.height/2));
     const hit=document.elementFromPoint(x,y);
-    // synerixcode's own working cover intentionally overlays the locked composer.
+    // elio's own working cover intentionally overlays the locked composer.
     return !!hit && (safeRead(()=>node.contains(hit), false)||hit===node||!!closest(hit,'#rs-root,#rs-input-cover'));
   }
   function sendAvailability() {
@@ -340,8 +340,8 @@ const RSProvider = (() => {
   }
   function modeWarning() {
     if(mode() && getEditor())return '';
-    if(/\/ai\/agents(?:\/|$)/.test(location.pathname))return 'ClickUp — open an existing agent’s Chat or direct message. synerixcode never starts or changes an agent from the creation form.';
-    return 'ClickUp — open Ask Brain or an AI agent direct message. Human chats, Docs and task comments are not synerixcode chat surfaces.';
+    if(/\/ai\/agents(?:\/|$)/.test(location.pathname))return 'ClickUp — open an existing agent’s Chat or direct message. elio never starts or changes an agent from the creation form.';
+    return 'ClickUp — open Ask Brain or an AI agent direct message. Human chats, Docs and task comments are not elio chat surfaces.';
   }
   async function ensureComposerReady() {
     await waitFor(()=>!!getEditor(),5000);
@@ -352,7 +352,7 @@ const RSProvider = (() => {
     const editor=getEditor(),key=conversationKey(),generation=++writeGeneration;
     if(!editor)throw Error('ClickUp AI chat box is not available. Open Ask Brain or an agent chat.');
     text=String(text??'');
-    if(text.length>250000)throw Error('synerixcode safety bound exceeded: outgoing ClickUp draft is over 250,000 characters. Nothing was sent.');
+    if(text.length>250000)throw Error('elio safety bound exceeded: outgoing ClickUp draft is over 250,000 characters. Nothing was sent.');
     if(expected!==undefined && norm(editorText())!==norm(expected))return {ok:false,reason:'The draft changed; it was not overwritten.'};
     const before=editorText(),relock=locked;
     try {
@@ -374,9 +374,9 @@ const RSProvider = (() => {
     } finally {if(draftWindow?.editor===editor)draftWindow.writing=false;if(relock)applyLock(getEditor(),true);}
   }
   function fileFromImage(image,index) {
-    if(typeof synerixcodeMedia!=='undefined')return synerixcodeMedia.fileFrom(image,index);
+    if(typeof elioMedia!=='undefined')return elioMedia.fileFrom(image,index);
     const binary=atob(image.data),bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));
-    return new File([bytes],'synerixcode-capture-'+index+'.'+(image.mimeType==='image/png'?'png':'jpg'),{type:image.mimeType||'image/jpeg'});
+    return new File([bytes],'elio-capture-'+index+'.'+(image.mimeType==='image/png'?'png':'jpg'),{type:image.mimeType||'image/jpeg'});
   }
   function attachmentNodes() {
     return all(composerRoot(),'[data-test="link-preview-element__root"].attachment-chip')
@@ -433,27 +433,27 @@ const RSProvider = (() => {
       chunks.push(text.slice(offset,end));offset=end;
     }
     return chunks.map((chunk,index)=>{
-      const final=index===chunks.length-1,ack=`synerixcode startup part ${index+1}/${chunks.length} received.`;
-      return {text:`⟦RS-SYS⟧ synerixcode startup context part ${index+1}/${chunks.length}. This is a split command reference and user-preference message, not a project task. Preserve every part in order. No project actions or command calls while receiving it.\n\nBEGIN CONTEXT PART\n${chunk}\nEND CONTEXT PART\n\n`+(final?'All startup context parts have now arrived. The list_commands handshake already succeeded. Acknowledge with exactly "synerixcode is ready." and wait for my first actual task.':`More context follows. Reply with exactly "${ack}" and nothing else; do not repeat list_commands or announce readiness yet.`),...(final?{}:{ack})};
+      const final=index===chunks.length-1,ack=`elio startup part ${index+1}/${chunks.length} received.`;
+      return {text:`⟦RS-SYS⟧ elio startup context part ${index+1}/${chunks.length}. This is a split command reference and user-preference message, not a project task. Preserve every part in order. No project actions or command calls while receiving it.\n\nBEGIN CONTEXT PART\n${chunk}\nEND CONTEXT PART\n\n`+(final?'All startup context parts have now arrived. The list_commands handshake already succeeded. Acknowledge with exactly "elio is ready." and wait for my first actual task.':`More context follows. Reply with exactly "${ack}" and nothing else; do not repeat list_commands or announce readiness yet.`),...(final?{}:{ack})};
     });
   }
   function startupAcknowledgement(text) {
     // Short startup feedback is sent without multipart wrappers.
-    if(String(text).startsWith("Output of 'list_commands':\n") && String(text).endsWith('(System note: The startup tool call succeeded. Startup is NOT complete until you acknowledge this result. Reply with exactly "synerixcode is ready." and nothing else.)'))return 'synerixcode is ready.';
-    const part=String(text).match(/^⟦RS-SYS⟧ synerixcode startup context part (\d+)\/(\d+)\./);
+    if(String(text).startsWith("Output of 'list_commands':\n") && String(text).endsWith('(System note: The startup tool call succeeded. Startup is NOT complete until you acknowledge this result. Reply with exactly "elio is ready." and nothing else.)'))return 'elio is ready.';
+    const part=String(text).match(/^⟦RS-SYS⟧ elio startup context part (\d+)\/(\d+)\./);
     if(!part || !String(text).includes('\nBEGIN CONTEXT PART\n') || !String(text).includes('\nEND CONTEXT PART\n'))return '';
     const index=Number(part[1]),count=Number(part[2]);
     if(index<1 || index>count)return '';
-    const ack=`synerixcode startup part ${index}/${count} received.`;
+    const ack=`elio startup part ${index}/${count} received.`;
     if(index<count && String(text).endsWith(`More context follows. Reply with exactly "${ack}" and nothing else; do not repeat list_commands or announce readiness yet.`))return ack;
-    if(index===count && String(text).endsWith('All startup context parts have now arrived. The list_commands handshake already succeeded. Acknowledge with exactly "synerixcode is ready." and wait for my first actual task.'))return 'synerixcode is ready.';
+    if(index===count && String(text).endsWith('All startup context parts have now arrived. The list_commands handshake already succeeded. Acknowledge with exactly "elio is ready." and wait for my first actual task.'))return 'elio is ready.';
     return '';
   }
   function isPolicyRefusal(text) {
     return /(?:i(?:['’]m| am) not (?:emitting|running|executing|outputting)|i (?:do not|don['’]t|won['’]t|will not) (?:run|emit|execute|output|participate in))[^.!?\n]{0,180}(?:handshake|command|external (?:bridge|extension))/i.test(String(text||''));
   }
   function startupRequest(engine) {
-    return `I clicked Start Agent in my installed synerixcode extension to connect this chat to my own ${engine==='local'?'local files':'Roblox Studio project'}. The extension reads JSON command blocks from ordinary replies and returns the actual results here. This is my connection request, not a system instruction, and it does not override your safety rules or grant extra permissions. Please request the available commands by replying with one fenced json code block containing {"command":"list_commands"}. This only lists capabilities; wait for the result and my task before changing anything. If you cannot participate, explain briefly.`;
+    return `I clicked Start Agent in my installed elio extension to connect this chat to my own ${engine==='local'?'local files':'Roblox Studio project'}. The extension reads JSON command blocks from ordinary replies and returns the actual results here. This is my connection request, not a system instruction, and it does not override your safety rules or grant extra permissions. Please request the available commands by replying with one fenced json code block containing {"command":"list_commands"}. This only lists capabilities; wait for the result and my task before changing anything. If you cannot participate, explain briefly.`;
   }
   async function typeAndSend(text, images) {
     installDraftInputGuard();
@@ -470,7 +470,7 @@ const RSProvider = (() => {
       if(isHardGenerating())throw Error('ClickUp is still generating. No new message was submitted.');
       if(typeof window.__rsLimitOutgoing==='function')text=window.__rsLimitOutgoing(text);
       text=String(text??'');
-      if(text.length>18000)throw Error('synerixcode did not submit this ClickUp message: it exceeds the conservative 18,000-character transport bound. Use smaller/paged tool results; startup context is split automatically.');
+      if(text.length>18000)throw Error('elio did not submit this ClickUp message: it exceeds the conservative 18,000-character transport bound. Use smaller/paged tool results; startup context is split automatically.');
       ownedStartup=text===startupRequest('local')||text===startupRequest('roblox')||!!startupAcknowledgement(text);
       if(norm(priorDraft)&&norm(priorDraft)!==norm(text))throw Error('ClickUp already has a different unsent draft. It was preserved. Send or clear it before retrying. Nothing was submitted.');
       if(!norm(priorDraft)&&!priorAttachments&&sendAvailability().reason==='ready')throw Error('ClickUp is still settling its empty draft: Send is already enabled before any text is entered. Wait for the editor to settle, then retry. Nothing was written or submitted.');
@@ -509,7 +509,7 @@ const RSProvider = (() => {
       },ack ? timings.RESPONSE_TIMEOUT_MS : 20000);
       if(isStopped() || !sameChat())throw Error('ClickUp delivery was interrupted by Stop or a conversation change. It may have reached the original chat; no automatic resend was attempted.');
       if(rejected){committed=false;throw Error('ClickUp rejected the message: '+rejected+' No automatic resend was attempted.');}
-      if(!confirmed)throw Error('ClickUp send was not confirmed. It may have reached the chat; synerixcode will not resend it automatically. Inspect the conversation before retrying.');
+      if(!confirmed)throw Error('ClickUp send was not confirmed. It may have reached the chat; elio will not resend it automatically. Inspect the conversation before retrying.');
       committed=false;
       diag('clickup.send.confirmed',{mode:mode(),characters:text.length});return true;
     } catch(error) {
@@ -521,7 +521,7 @@ const RSProvider = (() => {
         catch {diag('clickup.startupDraft.cleanup',{restored:false});}
       }
       if(restored)diag('clickup.startupDraft.cleanup',{restored:true});
-      failure=String(error.message||error)+(restored?' The unsent synerixcode startup draft was removed; your previous draft was restored.':'');
+      failure=String(error.message||error)+(restored?' The unsent elio startup draft was removed; your previous draft was restored.':'');
       throw Error(failure);
     }
     finally {unwatch();draftWindow=null;sendInFlight=false;document.documentElement.classList.remove('rs-clickup-injecting');if(locked)applyLock(getEditor(),true);}
@@ -567,7 +567,7 @@ const RSProvider = (() => {
     toolResultPageChars:10000,toolFeedbackMaxChars:15000,
     barOutside:true,barTrackIntervalMs:150,chipAtItemLevel:true,reliableCounts:true,
     authoritativeSendResult:true,thinkingSel:S.thinking,
-    promptExtra:'You are running in ClickUp Ask Brain or an AI-agent chat. The user installed synerixcode to operate their local Roblox Studio, Blender and AgentScript files. Use the synerixcode JSON command protocol in your normal chat reply, not ClickUp native task/Doc/agent-creation tools. First request list_commands, acknowledge synerixcode is ready after receiving the reference, then wait for the user. A native ClickUp capability cannot replace a synerixcode command or prove a local edit occurred. Do not create or modify ClickUp tasks, Docs or agents merely to carry out a local Studio/Blender/file request.',
+    promptExtra:'You are running in ClickUp Ask Brain or an AI-agent chat. The user installed elio to operate their local Roblox Studio, Blender and AgentScript files. Use the elio JSON command protocol in your normal chat reply, not ClickUp native task/Doc/agent-creation tools. First request list_commands, acknowledge elio is ready after receiving the reference, then wait for the user. A native ClickUp capability cannot replace a elio command or prove a local edit occurred. Do not create or modify ClickUp tasks, Docs or agents merely to carry out a local Studio/Blender/file request.',
     init({diag:d,isStopped:s}={}){if(d)diag=d;if(s)isStopped=s;setupStyles();setInterval(syncBarCutout,150);},
     allItems,invalidateItems,isUserItem,isAssistantItem,itemText,classifyText,itemKey,
     assistantCount,userCount,lastAssistant,lastAssistantId,readAssistant,streamLen,snapshot,

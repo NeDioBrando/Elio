@@ -1,0 +1,4 @@
+elio v1 is a modified GPL-3.0-or-later distribution.
+Complete editable source is included in elio-v1-source.zip.
+See README-RU.md for Windows build and test instructions.
+See UPSTREAM-SOURCE.txt, LICENSE, BRANDING-NOTICE.txt and third-party notices.

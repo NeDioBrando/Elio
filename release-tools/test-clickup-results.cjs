@@ -31,12 +31,12 @@ async function check(browser,name){
   autoReply=false;
   button.onclick=e=>{
    send(e);const text=sent.at(-1).text;let next;
-   const retained=text.match(/^\[synerixcode retained the COMPLETE result\.[^\n]*id:"([^"]+)",offset:(\d+)/);
-   if(retained){const offset=Number(retained[2]);restored=text.slice(text.indexOf('\n')+1,text.indexOf('\n')+1+offset);pages++;next={command:'synerixcode_result_read',params:{id:retained[1],offset,limit:1000000}};}
-   else if(text.startsWith("Output of 'synerixcode_result_read':\n")){
+   const retained=text.match(/^\[elio retained the COMPLETE result\.[^\n]*id:"([^"]+)",offset:(\d+)/);
+   if(retained){const offset=Number(retained[2]);restored=text.slice(text.indexOf('\n')+1,text.indexOf('\n')+1+offset);pages++;next={command:'elio_result_read',params:{id:retained[1],offset,limit:1000000}};}
+   else if(text.startsWith("Output of 'elio_result_read':\n")){
     const split=text.indexOf('\n---RESULT CONTENT---\n'),meta=JSON.parse(text.slice(text.indexOf('\n')+1,split));
     const end=meta.next_offset??meta.total_characters;restored+=text.slice(split+22,split+22+end-meta.offset);pages++;reads++;
-    if(meta.next_offset!==null)next={command:'synerixcode_result_read',params:{id:meta.id,offset:meta.next_offset,limit:1000000}};
+    if(meta.next_offset!==null)next={command:'elio_result_read',params:{id:meta.id,offset:meta.next_offset,limit:1000000}};
    }
    if(!next){if(current.expected){if(!restored.startsWith(current.expected)||!restored.slice(current.expected.length).startsWith('\n[SYSTEM_STATE:'))throw Error('Paged result changed or wrong server catalog: '+current.request.command+' (got '+restored.length+', expected body '+current.expected.length+')');restoredResults.push(restored);restored='';}current=steps.shift();next=current?.request;}
    addItem('assistant',next?'```json\n'+JSON.stringify(next)+'\n```':'Fixture task complete.','result-sequence-'+sent.length);
@@ -45,7 +45,7 @@ async function check(browser,name){
   addItem('user','Build an interactive Roblox shop using Blender models and the exact available schemas.','user-fixture-task');
   addItem('assistant','```json\n'+JSON.stringify(first.request)+'\n```','first-tool');
   await fixture.agentLoop(base);
-  const owned=provider.allItems().filter(x=>provider.isUserItem(x)&&(/^(?:\[synerixcode retained|Output of 'synerixcode_result_read')/.test(provider.itemText(x))));
+  const owned=provider.allItems().filter(x=>provider.isUserItem(x)&&(/^(?:\[elio retained|Output of 'elio_result_read')/.test(provider.itemText(x))));
   for(const row of owned)row.classList.remove('rs-hidden');
   provider.enforceComposer();
   const masked=owned.length>0&&owned.every(row=>getComputedStyle(row.querySelector('[data-test="chat-item-content-area__message-body"]')).display==='none');
@@ -62,7 +62,7 @@ async function check(browser,name){
  await page.close();
 }
 (async()=>{for(const [name,engine]of [['chromium',chromium],['firefox',firefox]]){
- if(process.env.SYNERIXCODE_TEST_BROWSER&&process.env.SYNERIXCODE_TEST_BROWSER!==name)continue;
- const browser=await engine.launch({headless:true,...(name==='chromium'&&process.env.SYNERIXCODE_CHROMIUM?{executablePath:process.env.SYNERIXCODE_CHROMIUM}:{}),args:name==='chromium'?['--no-sandbox']:[]});
+ if(process.env.ELIO_TEST_BROWSER&&process.env.ELIO_TEST_BROWSER!==name)continue;
+ const browser=await engine.launch({headless:true,...(name==='chromium'&&process.env.ELIO_CHROMIUM?{executablePath:process.env.ELIO_CHROMIUM}:{}),args:name==='chromium'?['--no-sandbox']:[]});
  let timer;try{await Promise.race([check(browser,name),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('ClickUp result fixture timed out')),240000);})]);}finally{clearTimeout(timer);await browser.close();}
 }})().catch(e=>{console.error(e);process.exitCode=1;});

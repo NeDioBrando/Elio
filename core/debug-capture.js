@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Debug capture (isolated content-script world).
-// Records synerixcode's own console errors, warnings and info, uncaught extension
+// Records elio's own console errors, warnings and info, uncaught extension
 // errors, the agent's recent diag events, and AI-site problems relayed by
 // core/debug-capture-main.js. Batches go to background.js, which forwards them
 // to the desktop app for Settings -> Copy debug report.
@@ -8,7 +8,7 @@
 // here throws or awaits on a caller's path, and buffers are capped.
 (() => {
   "use strict";
-  if (globalThis.__synerixcodeDebugCapture) return;
+  if (globalThis.__elioDebugCapture) return;
   const MAX_TEXT = 600, MAX_QUEUE = 150, FLUSH_MS = 3000, REPEAT_MS = 5000, DIAG_TAIL = 40;
   const queue = [];
   let dropped = 0, last = null, inside = false, stopped = false, diagSig = "";
@@ -25,7 +25,7 @@
       .replace(/([A-Za-z]:\\Users\\|\/Users\/|\/home\/)[^\\/\s"']+/g, "$1<user>")
       .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, "<email>");
   }
-  // "core/main.js › sendPrompt" for the first few synerixcode frames of a stack.
+  // "core/main.js › sendPrompt" for the first few elio frames of a stack.
   function where(stack) {
     const out = [];
     for (const line of String(stack || "").split("\n")) {
@@ -62,9 +62,9 @@
     if (queue.length > MAX_QUEUE) { queue.shift(); dropped++; }
     last = { key, at: now, entry: item };
   }
-  // synerixcode's console only: this world's console object is separate from the
+  // elio's console only: this world's console object is separate from the
   // AI page's, so the site's own console is never touched.
-  // console.log is kept only for synerixcode's own "[synerixcode]" lines (as info);
+  // console.log is kept only for elio's own "[elio]" lines (as info);
   // diag lines are collected separately below.
   for (const method of ["error", "warn", "info", "log"]) {
     const original = console[method];
@@ -75,7 +75,7 @@
       if (!inside) {
         inside = true;
         try {
-          const own = method !== "log" || (typeof args[0] === "string" && /^\[synerixcode/.test(args[0]));
+          const own = method !== "log" || (typeof args[0] === "string" && /^\[elio/.test(args[0]));
           const text = own ? args.map(describe).join(" ") : "";
           // Uncaught errors are recorded with their stack by the listeners below.
           if (own && !/^\[rs\] uncaught /.test(text)) {
@@ -106,14 +106,14 @@
     } catch {}
   });
   // AI-site problems from the passive MAIN-world helper (string detail only).
-  document.addEventListener("synerixcode:site-log", (event) => {
+  document.addEventListener("elio:site-log", (event) => {
     try {
       const data = JSON.parse(String(event.detail || "{}"));
       record({ source: "site", level: data.level === "error" ? "error" : data.level === "info" ? "info" : "warn",
         kind: String(data.kind || "error").slice(0, 20), text: String(data.text || ""), file: data.file, status: Number(data.status) || undefined });
     } catch {}
   });
-  try { document.dispatchEvent(new CustomEvent("synerixcode:site-log-ready")); } catch {}
+  try { document.dispatchEvent(new CustomEvent("elio:site-log-ready")); } catch {}
 
   // Recent agent decisions from core/main.js (window.__rsDiag), with chat text removed.
   const TEXT_KEY = /text|prompt|content|message|code|html|reply|body|answer|query|source|args|arguments|payload/i;
@@ -149,5 +149,5 @@
       if (sent && sent.catch) sent.catch(() => {});
     } catch { stopped = true; clearInterval(timer); }
   }, FLUSH_MS);
-  globalThis.__synerixcodeDebugCapture = { redact, where, record, pending: () => queue.slice() };
+  globalThis.__elioDebugCapture = { redact, where, record, pending: () => queue.slice() };
 })();

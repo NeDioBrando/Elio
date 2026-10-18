@@ -2,7 +2,7 @@
 from pathlib import Path
 import json, shutil, sys, zipfile
 
-ADDON_ID = "synerixcode@synerixcode.local"
+ADDON_ID = "elio@elio.local"
 FIREFOX_SHIM = "core/firefox-events.js"
 FIREFOX_PAGE_HELPER = "core/firefox-events-main.js"
 
@@ -41,20 +41,20 @@ def build(extension, destination, archive):
         shutil.copy2(extension.parent / name, destination / name)
     (destination / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     (destination / 'FIREFOX-INSTALL.txt').write_text(
-        'synerixcode ' + manifest['version'] + ' for Firefox 140 or newer\n\n'
-        '1. Update and open the synerixcode desktop app first.\n'
+        'elio ' + manifest['version'] + ' for Firefox 140 or newer\n\n'
+        '1. Update and open the elio desktop app first.\n'
         '2. Open about:debugging#/runtime/this-firefox in Firefox.\n'
-        '3. Click Load Temporary Add-on. Open synerixcode-Extension-Firefox and select manifest.json, '
-        'or select the standalone synerixcode-Firefox-VERSION.zip directly. Select a file, not a folder.\n'
+        '3. Click Load Temporary Add-on. Open elio-Extension-Firefox and select manifest.json, '
+        'or select the standalone elio-Firefox-VERSION.zip directly. Select a file, not a folder.\n'
         '4. Allow site access for the AI chat and localhost if Firefox asks. Refresh existing AI tabs.\n'
-        '5. After a synerixcode update, Reload this addon on the same page and refresh AI tabs.\n\n'
+        '5. After a elio update, Reload this addon on the same page and refresh AI tabs.\n\n'
         'This package is unsigned. Temporary addons are removed when Firefox restarts. '
         'Permanent installation in standard Firefox requires a Mozilla-signed addon; '
         'Install Add-on From File cannot permanently install this unsigned ZIP.\n\n'
-        'synerixcode sends the selected chat content, task inputs, current AI-page URL and interaction '
+        'elio sends the selected chat content, task inputs, current AI-page URL and interaction '
         'status to the local desktop bridge, and requested prompts, feedback and media to the '
         'selected AI service. These are needed for chat control, tools, memory and continuation. '
-        'Use only trusted AI services and review tool permissions. No synerixcode telemetry service is added.\n'
+        'Use only trusted AI services and review tool permissions. No elio telemetry service is added.\n'
     )
     with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as output:
         for path in sorted(destination.rglob('*')):

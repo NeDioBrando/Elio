@@ -1,4 +1,4 @@
-// 1.24.13: pasting into the prompt enhancer (and other synerixcode text boxes)
+// 1.24.13: pasting into the prompt enhancer (and other elio text boxes)
 // must work even when the page cancels paste/edit events outside its editor.
 const fs=require('fs'),assert=require('node:assert/strict'),{JSDOM}=require('jsdom');
 (async()=>{
@@ -44,5 +44,5 @@ const fs=require('fs'),assert=require('node:assert/strict'),{JSDOM}=require('jsd
   assert.equal(after.value,'Fix pasted request','paste lands in the prompt enhancer');
   assert.equal(after.pageEditor,before.pageEditor,'page editor behaviour is unchanged');
  }finally{await browser.close();}
- console.log('1.24.13 enhancer paste: paste works in synerixcode text boxes on hostile pages (browser verified)');
+ console.log('1.24.13 enhancer paste: paste works in elio text boxes on hostile pages (browser verified)');
 })().catch(error=>{console.error(error);process.exit(1);});

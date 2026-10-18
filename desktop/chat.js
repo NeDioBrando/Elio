@@ -1,117 +1,58 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// UI knows only this transport contract. A future CDP/Lightpanda adapter can
-// implement it without exposing chrome.* or provider DOM to the renderer.
-(function (global) {
-  'use strict';
-  function identity(control) { return JSON.stringify([control.browser_id, control.tab_id, control.chat]); }
-  function createTransport(api) {
-    function action(control, name, prompt, id) {
-      return api('/api/desktop/agent', {method:'POST',body:JSON.stringify({action:name,prompt:prompt || '',request_id:id || crypto.randomUUID(),chat:control.chat,browser_id:control.browser_id,tab_id:control.tab_id})}).then(function(result){
-        if (!result || !result.ok) throw Error(result && result.error || 'Нет подтверждения от расширения.');
-        return result;
-      });
-    }
-    return {
-      read: function(c, revision){return action(c,'chat-read',JSON.stringify({chat:c.chat,revision:revision}));},
-      send: function(c, text, id){return action(c,'task-send',text,id);},
-      start: function(c){return action(c,'start');},
-      stop: function(c){return action(c,'stop');},
-      pin: function(c, pinned){return action(c,'chat-pin',pinned?'on':'off');}
-    };
-  }
-  // Never interpret model/site text as HTML. Only fenced code gets a distinct
-  // visual treatment; scripts, images, and links remain inert plain text.
-  function renderText(node, text) {
-    node.replaceChildren();
-    var parts = String(text).split(/(```[^\n]*\n[\s\S]*?(?:```|$))/g);
-    parts.forEach(function(part){
-      if (!part) return;
-      var block = document.createElement(part.startsWith('```')?'pre':'p');
-      if(part.startsWith('```')) {
-        var newline=part.indexOf('\n'), code=document.createElement('code');
-        code.textContent=part.slice(newline+1).replace(/```$/, '');block.appendChild(code);
-      } else block.textContent=part;
-      node.appendChild(block);
-    });
-  }
-  function mount(root, transport, getState, ipc) {
-    root.innerHTML='<div class="sc-chat"><header class="sc-chat-head"><div><div class="sc-eyebrow">SYNERIXCODE / CHAT WORKSPACE</div><h1>От идеи — к проекту.</h1><p id="sc-chat-provider">Браузер — движок. Здесь — ваш рабочий чат.</p></div><div class="sc-chat-controls"><button type="button" id="sc-chat-pin" aria-pressed="false">Закрепить вкладку</button><button type="button" id="sc-chat-start">Запустить агента</button><button type="button" id="sc-chat-stop" hidden>Остановить</button></div></header><div class="sc-chat-health" id="sc-chat-health" role="status">Подключение к локальному мосту…</div><div class="sc-chat-thread" id="sc-chat-thread" tabindex="0" role="region" aria-label="Сообщения чата"><div class="sc-chat-empty" id="sc-chat-empty"><div class="sc-eyebrow">ОДНО ОКНО ДЛЯ РАБОТЫ</div><h2>Ваш ИИ. Ваши инструменты.</h2><p>Откройте поддерживаемый чат в браузере с расширением synerixcode. Закрепите вкладку и запустите агента — затем пишите здесь.</p><div class="sc-chat-launch"><button type="button" data-sc-open="open:chatgpt">Открыть ChatGPT ↗</button><button type="button" data-sc-open="open:deepseek">Открыть DeepSeek ↗</button></div><p class="sc-chat-caption">Roblox Studio · Blender · AgentScript</p></div></div><div class="sc-chat-notice" id="sc-chat-notice" role="status"></div><form id="sc-chat-form" class="sc-chat-composer"><label for="sc-chat-input">Сообщение для ИИ</label><textarea id="sc-chat-input" rows="3" maxlength="40000" placeholder="Что создадим? Например, сцену с освещением в Roblox Studio…"></textarea><div class="sc-chat-compose-footer"><span>Enter — отправить · Shift + Enter — новая строка</span><button type="submit" id="sc-chat-send">Отправить ↑</button></div></form><p class="sc-chat-caption sc-chat-footnote">Показываются захваченные расширением сообщения. Не загруженная сайтом история может отсутствовать.</p></div>';
-    var q=function(id){return root.querySelector('#sc-chat-'+id);};
-    var current=null, owner='', revision=null, reading=false, changing=false, sending=false, cooldown=0, error='', notice='', pending=null;
-    var drafts=new Map(), mounted=new Map();
-    var input=q('input'), thread=q('thread');
-    function remember(){if(owner)drafts.set(owner,{text:input.value,pending:pending});}
-    function showNotice(text){notice=text;q('notice').textContent=text;}
-    function controls() {
-      var c=current || {}, ready=!!c.canChatRead;
-      q('pin').disabled=!(c.canChatPin || ready) || changing;
-      q('pin').textContent=c.pinned?'Вкладка закреплена ✓':'Закрепить вкладку';
-      q('pin').setAttribute('aria-pressed',String(!!c.pinned));
-      q('start').disabled=!c.canStart || changing;q('start').hidden=!!c.canTaskSend || !!c.canStop;
-      q('stop').hidden=!c.canStop;q('stop').disabled=changing;
-      q('send').disabled=!c.canTaskSend || sending || Date.now()<cooldown || !input.value.trim();
-      q('send').textContent=sending?'Принимается…':pending?'Повторить вручную':'Отправить ↑';
-      q('provider').textContent=c.provider ? c.provider+' · '+(c.engine==='local'?'AgentScript':'Roblox Studio')+(c.pinned?' · вкладка закреплена':' · активная вкладка браузера') : 'Браузер — движок. Здесь — ваш рабочий чат.';
-      var state=getState() || {};
-      q('health').textContent=error || (!ready?'Откройте или обновите поддерживаемый чат в браузере.':(c.status || 'Чат подключён.'))+' · Studio: '+(state.roblox_connected?'подключена':'не подключена')+' · Blender: '+(state.blender_connected?'подключён':'не подключён');
-    }
-    function render(result) {
-      if(result.not_modified)return;
-      revision=result.revision;
-      var previousScroll=thread.scrollTop;
-      var bottom=thread.scrollHeight-previousScroll-thread.clientHeight<90;
-      var rows=result.history || [], keep=new Set(rows.map(function(row){return row.id;}));
-      mounted.forEach(function(node,id){if(!keep.has(id)){node.remove();mounted.delete(id);}});
-      q('empty').hidden=rows.length>0;
-      rows.forEach(function(row){
-        var node=mounted.get(row.id);
-        if(!node){node=document.createElement('article');node.className='sc-chat-message '+(row.role==='user'?'sc-chat-user':'sc-chat-assistant');var label=document.createElement('h3');label.textContent=row.role==='user'?'Вы':result.provider || 'ИИ';var body=document.createElement('div');node.append(label,body);mounted.set(row.id,node);}
-        if(node._text!==row.text){renderText(node.lastChild,row.text);node._text=row.text;}
-        thread.appendChild(node);
-      });
-      thread.scrollTop=bottom?thread.scrollHeight:previousScroll;
-      root.querySelector('.sc-chat-footnote').textContent=result.omitted?'Часть ранней истории не показана: лимит живого окна — 300 сообщений / 160 000 символов. Архив доступен в настройках.':'Показываются захваченные расширением сообщения. Не загруженная сайтом история может отсутствовать.';
-    }
-    async function tick() {
-      if(!root.closest('.page').classList.contains('active') || document.hidden)return;
-      var c=(getState() || {}).browser_agent || {};
-      if(c.canChatRead || c.canChatPin) {
-        var next=identity(c);
-        if(next!==owner){remember();owner=next;revision=null;mounted.forEach(function(node){node.remove();});mounted.clear();q('empty').hidden=false;var saved=drafts.get(owner);input.value=saved?saved.text:'';pending=saved?saved.pending:null;showNotice('');error='';}
-        current=c;
-      } else current=null;
-      controls();
-      if(!current || !current.canChatRead || reading)return;
-      reading=true;var selected=owner, snapshot=current;
-      try{var result=await transport.read(snapshot,revision);if(selected===owner && result.chat===snapshot.chat){render(result);error='';}}
-      catch(e){if(selected===owner)error='Не удалось прочитать чат: '+e.message;}
-      finally{reading=false;controls();}
-    }
-    async function command(name) {
-      if(!current || changing)return;
-      changing=true;var c=current, selected=owner;controls();
-      try{await transport[name](c,name==='pin'?!c.pinned:undefined);if(selected===owner)showNotice(name==='start'?'Запуск принят. Дождитесь готовности агента, затем отправьте запрос.':name==='stop'?'Запрос на остановку принят.':'Настройка вкладки сохранена.');}
-      catch(e){if(selected===owner)showNotice(e.message);}
-      finally{changing=false;controls();}
-    }
-    q('pin').onclick=function(){command('pin');};q('start').onclick=function(){command('start');};q('stop').onclick=function(){command('stop');};
-    root.querySelectorAll('[data-sc-open]').forEach(function(button){button.onclick=function(){ipc(button.dataset.scOpen);};});
-    input.oninput=function(){if(pending && pending.text!==input.value)pending=null;remember();controls();};
-    input.onkeydown=function(event){if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();if(!q('send').disabled)q('form').requestSubmit();}};
-    q('form').onsubmit=async function(event){
-      event.preventDefault();if(q('send').disabled || !current)return;
-      var c=current, selected=owner, text=input.value;
-      var request=pending && pending.text===text?pending:{id:crypto.randomUUID(),text:text};pending=request;remember();sending=true;controls();
-      try{
-        await transport.send(c,text,request.id);
-        if(selected===owner){if(input.value===text)input.value='';pending=null;remember();showNotice('Запрос принят расширением. Ответ появится в чате.');}
-        else {var saved=drafts.get(selected);drafts.set(selected,{text:saved && saved.text!==text?saved.text:'',pending:null});}
-        cooldown=Date.now()+1500;
-      } catch(e){if(selected===owner)showNotice('Запрос не подтверждён: '+e.message+' Черновик сохранён. Проверьте историю перед ручным повтором; автоматически запрос не повторяется.');}
-      finally{sending=false;controls();}
-    };
-    controls();tick();var timer=setInterval(tick,1000);
-    return {refresh:tick,destroy:function(){clearInterval(timer);}};
-  }
-  global.synerixcodeDesktopChat={createTransport:createTransport,mount:mount,renderText:renderText,identity:identity};
-}(globalThis));
+// Transport-neutral UI: browser-specific work stays behind the local bridge.
+(function(global){'use strict';
+function identity(c){return JSON.stringify([c.browser_id,c.tab_id,c.chat]);}
+const t=(s,v)=>global.elioI18n?global.elioI18n.t(s,v):String(s).replace(/\{(\w+)\}/g,(m,k)=>v&&k in v?v[k]:m);
+function createTransport(api){function action(c,name,prompt,id){return api('/api/desktop/agent',{method:'POST',body:JSON.stringify({action:name,prompt:prompt||'',request_id:id||crypto.randomUUID(),chat:c.chat,browser_id:c.browser_id,tab_id:c.tab_id})}).then(r=>{if(!r||!r.ok)throw Error(r&&r.error||t('The extension did not confirm the request.'));return r;});}return {read:(c,r)=>action(c,'chat-read',JSON.stringify({chat:c.chat,revision:r})),send:(c,text,id)=>action(c,'task-send',text,id),start:c=>action(c,'start'),stop:c=>action(c,'stop'),pin:(c,on)=>action(c,'chat-pin',on?'on':'off')};}
+function renderText(node,text){node.replaceChildren();String(text||'').split(/(```[^\n]*\n[\s\S]*?(?:```|$))/g).forEach(part=>{if(!part)return;const el=document.createElement(part.startsWith('```')?'pre':'p');if(part.startsWith('```')){const code=document.createElement('code');code.textContent=part.slice(part.indexOf('\n')+1).replace(/```$/,'');el.append(code);}else{ // A small safe inline renderer; never use model HTML.
+ const lines=part.split(/(\*\*[^*\n]+\*\*|`[^`\n]+`)/g);for(const value of lines){const b=document.createElement(value.startsWith('**')?'strong':value.startsWith('`')?'code':'span');b.textContent=value.startsWith('**')?value.slice(2,-2):value.startsWith('`')?value.slice(1,-1):value;el.append(b);}}
+ node.append(el);});}
+function mount(root,transport,getState,ipc){
+ root.innerHTML=`<div class="sc-chat"><header class="sc-chat-head"><div class="sc-chat-heading"><h1 data-elio-text="Chat"></h1><p id="sc-chat-provider"></p></div><div class="sc-chat-controls"><button type="button" id="sc-chat-pin" aria-pressed="false"></button><button type="button" id="sc-chat-start"></button><button type="button" id="sc-chat-stop" hidden></button></div></header><div class="sc-chat-health" id="sc-chat-health" role="status"></div><div class="sc-chat-thread" id="sc-chat-thread" tabindex="0" role="region"><div class="sc-chat-empty" id="sc-chat-empty"><div class="elio-welcome-mark" aria-hidden="true"></div><p class="sc-eyebrow">Elio</p><h2 data-elio-text="A little space for your next big idea."></h2><p data-elio-text="Your AI, connected to the tools you create with."></p><div class="sc-chat-launch"><button type="button" data-sc-open="open:chatgpt">ChatGPT ↗</button><button type="button" data-sc-open="open:deepseek">DeepSeek ↗</button></div><p class="sc-chat-caption" data-elio-text="Open a chat in your browser, then connect the agent here."></p></div></div><button type="button" class="sc-new-messages" id="sc-chat-latest" hidden data-elio-text="New messages ↓"></button><div class="sc-chat-notice" id="sc-chat-notice" role="status"></div><form id="sc-chat-form" class="sc-chat-composer"><label class="sc-sr-only" for="sc-chat-input" data-elio-text="Message"></label><textarea id="sc-chat-input" rows="2" maxlength="40000"></textarea><div class="sc-chat-compose-footer"><div class="sc-chat-compose-meta"><span class="sc-connection-dot" aria-hidden="true"></span><span id="sc-chat-compose-state"></span></div><span class="sc-chat-shortcut" data-elio-text="Enter to send · Shift + Enter for a new line"></span><button type="submit" id="sc-chat-send"></button></div></form><p class="sc-chat-footnote" data-elio-text="Elio connects to your browser. Review AI changes before keeping them."></p></div>`;
+ const q=id=>root.querySelector('#sc-chat-'+id),input=q('input'),thread=q('thread');thread.setAttribute('data-i18n-user-content','');
+ let current=null,owner='',revision=null,readFlight=null,changing=false,sending=false,error='',pending=null,rows=[],lastControl={},alive=true,ownerGeneration=0;
+ const drafts=new Map(),mounted=new Map(),optimistic=new Map();let noticeKey='',noticeValues={};
+ function remember(){if(owner)drafts.set(owner,{text:input.value,pending});}
+ function showNotice(key,values={}){noticeKey=key;noticeValues=values;q('notice').textContent=t(key,values);}
+ function localize(){root.querySelectorAll('[data-elio-text]').forEach(e=>e.textContent=t(e.dataset.elioText));input.placeholder=t('What would you like to create?');thread.setAttribute('aria-label',t('Chat messages'));q('notice').textContent=t(noticeKey,noticeValues);controls();renderRows(true);}
+ function controls(){const c=current||{},state=getState()||{};
+ q('pin').disabled=!(c.canChatPin||c.canChatRead)||changing;q('pin').textContent=t(c.pinned?'Pinned':'Pin tab');q('pin').setAttribute('aria-pressed',String(!!c.pinned));
+ q('start').hidden=!!c.started||!!c.canTaskSend||!!c.canStop;q('start').disabled=!c.canStart||changing;q('start').textContent=t(changing?'Connecting…':'Connect agent');q('stop').hidden=!c.canStop&&!c.stopping;q('stop').disabled=changing||!!c.stopping;q('stop').textContent=t(c.stopping?'Stopping…':'Stop');
+ const canSend=c.canTaskSend===true;q('send').disabled=!canSend||sending||!input.value.trim();q('send').textContent=t(sending?'Sending…':pending?'Retry manually':'Send')+' ↑';q('send').title=t('Send');
+ q('provider').textContent=c.provider?c.provider+' · '+(c.engine==='local'?'AgentScript':'Roblox Studio'):t('Your creative workspace');
+ let health=error?t('Chat connection interrupted. Retrying automatically.'):!c.canChatRead?t('Open or refresh a supported AI chat in your browser.'):c.stopping?t('Stopping…'):sending?t('Sending…'):c.canStop?t('Working…'):c.started||canSend?t('Ready'):t('Connect the agent to start.');
+ q('health').textContent=health;q('health').dataset.busy=String(!!c.canStop||sending);q('compose-state').textContent=c.stopping?t('Stopping…'):sending?t('Sending…'):c.canStop?t('Working…'):canSend?t('Ready'):t('Not connected');
+ root.querySelector('.sc-connection-dot').dataset.connected=String(!!c.canChatRead);q('input').setAttribute('aria-busy',String(sending));
+ }
+ function card(parent,title,raw,status,kind){const d=document.createElement('details');d.className='elio-tool';d.dataset.state=status||'requested';d.dataset.kind=kind;const summary=document.createElement('summary'),icon=document.createElement('span'),label=document.createElement('span'),badge=document.createElement('span');icon.className='elio-tool-symbol';icon.textContent=status==='done'?'✓':status==='error'?'!':status==='running'?'◷':'◇';label.className='elio-tool-label';label.textContent=title;badge.className='elio-tool-state';badge.textContent=t(status==='done'?'Completed':status==='error'?'Failed':status==='running'?'Working…':'Requested');summary.append(icon,label,badge);const body=document.createElement('pre');body.className='elio-tool-raw';body.textContent=raw;d.append(summary,body);parent.append(d);}
+ function fillRow(node,row,provider){node.replaceChildren();node.className='sc-chat-message '+(row.kind==='result'||row.kind==='system'?'sc-chat-event':row.role==='user'?'sc-chat-user':'sc-chat-assistant');node.dataset.role=row.role;node.dataset.kind=row.kind;const label=document.createElement('h3');label.textContent=row.kind==='result'||row.kind==='system'?'Elio':row.role==='user'?t('You'):provider||t('Assistant');const body=document.createElement('div');body.className='sc-chat-body';body.dir='auto';node.append(label,body);
+ if(row.kind==='result'||row.kind==='system')card(body,t(row.name==='Agent setup'?'Agent setup':row.name==='Tool result'?'Tool result':row.name)+(row.kind==='result'?' · '+t('Result'):''),row.text,row.status,row.kind);
+ else for(const part of row.segments||[{type:'text',text:row.text}]){if(part.type==='tool')card(body,part.name==='Tool call'?t('Tool call'):part.name,part.raw,part.status||row.status,'tool');else{const div=document.createElement('div');renderText(div,part.text);body.append(div);}}
+ if(row.delivery){const s=document.createElement('small');s.className='elio-delivery';s.textContent=t(row.delivery==='confirmed'?'Sent · waiting for browser history':row.delivery==='uncertain'?'Delivery not confirmed. Check the browser before retrying.':'Sending…');body.append(s);}
+ }
+ function renderRows(force=false){const bottom=thread.scrollHeight-thread.scrollTop-thread.clientHeight<110,previous=thread.scrollTop;const model=global.elioChatView;let all=model?model.prepare(rows):rows.map(r=>({...r,kind:'message',segments:[{type:'text',text:r.text}]}));const pendingRows=optimistic.get(owner)||[];
+ // Only reconcile with an observed user turn after the send baseline, never an old equal message.
+ const ids=new Set(rows.map(r=>r.id));for(let i=pendingRows.length-1;i>=0;i--){const p=pendingRows[i];if(rows.some(r=>r.role==='user'&&r.text.trim()===p.text.trim()&&!p.baseline.includes(r.id)))pendingRows.splice(i,1);}
+ all=all.concat(pendingRows.map(p=>({...p,role:'user',kind:'message',segments:[{type:'text',text:p.text}]})));const keep=new Set(all.map(r=>r.id));mounted.forEach((n,id)=>{if(!keep.has(id)){n.remove();mounted.delete(id);}});q('empty').hidden=all.length>0;
+ for(const row of all){let n=mounted.get(row.id);if(!n){n=document.createElement('article');mounted.set(row.id,n);}const sig=JSON.stringify([row,getState()?.browser_agent?.provider,global.elioI18n?.getLanguage()]);if(force||n._signature!==sig){const opened=[...n.querySelectorAll('details')].map(x=>x.open);fillRow(n,row,getState()?.browser_agent?.provider);n.querySelectorAll('details').forEach((x,i)=>x.open=!!opened[i]);n._signature=sig;}thread.append(n);}
+ thread.scrollTop=bottom?thread.scrollHeight:previous;q('latest').hidden=bottom||!all.length;
+ }
+ function switchOwner(c){const next=identity(c);if(next===owner)return;remember();owner=next;ownerGeneration++;revision=null;rows=[];mounted.forEach(n=>n.remove());mounted.clear();const saved=drafts.get(owner);input.value=saved?saved.text:'';pending=saved?saved.pending:null;showNotice('');error='';renderRows();}
+ async function tick(){if(!alive||document.hidden||root.closest('.page')&&!root.closest('.page').classList.contains('active'))return;const c=(getState()||{}).browser_agent||{};lastControl=c;
+ if(c.canChatRead||c.canChatPin){switchOwner(c);current=c;}else current=null;controls();if(!current?.canChatRead||readFlight)return;
+ const selected=owner,snapshot={...current},generation=ownerGeneration;const operation={};readFlight=operation;
+ try{const result=await transport.read(snapshot,revision);if(alive&&selected===owner&&generation===ownerGeneration&&result.chat===snapshot.chat){if(!result.not_modified){revision=result.revision;rows=result.history||[];renderRows();}error='';}}
+ catch(e){if(selected===owner){error=e.message;}}
+ finally{if(readFlight===operation)readFlight=null;controls();}}
+ async function command(name){if(!current||changing)return;changing=true;const c={...current},selected=owner;controls();try{const r=await transport[name](c,name==='pin'?!c.pinned:undefined);if(selected===owner){if(name==='pin'){current={...current,pinned:r.pinned??!c.pinned};}showNotice(name==='start'?'Agent connection requested. Waiting for the browser.':name==='stop'?'Stop requested. Waiting for tools to settle.':'Tab preference saved.');}setTimeout(tick,150);}catch(e){if(selected===owner)showNotice('Action failed: {error}',{error:e.message});}finally{changing=false;controls();}}
+ q('pin').onclick=()=>command('pin');q('start').onclick=()=>command('start');q('stop').onclick=()=>command('stop');q('latest').onclick=()=>{thread.scrollTop=thread.scrollHeight;q('latest').hidden=true;};thread.addEventListener('scroll',()=>{if(thread.scrollHeight-thread.scrollTop-thread.clientHeight<110)q('latest').hidden=true;});
+ root.querySelectorAll('[data-sc-open]').forEach(b=>b.onclick=()=>ipc(b.dataset.scOpen));input.oninput=()=>{if(pending&&pending.text!==input.value)pending=null;remember();input.style.height='auto';input.style.height=Math.min(180,input.scrollHeight)+'px';controls();};input.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();if(!q('send').disabled)q('form').requestSubmit();}};
+ q('form').onsubmit=async e=>{e.preventDefault();if(q('send').disabled||!current)return;const c={...current},selected=owner,text=input.value;const request=pending&&pending.text===text?pending:{id:crypto.randomUUID(),text};pending=request;remember();sending=true;showNotice('');
+ const list=optimistic.get(selected)||[];let local=list.find(x=>x.id==='local:'+request.id);if(!local){local={id:'local:'+request.id,text,delivery:'sending',baseline:rows.map(r=>r.id)};list.push(local);optimistic.set(selected,list);}else local.delivery='sending';renderRows();controls();
+ try{await transport.send(c,text,request.id);local.delivery='confirmed';if(selected===owner){if(input.value===text)input.value='';pending=null;remember();showNotice('');}else{const d=drafts.get(selected);drafts.set(selected,{text:d&&d.text!==text?d.text:'',pending:null});}revision=null;}
+ catch(err){local.delivery='uncertain';if(selected===owner)showNotice('Delivery not confirmed. Your draft is saved. Check the browser before retrying.');}
+ finally{sending=false;if(selected===owner)renderRows();controls();setTimeout(tick,100);}};
+ const unsubscribe=global.elioI18n?.onChange(localize);localize();tick();const timer=setInterval(tick,1000);return {refresh:tick,destroy(){alive=false;clearInterval(timer);unsubscribe?.();}};
+}
+global.elioDesktopChat={createTransport,mount,renderText,identity};
+})(globalThis);

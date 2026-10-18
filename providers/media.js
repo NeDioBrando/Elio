@@ -2,7 +2,7 @@
 function safeQueryAll(root, selector) {
   try { return Array.from(root.querySelectorAll(selector)); } catch { return []; }
 }
-const synerixcodeProviderMedia = {
+const elioProviderMedia = {
   nativeVideo(provider) {
     // These providers document native video attachments. Their upload result
     // still decides success; account/platform restrictions can reject a file.

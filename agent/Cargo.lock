@@ -3101,8 +3101,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "synerixcode-agent"
-version = "1.0.0"
+name = "elio-agent"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "axum",

@@ -3,7 +3,7 @@ const main=fs.readFileSync('core/main.js','utf8'),start=main.indexOf('  async fu
 const submit=main.slice(main.indexOf('  async function submitCore('),main.indexOf('  async function performSubmitCore('));
 const html='<main><section id="composer" style="min-height:900px"><div><div role="textbox" contenteditable="true" data-placeholder="Frage Notion AI"></div></div><div role="button" data-testid="agent-chat-send-button" aria-label="Nachricht senden">Senden</div></section></main>';
 (async()=>{for(const [name,engine] of [['chromium',chromium],['firefox',firefox]]){
- if(process.env.SYNERIXCODE_TEST_BROWSER&&process.env.SYNERIXCODE_TEST_BROWSER!==name)continue;
+ if(process.env.ELIO_TEST_BROWSER&&process.env.ELIO_TEST_BROWSER!==name)continue;
  const browser=await engine.launch({headless:true});
  for(const scenario of ['success','block-success','wrong-command','throwing-composer']){
   const page=await browser.newPage();page.on('pageerror',error=>console.error(name,scenario,error.message));await page.route('https://app.notion.com/**',route=>route.fulfill({contentType:'text/html',body:html}));await page.goto('https://app.notion.com/ai');
@@ -14,7 +14,7 @@ const html='<main><section id="composer" style="min-height:900px"><div><div role
    ed.addEventListener('paste',event=>{event.preventDefault();const value=event.clipboardData.getData('text/plain'),range=getSelection().getRangeAt(0);range.deleteContents();const text=document.createTextNode(value);range.insertNode(text);range.setStartAfter(text);range.collapse(true);getSelection().removeAllRanges();getSelection().addRange(range);});
    document.querySelector('[role=button]').onclick=()=>{
     const text=ed.innerText;sent.push(text);ed.textContent='';
-    for(const [kind,body] of [['user',text],['assistant',sent.length===1?(scenario==='wrong-command'?'```json\n{"command":"execute_luau","params":{}}\n```':'```json\n{"command":"list_commands"}\n```'):'synerixcode is ready.']]){const row=document.createElement('div');if(scenario==='block-success'){if(kind==='user'){row.style.display='flex';row.style.justifyContent='flex-end';row.textContent=body;}else{row.setAttribute('data-content-editable-root','true');const block=document.createElement('pre');block.setAttribute('data-block-id',kind+'-'+sent.length);block.textContent=body;row.append(block);}}else{row.setAttribute('data-agent-service-scroll-anchor',kind+'-'+sent.length);row.style.justifyContent=kind==='user'?'flex-end':'flex-start';row.textContent=body;}document.body.append(row);}
+    for(const [kind,body] of [['user',text],['assistant',sent.length===1?(scenario==='wrong-command'?'```json\n{"command":"execute_luau","params":{}}\n```':'```json\n{"command":"list_commands"}\n```'):'elio is ready.']]){const row=document.createElement('div');if(scenario==='block-success'){if(kind==='user'){row.style.display='flex';row.style.justifyContent='flex-end';row.textContent=body;}else{row.setAttribute('data-content-editable-root','true');const block=document.createElement('pre');block.setAttribute('data-block-id',kind+'-'+sent.length);block.textContent=body;row.append(block);}}else{row.setAttribute('data-agent-service-scroll-anchor',kind+'-'+sent.length);row.style.justifyContent=kind==='user'?'flex-end':'flex-start';row.textContent=body;}document.body.append(row);}
     history.replaceState({},'','/chat/bootstrap-fixture');P.invalidateItems();
    };
    P.init({isStopped:()=>!!A.stop,diag:(name,data)=>{window.diagnostics=window.diagnostics||[];diagnostics.push({name,data});}});

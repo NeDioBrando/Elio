@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-const synerixcodeToolGuard = (() => {
+const elioToolGuard = (() => {
   const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
   function validate(value, schema, path = 'arguments', depth = 0) {
     if (!object(schema) || depth > 12) return [];
@@ -98,7 +98,7 @@ const synerixcodeToolGuard = (() => {
     return value;
   }
   // Some Studio MCPs expose a generic `skill` tool. Models sometimes pass a
-  // synerixcode or MCP tool name to it ({tool:"skill",arguments:{name:"creation_preview",...}}),
+  // elio or MCP tool name to it ({tool:"skill",arguments:{name:"creation_preview",...}}),
   // which fails with "Unknown skill". When the name is an advertised tool (and
   // not skill itself), call that tool directly with the nested arguments.
   function rerouteSkill(call, tools) {
@@ -140,4 +140,4 @@ const synerixcodeToolGuard = (() => {
   }
   return { check, validate, retries, incompleteLuau, repair };
 })();
-if (typeof module !== 'undefined' && module.exports) module.exports = synerixcodeToolGuard;
+if (typeof module !== 'undefined' && module.exports) module.exports = elioToolGuard;

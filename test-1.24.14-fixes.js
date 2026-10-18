@@ -3,7 +3,7 @@ const fs = require('node:fs'), vm = require('node:vm'), assert = require('node:a
 const { JSDOM } = require('jsdom');
 const main = fs.readFileSync('core/main.js', 'utf8');
 const parser = new Function(fs.readFileSync('core/parser.js', 'utf8') + ';return RSParse;')();
-const command = '{"command":"synerixcode_status","params":{}}';
+const command = '{"command":"elio_status","params":{}}';
 function coworkCards() {
   const dom = new JSDOM('<main><article id="answer">Answer</article></main>');
   try {
@@ -50,7 +50,7 @@ async function claudeReplies() {
     vm.createContext(box);vm.runInContext(main.slice(start,end)+';this.watch=waitForResponse;',box);
     const result=await box.watch(1);
     assert.equal(result.kind,'tool','A visible completed Claude command must not become an empty reply');
-    assert.equal(result.calls[0].tool,'synerixcode_status');
+    assert.equal(result.calls[0].tool,'elio_status');
     // Same turn contains multiple answer blocks; the command may be after narration.
     item.innerHTML='<div data-is-thinking="true"><div class="standard-markdown">Hidden thought</div></div><div class="standard-markdown">First answer block.</div><div data-testid="markdown"><pre>'+command+'</pre></div>';
     assert(p.readAssistant().reply.includes('First answer block.'));

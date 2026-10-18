@@ -116,7 +116,7 @@ fn win_alert(title: &str, msg: &str) {
 
 
 #[derive(Parser, Debug)]
-#[command(name = "synerixcode-agent", version = env!("CARGO_PKG_VERSION"), about = "synerixcode Native Agent — Roblox Studio MCP + AgentScript")]
+#[command(name = "elio-agent", version = env!("CARGO_PKG_VERSION"), about = "Elio Native Agent — Roblox Studio MCP + AgentScript")]
 struct Args {
     #[arg(long, help = "Run without the status window (for autostart/background use)")]
     headless: bool,
@@ -128,7 +128,7 @@ struct Args {
     restore_window: bool,
     #[arg(long, default_value = "127.0.0.1:3000")]
     roblox_addr: String,
-    #[arg(long, help = "Workspace root for the LOCAL (FS) engine [env: SYNERIXCODE_WORKSPACE_ROOT]")]
+    #[arg(long, help = "Workspace root for the LOCAL (FS) engine [env: ELIO_WORKSPACE_ROOT]")]
     workspace: Option<String>,
 }
 
@@ -243,9 +243,9 @@ impl McpRuntime {
     }
 
     fn launcher() -> anyhow::Result<(String, Vec<String>)> {
-        if let Ok(raw) = std::env::var("SYNERIXCODE_MCP_COMMAND").or_else(|_| std::env::var("ROBLOXSCRIPT_MCP_COMMAND")) {
+        if let Ok(raw) = std::env::var("ELIO_MCP_COMMAND").or_else(|_| std::env::var("ROBLOXSCRIPT_MCP_COMMAND")) {
             let mut parts = raw.split_whitespace();
-            let program = parts.next().ok_or_else(|| anyhow::anyhow!("SYNERIXCODE_MCP_COMMAND is empty"))?;
+            let program = parts.next().ok_or_else(|| anyhow::anyhow!("ELIO_MCP_COMMAND is empty"))?;
             return Ok((program.to_string(), parts.map(str::to_string).collect()));
         }
         #[cfg(target_os = "macos")]
@@ -334,7 +334,7 @@ impl McpRuntime {
         let _ = self.request("initialize", serde_json::json!({
             "protocolVersion": "2025-06-18",
             "capabilities": {},
-            "clientInfo": {"name": "synerixcode", "version": env!("CARGO_PKG_VERSION")}
+            "clientInfo": {"name": "elio", "version": env!("CARGO_PKG_VERSION")}
         })).await.map_err(|e| { tracing::warn!("MCP initialize failed: {e:#}"); e })?;
         self.notify("notifications/initialized", serde_json::json!({})).await?;
         self.alive.store(true, Ordering::Relaxed);
@@ -526,10 +526,10 @@ fn process_image(pid: u32) -> Option<String> {
 #[cfg(not(windows))]
 fn process_image(_pid: u32) -> Option<String> { None }
 
-fn is_synerixcode_image(image: &str) -> bool {
+fn is_elio_image(image: &str) -> bool {
     matches!(
         image.trim().to_ascii_lowercase().as_str(),
-        "synerixcode.exe" | "synerixcode-agent.exe"
+        "elio.exe" | "elio-agent.exe"
     )
 }
 
@@ -538,8 +538,8 @@ fn reclaim_port(port: u16) -> anyhow::Result<()> {
     let Some(pid) = port_owner_pid(port) else { return Ok(()); };
     if pid == std::process::id() { return Ok(()); }
     let image = process_image(pid).unwrap_or_default();
-    if is_synerixcode_image(&image) {
-        tracing::info!("killing stale synerixcode Agent (pid {pid}) on port {port}...");
+    if is_elio_image(&image) {
+        tracing::info!("killing stale elio Agent (pid {pid}) on port {port}...");
         let _ = std::process::Command::new("taskkill")
             .args(["/F", "/T", "/PID", &pid.to_string()])
             .creation_flags(CREATE_NO_WINDOW)
@@ -573,13 +573,13 @@ extern "system" {
 #[cfg(windows)]
 impl StartupGuard {
     fn acquire(addr: SocketAddr) -> anyhow::Result<Self> {
-        let name: Vec<u16> = format!("Local\\synerixcode-startup-{}", addr).encode_utf16().chain(Some(0)).collect();
+        let name: Vec<u16> = format!("Local\\elio-startup-{}", addr).encode_utf16().chain(Some(0)).collect();
         let handle = unsafe { CreateMutexW(std::ptr::null_mut(), 0, name.as_ptr()) };
         anyhow::ensure!(!handle.is_null(), "Could not create startup lock: {}", std::io::Error::last_os_error());
         let wait = unsafe { WaitForSingleObject(handle, 30000) };
         if wait != 0 && wait != 0x80 {
             unsafe { CloseHandle(handle); }
-            anyhow::bail!("Another synerixcode launch is still starting. Wait briefly and open synerixcode again.");
+            anyhow::bail!("Another elio launch is still starting. Wait briefly and open elio again.");
         }
         Ok(Self(handle))
     }
@@ -596,14 +596,14 @@ impl StartupGuard {
         use std::os::fd::AsRawFd;
         use std::os::unix::fs::OpenOptionsExt;
         let home = std::env::var_os("HOME").ok_or_else(||anyhow::anyhow!("Cannot locate startup lock directory"))?;
-        let directory = PathBuf::from(home).join(".config/synerixcode");std::fs::create_dir_all(&directory)?;
+        let directory = PathBuf::from(home).join(".config/elio");std::fs::create_dir_all(&directory)?;
         let file=std::fs::OpenOptions::new().read(true).write(true).create(true).mode(0o600).open(directory.join(format!("startup-{}.lock",addr.port())))?;
         let start=std::time::Instant::now();
         loop {
             if unsafe { libc::flock(file.as_raw_fd(),libc::LOCK_EX|libc::LOCK_NB) }==0 { return Ok(Self(file)); }
             let error=std::io::Error::last_os_error();
             anyhow::ensure!(error.kind()==std::io::ErrorKind::WouldBlock,"Cannot acquire startup lock: {error}");
-            anyhow::ensure!(start.elapsed()<Duration::from_secs(15),"Another synerixcode launch is still starting. Retry shortly.");
+            anyhow::ensure!(start.elapsed()<Duration::from_secs(15),"Another elio launch is still starting. Retry shortly.");
             std::thread::sleep(Duration::from_millis(50));
         }
     }
@@ -631,7 +631,7 @@ async fn bind_required(addr: SocketAddr, wait: Duration) -> anyhow::Result<tokio
             Err(error) if error.kind() == std::io::ErrorKind::AddrInUse && tokio::time::Instant::now() < deadline => {
                 tokio::time::sleep(Duration::from_millis(150)).await;
             }
-            Err(error) => anyhow::bail!("Cannot start the local bridge at {addr}: {error}. Close an older synerixcode instance if it is still exiting. Details: logs/agent.log."),
+            Err(error) => anyhow::bail!("Cannot start the local bridge at {addr}: {error}. Close an older elio instance if it is still exiting. Details: logs/agent.log."),
         }
     }
 }
@@ -669,7 +669,7 @@ async fn focus_existing(addr: SocketAddr, pairing_key: &str) -> bool {
 
     if !should_reuse_running_version(&running_version) {
         info!(
-            "older synerixcode instance v{} detected while launching v{} — replacing it",
+            "older elio instance v{} detected while launching v{} — replacing it",
             running_version,
             env!("CARGO_PKG_VERSION")
         );
@@ -731,7 +731,7 @@ mod startup_tests {
     async fn verified_editor_transitions_push_to_all_subscribers_without_locking_tools() {
         let alive = Arc::new(AtomicBool::new(false));
         let ui = Arc::new(gui::UiShared::new(alive.clone()));
-        let folder = std::env::temp_dir().join(format!("synerixcode-status-test-{}", std::process::id()));
+        let folder = std::env::temp_dir().join(format!("elio-status-test-{}", std::process::id()));
         let workspace = Arc::new(workspace::Workspace::new(Some(folder.to_str().unwrap())).unwrap());
         let state = AppState::new(broadcast::channel(16).0, alive, Arc::new(AtomicBool::new(false)),
             workspace, Arc::new("test-key".into()), Arc::new(preferences::PreferencesStore::load()), ui.clone());
@@ -829,7 +829,7 @@ for line in sys.stdin:
     #[tokio::test]
     async fn queued_command_deadline_does_not_reset_another_tasks_helper() {
         let alive=Arc::new(AtomicBool::new(true));let ui=Arc::new(gui::UiShared::new(alive.clone()));
-        let folder=std::env::temp_dir().join(format!("synerixcode-queue-test-{}",std::process::id()));
+        let folder=std::env::temp_dir().join(format!("elio-queue-test-{}",std::process::id()));
         let workspace=Arc::new(workspace::Workspace::new(Some(folder.to_str().unwrap())).unwrap());
         let state=AppState::new(broadcast::channel(16).0,alive.clone(),Arc::new(AtomicBool::new(false)),workspace,Arc::new("test".into()),Arc::new(preferences::PreferencesStore::load()),ui);
         let _owned=state.roblox_mcp.lock().await;
@@ -913,17 +913,17 @@ for line in sys.stdin:
     }
 
     #[test]
-    fn stale_cleanup_targets_only_synerixcode_images() {
-        assert!(is_synerixcode_image("synerixcode.exe"));
-        assert!(is_synerixcode_image("synerixcode-agent.exe"));
-        assert!(!is_synerixcode_image("python.exe"));
-        assert!(!is_synerixcode_image("RobloxStudioBeta.exe"));
+    fn stale_cleanup_targets_only_elio_images() {
+        assert!(is_elio_image("elio.exe"));
+        assert!(is_elio_image("elio-agent.exe"));
+        assert!(!is_elio_image("python.exe"));
+        assert!(!is_elio_image("RobloxStudioBeta.exe"));
     }
 }
 
 /// Windows can report ERROR_NO_SYSTEM_RESOURCES (1450) from the IOCP wait that
 /// drives tokio's I/O reactor. Tokio treats any such error as fatal and panics
-/// the reactor thread, which used to end in a modal "synerixcode Agent crashed"
+/// the reactor thread, which used to end in a modal "elio Agent crashed"
 /// box and a dead bridge. It is transient resource pressure, so recover by
 /// relaunching instead of showing a dialog.
 fn is_reactor_resource_panic(msg: &str) -> bool {
@@ -934,7 +934,7 @@ fn is_reactor_resource_panic(msg: &str) -> bool {
         || lower.contains("no system resources")
 }
 
-const CRASH_RESTART_ENV: &str = "SYNERIXCODE_CRASH_RESTARTS";
+const CRASH_RESTART_ENV: &str = "ELIO_CRASH_RESTARTS";
 const CRASH_RESTART_LIMIT: u32 = 5;
 
 /// Relaunch this executable with the same arguments. Bounded by an env counter
@@ -962,11 +962,11 @@ fn main() {
     }
     std::panic::set_hook(Box::new(|info| {
         let msg = format!("{info}");
-        eprintln!("synerixcode Agent panic: {msg}");
-        tracing::error!("synerixcode Agent panic: {msg}");
+        eprintln!("elio Agent panic: {msg}");
+        tracing::error!("elio Agent panic: {msg}");
         if is_reactor_resource_panic(&msg) {
             if relaunch_after_crash() {
-                tracing::error!("I/O reactor failed with a transient system-resource error; relaunched synerixcode");
+                tracing::error!("I/O reactor failed with a transient system-resource error; relaunched elio");
                 std::process::exit(0);
             }
         } else if std::thread::current().name().is_some_and(|name| name.starts_with("tokio-runtime-worker")) {
@@ -976,13 +976,13 @@ fn main() {
             return;
         }
         #[cfg(windows)]
-        win_alert("synerixcode Agent crashed", &msg);
+        win_alert("elio Agent crashed", &msg);
     }));
     if let Err(e) = start() {
         let msg = format!("{e:#}");
         #[cfg(windows)]
-        win_alert("synerixcode Agent failed to start", &msg);
-        eprintln!("synerixcode Agent failed to start: {msg}");
+        win_alert("elio Agent failed to start", &msg);
+        eprintln!("elio Agent failed to start: {msg}");
         std::process::exit(1);
     }
 }
@@ -1003,33 +1003,33 @@ async fn start() -> anyhow::Result<()> {
     let pairing_key = Arc::new(security::load_key()?);
     let shared = Arc::new(gui::UiShared::new(mcp_alive.clone()));
     init_file_logger(Some(shared.clone()));
-    info!("=== synerixcode Rust Agent v{} start (pid={}) ===", env!("CARGO_PKG_VERSION"), std::process::id());
+    info!("=== elio Rust Agent v{} start (pid={}) ===", env!("CARGO_PKG_VERSION"), std::process::id());
     let start = std::time::Instant::now();
     let (result_tx, _) = broadcast::channel::<ExecResult>(128);
     if !args.headless {
         if focus_existing(addr, pairing_key.as_str()).await {
-            info!("existing same-version synerixcode instance found — requested its desktop window and exiting launcher process");
+            info!("existing same-version elio instance found — requested its desktop window and exiting launcher process");
             return Ok(());
         }
     }
     // Bind every required endpoint before announcing readiness. Reclaim only the
-    // synerixcode process holding that endpoint, never all similarly named launches.
+    // elio process holding that endpoint, never all similarly named launches.
     let listener = bind_required(addr, Duration::from_secs(8)).await?;
     let legacy_roblox = bind_required("127.0.0.1:17613".parse()?, Duration::from_secs(8)).await?;
     let legacy_local = bind_required("127.0.0.1:17615".parse()?, Duration::from_secs(8)).await?;
-    let ws_override = env_first(&["SYNERIXCODE_WORKSPACE_ROOT", "ROBLOXSCRIPT_WORKSPACE_ROOT"])
+    let ws_override = env_first(&["ELIO_WORKSPACE_ROOT", "ROBLOXSCRIPT_WORKSPACE_ROOT"])
         .or_else(|| args.workspace.clone());
     let workspace = Arc::new(workspace::Workspace::new(ws_override.as_deref())?);
     let preferences = Arc::new(preferences::PreferencesStore::load());
-    if env_first(&["SYNERIXCODE_FULL_ACCESS", "ROBLOXSCRIPT_FULL_ACCESS"]).map(|v| v == "1" || v.eq_ignore_ascii_case("true")).unwrap_or(false)
+    if env_first(&["ELIO_FULL_ACCESS", "ROBLOXSCRIPT_FULL_ACCESS"]).map(|v| v == "1" || v.eq_ignore_ascii_case("true")).unwrap_or(false)
         || preferences.snapshot().perm_mode == "full" {
         workspace.set_full_access(true);
     }
     shared.attach_workspace(workspace.root_display(), workspace.full_flag());
     shared.set_local_tools(&workspace::catalog(), workspace.ready());
-    shared.log(&format!("synerixcode-agent v{} — native bridge for roblox studio / local fs", env!("CARGO_PKG_VERSION")));
+    shared.log(&format!("elio-agent v{} — native bridge for roblox studio / local fs", env!("CARGO_PKG_VERSION")));
     shared.log(&format!("workspace: {}", workspace.root_display()));
-    if workspace.full_access() { shared.log("FULL PC ACCESS enabled at boot (SYNERIXCODE_FULL_ACCESS=1)"); }
+    if workspace.full_access() { shared.log("FULL PC ACCESS enabled at boot (ELIO_FULL_ACCESS=1)"); }
     shared.log("listening: http://127.0.0.1:3000 · ws 17613 (roblox) · 17615 (agentscript)");
     shared.log("keys: [R] restart mcp · [C] clear console · [1-4] filter level");
     let state = AppState::new(
@@ -1081,7 +1081,7 @@ async fn start() -> anyhow::Result<()> {
         gui::RESTORE_WINDOW.store(args.background && args.restore_window, Ordering::Relaxed);
         match gui::run_gui(shared, restart_tx, preferences, addr, shutdown_state.pairing_key.as_str(), args.background) {
             Ok(()) => {
-                info!("synerixcode exit requested — killing MCP helper tree and exiting");
+                info!("elio exit requested — killing MCP helper tree and exiting");
                 shutdown_state.roblox_mcp.lock().await.reset().await;
                 std::process::exit(0);
             }
@@ -1089,7 +1089,7 @@ async fn start() -> anyhow::Result<()> {
                 tracing::error!("GUI unavailable ({e:#}) — continuing headless");
                 #[cfg(windows)]
                 win_alert(
-                    "synerixcode Agent",
+                    "elio Agent",
                     &format!("The status window could not open ({e:#}).\nThe bridge is still running in the background (ports 3000 / 17613 / 17615)."),
                 );
                 let _ = server.await;
@@ -1185,7 +1185,7 @@ async fn run_server(state: AppState, addr: SocketAddr, start: std::time::Instant
                                 mcp.reset().await;
                                 let closed = close_competing_studio_helpers();
                                 if !closed.is_empty() {
-                                    tracing::warn!("Closed other Studio MCP connection(s) so synerixcode can connect: {}", closed.join(", "));
+                                    tracing::warn!("Closed other Studio MCP connection(s) so elio can connect: {}", closed.join(", "));
                                     let _ = autoconnect_state.ui.desktop_events.send(serde_json::json!({"type":"studio_competitors_closed","closed":closed}));
                                 }
                             }
@@ -1209,7 +1209,7 @@ async fn run_server(state: AppState, addr: SocketAddr, start: std::time::Instant
         security::allowed_origin(&headers)
     })).allow_methods([Method::GET, Method::POST, Method::OPTIONS]).allow_headers(Any);
     let app = Router::new()
-        .route("/", get(|| async { Json(serde_json::json!({"ok": true, "service": "synerixcode-agent", "version": env!("CARGO_PKG_VERSION")})) }))
+        .route("/", get(|| async { Json(serde_json::json!({"ok": true, "service": "elio-agent", "version": env!("CARGO_PKG_VERSION")})) }))
         .route("/api/pair", post(|| async { axum::http::StatusCode::FORBIDDEN }))
         .route("/api/connect", post(connect_handler))
         .route("/api/poll", get(poll_handler))
@@ -1262,7 +1262,7 @@ async fn run_server(state: AppState, addr: SocketAddr, start: std::time::Instant
         // Register after pairing middleware; every API remains authenticated.
         .route("/desktop-ui", get(desktop_shell_handler))
         .layer(cors);
-    info!("synerixcode bridge listening on http://{} (WS /ws)", addr);
+    info!("elio bridge listening on http://{} (WS /ws)", addr);
     info!("Legacy WS on ws://127.0.0.1:17613 (roblox) and 17615 (AgentScript FS: {})", ws_root_display);
     info!("Boot completed in {}ms", start.elapsed().as_millis());
     let _ = ready.send(());
@@ -1346,7 +1346,7 @@ async fn checkpoint_handler(State(state): State<AppState>, Json(req): Json<serde
                     let snapshot=task.scripts.iter().find(|s|s.path==path&&s.studio_id==req["studio_id"]).ok_or_else(||anyhow::anyhow!("Script snapshot not found."))?;
                     anyhow::ensure!(snapshot.session==*checkpoints::SNAPSHOT_SESSION,"Studio snapshots cannot be restored after restarting the bridge.");
                     let out=roblox_tool(&state,"execute_luau",serde_json::json!({"code":checkpoints::script_restore(snapshot),"datamodel_type":"Edit","studio_id":snapshot.studio_id})).await?;
-                    anyhow::ensure!(out.text.contains("SYNERIXCODE_SCRIPT_RESTORED"),"Studio did not confirm restore: {}",out.text);
+                    anyhow::ensure!(out.text.contains("ELIO_SCRIPT_RESTORED"),"Studio did not confirm restore: {}",out.text);
                     journal.task_mut(id)?.scripts.retain(|s|!(s.path==path&&s.studio_id==req["studio_id"]));
                     journal.warn(id,"An individual script was restored. Whole-task Studio undo is disabled because its history changed.");journal.save()?;
                 }
@@ -1359,7 +1359,7 @@ async fn checkpoint_handler(State(state): State<AppState>, Json(req): Json<serde
                 else {
                     anyhow::ensure!(!task.waypoints.is_empty(), "No verified Studio undo checkpoints.");
                     let out=roblox_tool(&state,"execute_luau",serde_json::json!({"code":checkpoints::studio_revert(&task.waypoints),"datamodel_type":"Edit"})).await?;
-                    anyhow::ensure!(out.text.contains("SYNERIXCODE_TASK_REVERTED"), "Studio did not confirm task restore: {}",out.text);
+                    anyhow::ensure!(out.text.contains("ELIO_TASK_REVERTED"), "Studio did not confirm task restore: {}",out.text);
                     journal.task_mut(id)?.status="reverted".into();journal.save()?;
                 }
                 Ok(serde_json::json!({"ok":true}))
@@ -1448,7 +1448,7 @@ async fn checkpoint_tool_inner(state: &AppState, engine: &str, id: &str, name: &
             if let Some(studio)=studio{args["studio_id"]=studio.clone();script_before=Some((before,studio));}
         }}
     }
-    let label=format!("synerixcode {} {}",id,journal.task(id)?.steps.len());
+    let label=format!("elio {} {}",id,journal.task(id)?.steps.len());
     let studio_id = args.get("studio_id").filter(|id| !id.is_null()).cloned();
     let mark_args = |code: String| {
         let mut params = serde_json::json!({"code":code,"datamodel_type":"Edit"});
@@ -1477,39 +1477,47 @@ async fn checkpoint_tool_inner(state: &AppState, engine: &str, id: &str, name: &
 
 async fn desktop_shell_handler() -> impl IntoResponse {
     let html = include_str!("desktop.html")
-        .replace("__SYNERIXCODE_I18N_CATALOG__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/i18n-catalog.js")))
-        .replace("__SYNERIXCODE_I18N__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/i18n.js")))
-        .replace("__SYNERIXCODE_SKILLS_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/skills-ui.js")))
-        .replace("__SYNERIXCODE_EXPLORER_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/explorer-ui.js")))
-        .replace("__SYNERIXCODE_MEDIA_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/media.js")))
-        .replace("__SYNERIXCODE_MEMORY_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/memory.js")))
-        .replace("__SYNERIXCODE_TOOLKIT_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/toolkit-ui.js")))
-        .replace("__SYNERIXCODE_TASK_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/task-center.js")))
-        .replace("__SYNERIXCODE_TEMPLATE_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/templates.js")))
-        .replace("__SYNERIXCODE_VERSION_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/version.js")))
-        .replace("__SYNERIXCODE_PAIRING_KEY__", "")
-        .replace("__SYNERIXCODE_VERSION__", env!("CARGO_PKG_VERSION"))
-        .replace("__SYNERIXCODE_DESKTOP_CHAT_CSS__", include_str!("../../desktop/chat.css"))
-        .replace("__SYNERIXCODE_DESKTOP_CHAT_JS__", include_str!("../../desktop/chat.js"));
+        .replace("__ELIO_I18N_CATALOG__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/i18n-catalog.js")))
+        .replace("__ELIO_I18N__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/i18n.js")))
+        .replace("__ELIO_SKILLS_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/skills-ui.js")))
+        .replace("__ELIO_EXPLORER_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/explorer-ui.js")))
+        .replace("__ELIO_MEDIA_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/media.js")))
+        .replace("__ELIO_MEMORY_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/memory.js")))
+        .replace("__ELIO_TOOLKIT_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/toolkit-ui.js")))
+        .replace("__ELIO_TASK_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/task-center.js")))
+        .replace("__ELIO_TEMPLATE_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/templates.js")))
+        .replace("__ELIO_VERSION_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/version.js")))
+        .replace("__ELIO_PAIRING_KEY__", "")
+        .replace("__ELIO_VERSION__", env!("CARGO_PKG_VERSION"))
+        .replace("__ELIO_DESKTOP_CHAT_CSS__", include_str!("../../desktop/chat.css"))
+        .replace("__ELIO_CHAT_VIEW__", include_str!("../../core/chat-view.js"))
+        .replace("__ELIO_SHELL_CSS__", include_str!("../../desktop/elio.css"))
+        .replace("__ELIO_THEME_CSS__", include_str!("../../core/theme.css"))
+        .replace("__ELIO_THEME_JS__", include_str!("../../core/theme.js"))
+        .replace("__ELIO_DESKTOP_CHAT_JS__", include_str!("../../desktop/chat.js"));
     ([(axum::http::header::CACHE_CONTROL, "no-store")], Html(html))
 }
 
 async fn desktop_handler(State(state): State<AppState>) -> Html<String> {
     let html = include_str!("desktop.html")
-        .replace("__SYNERIXCODE_I18N_CATALOG__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/i18n-catalog.js")))
-        .replace("__SYNERIXCODE_I18N__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/i18n.js")))
-        .replace("__SYNERIXCODE_SKILLS_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/skills-ui.js")))
-        .replace("__SYNERIXCODE_EXPLORER_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/explorer-ui.js")))
-        .replace("__SYNERIXCODE_MEDIA_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/media.js")))
-        .replace("__SYNERIXCODE_MEMORY_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/memory.js")))
-        .replace("__SYNERIXCODE_TOOLKIT_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/toolkit-ui.js")))
-        .replace("__SYNERIXCODE_TASK_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/task-center.js")))
-        .replace("__SYNERIXCODE_TEMPLATE_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/templates.js")))
-        .replace("__SYNERIXCODE_VERSION_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/version.js")))
-        .replace("__SYNERIXCODE_PAIRING_KEY__", state.pairing_key.as_str())
-        .replace("__SYNERIXCODE_VERSION__", env!("CARGO_PKG_VERSION"))
-        .replace("__SYNERIXCODE_DESKTOP_CHAT_CSS__", include_str!("../../desktop/chat.css"))
-        .replace("__SYNERIXCODE_DESKTOP_CHAT_JS__", include_str!("../../desktop/chat.js"));
+        .replace("__ELIO_I18N_CATALOG__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/i18n-catalog.js")))
+        .replace("__ELIO_I18N__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/i18n.js")))
+        .replace("__ELIO_SKILLS_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/skills-ui.js")))
+        .replace("__ELIO_EXPLORER_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/explorer-ui.js")))
+        .replace("__ELIO_MEDIA_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/media.js")))
+        .replace("__ELIO_MEMORY_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/memory.js")))
+        .replace("__ELIO_TOOLKIT_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/toolkit-ui.js")))
+        .replace("__ELIO_TASK_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/task-center.js")))
+        .replace("__ELIO_TEMPLATE_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/templates.js")))
+        .replace("__ELIO_VERSION_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/version.js")))
+        .replace("__ELIO_PAIRING_KEY__", state.pairing_key.as_str())
+        .replace("__ELIO_VERSION__", env!("CARGO_PKG_VERSION"))
+        .replace("__ELIO_DESKTOP_CHAT_CSS__", include_str!("../../desktop/chat.css"))
+        .replace("__ELIO_CHAT_VIEW__", include_str!("../../core/chat-view.js"))
+        .replace("__ELIO_SHELL_CSS__", include_str!("../../desktop/elio.css"))
+        .replace("__ELIO_THEME_CSS__", include_str!("../../core/theme.css"))
+        .replace("__ELIO_THEME_JS__", include_str!("../../core/theme.js"))
+        .replace("__ELIO_DESKTOP_CHAT_JS__", include_str!("../../desktop/chat.js"));
     Html(html)
 }
 
@@ -1635,7 +1643,7 @@ async fn browser_agent_handler(State(state): State<AppState>, Json(value): Json<
 
 async fn desktop_agent_handler(State(state): State<AppState>, Json(req): Json<serde_json::Value>) -> impl IntoResponse {
     let action = req.get("action").and_then(|value| value.as_str()).unwrap_or("");
-    if action.starts_with("cowork-") || action.starts_with("memory-") || action=="handoff-export" || action=="budget-resume" || action=="task-send" || action=="creator-send" || action=="creator-insert" || action=="activity-read" || action=="chat-read" || action=="chat-pin" || action=="media-stage" || action=="stop" || action=="engine-set" { return desktop_cowork_handler(state, req).await; }
+    if action.starts_with("cowork-") || action.starts_with("memory-") || action=="handoff-export" || action=="budget-resume" || action=="task-send" || action=="creator-send" || action=="creator-insert" || action=="activity-read" || action=="chat-read" || action=="chat-pin" || action=="start" || action=="media-stage" || action=="stop" || action=="engine-set" { return desktop_cowork_handler(state, req).await; }
     let mut slot = state.ui.browser_agent.lock().unwrap_or_else(|error| error.into_inner());
     let available = slot.as_ref().filter(|(at, _)| at.elapsed() < Duration::from_secs(3));
     let key = match action { "start" => "canStart", "stop" => "canStop", "enhance" => "canEnhance", "cowork-queue" => "canQueue", "cowork-on" | "cowork-off" | "cowork-resume" | "cowork-remove" => "canCoWork", _ => "" };
@@ -1670,7 +1678,7 @@ async fn desktop_agent_result_handler(State(state): State<AppState>, Json(req): 
 
 async fn desktop_cowork_handler(state: AppState, req: serde_json::Value) -> axum::response::Response {
     let action = req.get("action").and_then(|value| value.as_str()).unwrap_or("");
-    let key = match action { "chat-read" => "canChatRead", "chat-pin" => "canChatPin", "stop"=>"canStop", "media-stage"=>"canMedia", "task-send"=>"canTaskSend", "creator-send"=>"canCreate", "creator-insert"=>"canTaskSend", "cowork-queue" => "canQueue", "memory-import" => "canEnhance", "memory-export" | "activity-read" | "handoff-export" | "budget-resume" | "engine-set" => "canCoWork", "cowork-on" | "cowork-off" | "cowork-resume" | "cowork-remove" => "canCoWork", _ => "" };
+    let key = match action { "chat-read" => "canChatRead", "chat-pin" => "canChatPin", "start"=>"canStart", "stop"=>"canStop", "media-stage"=>"canMedia", "task-send"=>"canTaskSend", "creator-send"=>"canCreate", "creator-insert"=>"canTaskSend", "cowork-queue" => "canQueue", "memory-import" => "canEnhance", "memory-export" | "activity-read" | "handoff-export" | "budget-resume" | "engine-set" => "canCoWork", "cowork-on" | "cowork-off" | "cowork-resume" | "cowork-remove" => "canCoWork", _ => "" };
     let control = {
         let slot = state.ui.browser_agent.lock().unwrap_or_else(|error| error.into_inner());
         slot.as_ref().filter(|(at, control)| at.elapsed() < Duration::from_secs(3) && !key.is_empty() && control.get(key).and_then(|value| value.as_bool()) == Some(true)).map(|(_, control)| control.clone())
@@ -1689,7 +1697,7 @@ async fn desktop_cowork_handler(state: AppState, req: serde_json::Value) -> axum
     }
     let event = serde_json::json!({"type":"desktop_agent_action","action":action,"tab_id":control.get("tab_id"),"browser_id":control.get("browser_id"),"prompt":req.get("prompt"),"request_id":id,"expected_chat":req.get("chat")});
     let delivered = state.ui.desktop_events.send(event).is_ok();
-    let result = if delivered { tokio::time::timeout(Duration::from_secs(if action == "media-stage" { 60 } else if action == "creator-insert" { 125 } else if action == "creator-send" { 100 } else { 5 }), receiver).await.ok().and_then(Result::ok) } else { None };
+    let result = if delivered { tokio::time::timeout(Duration::from_secs(if action == "task-send" { 100 } else if action == "media-stage" { 60 } else if action == "creator-insert" { 125 } else if action == "creator-send" { 100 } else { 5 }), receiver).await.ok().and_then(Result::ok) } else { None };
     state.ui.desktop_action_results.lock().unwrap_or_else(|error| error.into_inner()).remove(id);
     match result {
         Some(result) if result.get("ok").and_then(|value| value.as_bool()) == Some(true) => Json(result).into_response(),
@@ -1734,7 +1742,7 @@ async fn debug_report_handler(State(state): State<AppState>) -> impl IntoRespons
         "mcp_busy": state.mcp_in_flight.load(Ordering::Relaxed) > 0,
     });
     let context = debug_report::Context { desktop_version: env!("CARGO_PKG_VERSION").to_string(), status, desktop_log };
-    let report = tokio::task::spawn_blocking(move || debug_report::render(&context)).await.unwrap_or_else(|_| "# synerixcode debug report\n\nThe report could not be built.\n".to_string());
+    let report = tokio::task::spawn_blocking(move || debug_report::render(&context)).await.unwrap_or_else(|_| "# elio debug report\n\nThe report could not be built.\n".to_string());
     Json(serde_json::json!({"ok": true, "report": report}))
 }
 
@@ -1757,7 +1765,7 @@ async fn preferences_get_handler(State(state): State<AppState>) -> impl IntoResp
     state.ui.mark_extension_seen();
     let mut value = serde_json::to_value(state.preferences.snapshot()).unwrap_or_else(|_| serde_json::json!({}));
     if let Some(object) = value.as_object_mut() {
-        object.insert("_synerixcodePersisted".to_string(), serde_json::Value::Bool(state.preferences.persisted()));
+        object.insert("_elioPersisted".to_string(), serde_json::Value::Bool(state.preferences.persisted()));
     }
     Json(value)
 }
@@ -1841,7 +1849,7 @@ async fn status_handler(State(state): State<AppState>) -> impl IntoResponse {
     }))
 }
 async fn ws_handler(ws: axum::extract::ws::WebSocketUpgrade, State(state): State<AppState>) -> impl IntoResponse {
-    ws.protocols(["synerixcode"]).on_upgrade(move |socket| handle_ws(socket, state))
+    ws.protocols(["elio"]).on_upgrade(move |socket| handle_ws(socket, state))
 }
 
 /// 1.20.0: an empty get_studio_state text is not proof that Studio is gone
@@ -1859,8 +1867,8 @@ fn studio_should_drop(was_connected: bool, misses: u32, helper_dead: bool) -> bo
     !was_connected || helper_dead || misses >= STUDIO_DROP_AFTER
 }
 /// 1.21.0: another AI or bridge can hold Roblox Studio's MCP link with its
-/// own StudioMCP helper, which leaves synerixcode stuck on "MCP is off". Only
-/// StudioMCP helpers that synerixcode did not start are targeted; Studio itself,
+/// own StudioMCP helper, which leaves elio stuck on "MCP is off". Only
+/// StudioMCP helpers that elio did not start are targeted; Studio itself,
 /// the other app's main window and unrelated processes are never touched.
 fn is_studio_mcp_helper(name: &str) -> bool {
     let lower = name.trim().to_ascii_lowercase();
@@ -2060,9 +2068,9 @@ async fn run_legacy_ws(state: AppState, listener: tokio::net::TcpListener, engin
             let handshake = tokio_tungstenite::accept_hdr_async(stream, move |request: &tokio_tungstenite::tungstenite::handshake::server::Request, mut response: tokio_tungstenite::tungstenite::handshake::server::Response| {
                 if !security::authorized(request.headers(), &key) {
                     return Err(tokio_tungstenite::tungstenite::http::Response::builder()
-                        .status(401).body(Some("synerixcode pairing required".to_string())).unwrap());
+                        .status(401).body(Some("elio pairing required".to_string())).unwrap());
                 }
-                response.headers_mut().insert("sec-websocket-protocol", "synerixcode".parse().unwrap());
+                response.headers_mut().insert("sec-websocket-protocol", "elio".parse().unwrap());
                 Ok(response)
             });
             if let Ok(Ok(ws)) = tokio::time::timeout(Duration::from_secs(5), handshake).await {
@@ -2351,7 +2359,7 @@ mod studio_detection_tests {
     fn only_foreign_studio_helpers_are_closed() {
         let me = 100;
         let procs = vec![
-            (100, Some(1), "synerixcode.exe".to_string()),
+            (100, Some(1), "elio.exe".to_string()),
             (110, Some(100), "cmd.exe".to_string()),
             (111, Some(110), "StudioMCP.exe".to_string()),      // ours
             (200, Some(1), "Claude.exe".to_string()),

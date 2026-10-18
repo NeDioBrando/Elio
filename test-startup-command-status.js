@@ -6,10 +6,10 @@ const phases=[];
 const box={Map,Set,Date,A:{startGen:0,sessionGen:1,toolList:[{name:'read_file',server:'local',description:'Read a file.',inputSchema:{properties:{path:{type:'string'}},required:['path']}}]},
  P:{id:'notion',displayName:'Notion',prepareSessionStart:async()=>({ready:true}),chatIsEmpty:()=>true,lastAssistantId:()=>current.id,lastAssistant:()=>current,conversationKey:()=>chat,setInputLock(){},ensureComposerReady:async()=>({ready:true}),classifyText:i=>i.text,isAssistantItem:i=>i.role!=='user'},
  assistantIdx:i=>items.filter(x=>x.role!=='user').indexOf(i),turnKey:i=>i.id,condoLocked:()=>false,diag(){},activeEngine:()=> 'local',ensureTools:async()=>{},systemPrompt:()=> '⟦RS-SYS⟧',submitAndGetBase:async()=>0,
- waitForResponse:async()=>dispatches?{kind:'text',text:'synerixcode is ready.'}:{kind:'tool',calls:[{tool:'list_commands',arguments:{}}],item:current},
+ waitForResponse:async()=>dispatches?{kind:'text',text:'Elio is ready to assist you.'}:{kind:'tool',calls:[{tool:'list_commands',arguments:{}}],item:current},
  rememberExecuted(){remembered++;},rememberSession(){},decorate:{sweep(){},toolBox(i,name,phase,detail){phases.push({name,phase,detail});}},
  ui:{setStarting(){},updateStartGate(){},inputCover(){},trackCard(){},setStarted(){},toast(){},banner(){throw Error('Unexpected startup failure');}},
- RSParse:{parseToolCalls:()=>[],hasCommandShape:text=>text.includes('"command"')},SendAbortedError:class extends Error{},RUN_CMD:'Start-synerixcode-Agent.cmd',
+ RSParse:{parseToolCalls:()=>[],hasCommandShape:text=>text.includes('"command"')},SendAbortedError:class extends Error{},RUN_CMD:'Start-elio-Agent.cmd',
  runTool:async()=>{dispatches++;current={id:'startup-command',text:command,dataset:{}};items=[current];return "Output of 'list_commands':\nread_file";}};
 vm.createContext(box);
 // The actual bootstrap now checks model refusal during the context stage too.
@@ -17,7 +17,7 @@ vm.createContext(box);
 vm.runInContext(source.slice(source.indexOf('  function isProviderPolicyRefusal('),source.indexOf('  function notionPlainText(')),box);
 // 1.24.12: Notion readyPrompt preferences pass through the real notionPlainText helper.
 vm.runInContext(source.slice(source.indexOf('  function notionPlainText('),source.indexOf('  const PLAN_CONTINUE_FEEDBACK')),box);
-box.P.itemText=i=>i.text;const user={role:'user',text:'⟦RS-SYS⟧ startup attachment synerixcode_protocol_1.txt'};box.P.allItems=()=>[user,...items];box.P.isUserItem=i=>i.role==='user';
+box.P.itemText=i=>i.text;const user={role:'user',text:'⟦RS-SYS⟧ startup attachment elio_protocol_1.txt'};box.P.allItems=()=>[user,...items];box.P.isUserItem=i=>i.role==='user';
 const executedHelpers=source.slice(source.indexOf('  const executed = new Map()'),source.indexOf('  const startupOutcomes ='));
 vm.runInContext(executedHelpers+'this.didExecute=isRememberedExecuted;',box);
 const remember=box.rememberExecuted;

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// workspace.rs - synerixcode LOCAL engine (AgentScript).
+// workspace.rs - elio LOCAL engine (AgentScript).
 //
 // Native Rust port of OpenRender's workspace_mcp.py: full control over ONE
 // local folder ("the workspace") - list/tree/read/write/edit/move/delete,
@@ -46,19 +46,19 @@ pub struct Workspace {
 
 impl Workspace {
     /// Resolve the workspace root from (in order) an explicit override,
-    /// SYNERIXCODE_WORKSPACE_ROOT / ROBLOXSCRIPT_WORKSPACE_ROOT, or USERPROFILE/synerixcodeWorkspace.
+    /// ELIO_WORKSPACE_ROOT / ROBLOXSCRIPT_WORKSPACE_ROOT, or USERPROFILE/elioWorkspace.
     /// The folder is created when missing so a fresh install just works.
     pub fn new(override_dir: Option<&str>) -> anyhow::Result<Self> {
         let chosen = override_dir
             .map(str::to_string)
             .filter(|s| !s.trim().is_empty())
-            .or_else(|| std::env::var("SYNERIXCODE_WORKSPACE_ROOT").ok())
+            .or_else(|| std::env::var("ELIO_WORKSPACE_ROOT").ok())
             .or_else(|| std::env::var("ROBLOXSCRIPT_WORKSPACE_ROOT").ok())
             .unwrap_or_else(|| {
                 let home = std::env::var("USERPROFILE")
                     .or_else(|_| std::env::var("HOME"))
                     .unwrap_or_else(|_| ".".to_string());
-                Path::new(&home).join("synerixcodeWorkspace").to_string_lossy().to_string()
+                Path::new(&home).join("elioWorkspace").to_string_lossy().to_string()
             });
         let root = PathBuf::from(chosen);
         std::fs::create_dir_all(&root)
@@ -468,7 +468,7 @@ fn mime_for(path: &Path) -> &'static str {
 /// Read ANY file (text or binary) as base64 + mime. Used by the extension to
 /// turn a screenshot written by Studio/Blender into an attachment it can put
 /// in the chat composer, and to push a workspace file into the AI as an
-/// attachment (synerixcode's attach_feedback / synerixcode_attach).
+/// attachment (elio's attach_feedback / elio_attach).
 pub async fn tool_read_file_base64(ws: &Workspace, args: &serde_json::Value) -> Result<String, String> {
     let p = ws.resolve_path(arg_str(args, "path")?.as_str(), true)?;
     require_file(ws, &p)?;
@@ -869,7 +869,7 @@ pub async fn tool_process_list(ws: &Workspace, args: &serde_json::Value) -> Resu
 
 pub async fn tool_process_kill(ws: &Workspace, args: &serde_json::Value) -> Result<String, String> {
     if !ws.full_access() {
-        return Err("process_kill requires FULL PC ACCESS mode (the user must enable it from the synerixcode bar toggle). This is intentional: killing processes affects the whole machine.".into());
+        return Err("process_kill requires FULL PC ACCESS mode (the user must enable it from the elio bar toggle). This is intentional: killing processes affects the whole machine.".into());
     }
     let pid = args.get("pid").and_then(|p| p.as_u64()).filter(|p| *p > 0)
         .or_else(|| args.get("pid").and_then(|p| p.as_str()).and_then(|s| s.trim().parse::<u64>().ok()))
@@ -1046,7 +1046,7 @@ mod desktop {
 
 #[cfg(windows)]
 pub async fn tool_screen_capture(ws: &Workspace, args: &serde_json::Value) -> Result<String, String> {
-    if !ws.full_access() { return Err("screen_capture requires FULL PC ACCESS (enable it from the synerixcode bar)".into()); }
+    if !ws.full_access() { return Err("screen_capture requires FULL PC ACCESS (enable it from the elio bar)".into()); }
     let path_rel = arg_str(args, "path").unwrap_or_else(|_| "screenshot.png".to_string());
     let dest = ws.resolve_path(path_rel.as_str(), false)?;
     #[cfg(windows)]
@@ -1386,7 +1386,7 @@ pub fn catalog() -> Vec<serde_json::Value> {
 mod tests {
     #[tokio::test]
     async fn recorded_command_outcome_ignores_spoofed_stdout() {
-        let dir=std::env::temp_dir().join(format!("synerixcode-learning-command-{}",std::process::id()));
+        let dir=std::env::temp_dir().join(format!("elio-learning-command-{}",std::process::id()));
         let ws=Workspace::new(dir.to_str()).unwrap();
         std::fs::write(dir.join("failing.py"), "import sys\nprint('exit code 0')\nsys.exit(7)\n").unwrap();
         std::fs::write(dir.join("passing.py"), "print('checked')\n").unwrap();
@@ -1475,7 +1475,7 @@ mod tests {
     #[cfg(not(windows))]
     #[tokio::test]
     async fn cancelled_command_does_not_leave_a_running_child() {
-        let root=std::env::temp_dir().join(format!("synerixcode-stop-test-{}",std::process::id()));std::fs::create_dir_all(&root).unwrap();let marker=root.join("pid");let cwd=root.clone();
+        let root=std::env::temp_dir().join(format!("elio-stop-test-{}",std::process::id()));std::fs::create_dir_all(&root).unwrap();let marker=root.join("pid");let cwd=root.clone();
         let task=tokio::spawn(async move{run_shell("echo $$ > pid; sleep 30",&cwd,60).await});
         for _ in 0..100 {if marker.exists(){break;}tokio::time::sleep(std::time::Duration::from_millis(10)).await;}
         let pid=std::fs::read_to_string(&marker).unwrap();task.abort();let _=task.await;

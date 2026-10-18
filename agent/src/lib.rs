@@ -47,10 +47,10 @@ mod integration {
             ("12345678-1234-1234-1234-123456789abc", "https://example.com", 403),
             ("12345678-1234-1234-1234-123456789abc", "null", 403),
             ("12345678-1234-1234-1234-123456789abc", "chrome-extension://12345678-1234-1234-1234-123456789abc", 403),
-            ("synerixcode@synerixcode.local", "", 403),
+            ("elio@elio.local", "", 403),
         ] {
             let request = Request::builder().method("POST").uri("/api/pair")
-                .header("content-type", "application/json").header("x-synerixcode-extension", id);
+                .header("content-type", "application/json").header("x-elio-extension", id);
             let request = if origin.is_empty() { request } else { request.header("origin", origin) };
             let response = app.clone().oneshot(request.body(Body::empty()).unwrap()).await.unwrap();
             assert_eq!(response.status().as_u16(), expected);

@@ -2,13 +2,13 @@
 from pathlib import Path
 import os,subprocess,tempfile,time,json,urllib.request,shutil
 root=Path(__file__).resolve().parent
-with tempfile.TemporaryDirectory(prefix='synerixcode-platform-') as temporary:
- install=Path(temporary);name='synerixcode.exe' if os.name=='nt' else 'synerixcode';shutil.copy2(Path(os.environ.get('SYNERIXCODE_TEST_BINARY',str(root/'agent/target/release'/name))),install/name)
+with tempfile.TemporaryDirectory(prefix='elio-platform-') as temporary:
+ install=Path(temporary);name='elio.exe' if os.name=='nt' else 'elio';shutil.copy2(Path(os.environ.get('ELIO_TEST_BINARY',str(root/'agent/target/release'/name))),install/name)
  workspace=install/'workspace';workspace.mkdir();config=install/'config';config.mkdir()
- env={**os.environ,'SYNERIXCODE_WORKSPACE_ROOT':str(workspace),'LOCALAPPDATA':str(config),'XDG_CONFIG_HOME':str(config)}
+ env={**os.environ,'ELIO_WORKSPACE_ROOT':str(workspace),'LOCALAPPDATA':str(config),'XDG_CONFIG_HOME':str(config)}
  log=(install/'output.log').open('w');process=subprocess.Popen([str(install/name),'--headless'],env=env,stdout=log,stderr=log)
  try:
-  keyfile=config/'synerixcode/bridge-key';key=''
+  keyfile=config/'elio/bridge-key';key=''
   for attempt in range(100):
    if process.poll() is not None:raise RuntimeError('Bridge exited: '+(install/'output.log').read_text())
    if keyfile.exists():
@@ -44,8 +44,8 @@ with tempfile.TemporaryDirectory(prefix='synerixcode-platform-') as temporary:
   assert '<roblox' in request('/api/creations',{'action':'export','build_id':'smoke','revision':1})['xml']
   assert 'blueprint' in request('/api/creations',{'action':'read','build_id':'smoke'})['record']
   request('/api/creations',{'action':'remove','build_id':'smoke','revision':1})
-  html=urllib.request.urlopen('http://127.0.0.1:3000/desktop-ui',timeout=5).read().decode();assert '__SYNERIXCODE_CREATOR_CORE__' not in html;assert 'pc-create-revision' in html
-  subprocess.run(['node','test-bridges.js'],env={**env,'SYNERIXCODE_TEST_KEY':key},check=True,timeout=25)
+  html=urllib.request.urlopen('http://127.0.0.1:3000/desktop-ui',timeout=5).read().decode();assert '__ELIO_CREATOR_CORE__' not in html;assert 'pc-create-revision' in html
+  subprocess.run(['node','test-bridges.js'],env={**env,'ELIO_TEST_KEY':key},check=True,timeout=25)
   print('PASS native startup, authenticated APIs, isolated workspace, creator persistence/export, unauthorized rejection and embedded desktop assets')
  finally:
   process.terminate()

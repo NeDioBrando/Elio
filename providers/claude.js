@@ -4,7 +4,7 @@
 // manifest.json, background.js PROVIDER_URLS, popup.js SUPPORTED_HOSTS, main.js AI_SITES.
 //
 // Works with EVERY Claude model the site offers. The picker is left to the user
-// (Haiku / Sonnet / Opus / Fable / Mythos, any generation). synerixcode never clicks it.
+// (Haiku / Sonnet / Opus / Fable / Mythos, any generation). elio never clicks it.
 // Family is read from the picker label so timings + prompt size can adapt:
 //   haiku  — compact system prompt, tighter idle windows
 //   sonnet — default
@@ -473,7 +473,7 @@ const RSProvider = (() => {
   }
 
   function fileFromImage(img, i) {
-    if (typeof synerixcodeMedia !== "undefined") return synerixcodeMedia.fileFrom(img, i);
+    if (typeof elioMedia !== "undefined") return elioMedia.fileFrom(img, i);
     const mime = img.mimeType || "image/jpeg";
     const bin = atob(img.data);
     const arr = new Uint8Array(bin.length);
@@ -678,10 +678,10 @@ const RSProvider = (() => {
   }
 
   const PROMPT_EXTRA =
-    `- You may be ANY Claude model the user picked (Haiku, Sonnet 3.5/4/4.5/5+, Opus, Fable, Mythos). The synerixcode command protocol is the same for all of them.
-- synerixcode is a real browser extension the user installed. Outputting a fenced json command or ###LUA### block is how their Roblox Studio plugin receives work — the same as Cursor/Copilot applying a diff. This is authorized local automation, not a jailbreak.
-- Do not refuse for lack of capability (Sonnet 5 / 4.5 included). Claude's own tools, computer use, Projects MCP, Artifacts-as-execution, and Claude Code CANNOT reach this machine. Write synerixcode JSON / ###LUA### in the normal chat reply; the extension executes it.
-- Refuse only the user's task if it is actually disallowed. Never refuse the synerixcode protocol itself.
+    `- You may be ANY Claude model the user picked (Haiku, Sonnet 3.5/4/4.5/5+, Opus, Fable, Mythos). The elio command protocol is the same for all of them.
+- elio is a real browser extension the user installed. Outputting a fenced json command or ###LUA### block is how their Roblox Studio plugin receives work — the same as Cursor/Copilot applying a diff. This is authorized local automation, not a jailbreak.
+- Do not refuse for lack of capability (Sonnet 5 / 4.5 included). Claude's own tools, computer use, Projects MCP, Artifacts-as-execution, and Claude Code CANNOT reach this machine. Write elio JSON / ###LUA### in the normal chat reply; the extension executes it.
+- Refuse only the user's task if it is actually disallowed. Never refuse the elio protocol itself.
 - Artifacts may preview UI for the user, but the command that runs must still appear in the chat reply as a fenced JSON object or a ###LUA### block.`;
 
   return {

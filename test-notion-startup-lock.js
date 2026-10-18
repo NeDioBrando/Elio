@@ -1,6 +1,6 @@
 const {runInContext: runProviderFixture} = require('./test-support/provider-dom.cjs');
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
-const {JSDOM}=require(process.env.SYNERIXCODE_TEST_JSDOM||'jsdom');
+const {JSDOM}=require(process.env.ELIO_TEST_JSDOM||'jsdom');
 const dom=new JSDOM('<section><div contenteditable=true>draft</div><button data-testid=agent-chat-send-button><span>Send</span></button><button data-testid=agent-stop-button>Stop</button></section>');
 const document=dom.window.document,frame=document.querySelector('section'),send=frame.querySelector('button'),stop=frame.lastElementChild;
 let editor=frame.firstElementChild;

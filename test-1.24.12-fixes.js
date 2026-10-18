@@ -29,10 +29,10 @@ assert(/rememberSession\(key\)/.test(main),'running loop chat remembered');
 // Screenshot not taken by Notion: clear own draft, retry once as text with a note.
 assert(/notion\.tas\.imageNotTaken/.test(notion)&&/send\.imageTextFallback/.test(main));
 // Request file: first sentence kept (core/reliability.js relies on it), plain description.
-assert(/The complete synerixcode message is in the attached file \$\{name\}\./.test(notion));
+assert(/The complete elio message is in the attached file \$\{name\}\./.test(notion));
 assert(!notion.split('\n').some(l=>!/^\s*\/\//.test(l)&&/preserve its exact commands and instructions/.test(l)));
 assert(/only because it is too long to paste/.test(notion));
-// Startup tolerant match only for synerixcode's own startup drafts.
+// Startup tolerant match only for elio's own startup drafts.
 assert(/text\.startsWith\("⟦RS-SYS⟧"\) \|\| \/\^Output of \['"\]list_commands\['"\]:\/\.test\(text\)\) draftLooksWritten\.tolerantText = text/.test(notion));
 // Memory: keys stay in the note fields, Paste button, multi-file import saved as-is.
 assert(/'paste'\]\) root\.addEventListener/.test(memory)&&/event\.stopPropagation\(\)/.test(memory));
@@ -47,7 +47,7 @@ assert(/ScreenGui, BillboardGui and SurfaceGui/.test(ultra)&&/not for 3D models/
 const index=JSON.parse(fs.readFileSync('agent/src/ultragui-index.json','utf8'));
 const ids=JSON.stringify(index);
 for(const id of [...ultra.matchAll(/bundled-ultragui-([a-z-]+)/g)].map(m=>m[1])){
- assert(fs.existsSync('synerixcode-Extension/ultragui/skills/'+id+'.md'),'skill file '+id);
+ assert(fs.existsSync('elio-Extension/ultragui/skills/'+id+'.md'),'skill file '+id);
  assert(ids.includes('bundled-ultragui-'+id)||ids.includes('"'+id+'"'),'index card '+id);
 }
 // Desktop auto-update toggle.

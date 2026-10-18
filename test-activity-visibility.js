@@ -1,5 +1,5 @@
 const assert = require('assert');
-const {JSDOM} = require(process.env.SYNERIXCODE_TEST_JSDOM || 'jsdom');
+const {JSDOM} = require(process.env.ELIO_TEST_JSDOM || 'jsdom');
 const dom = new JSDOM('<main><article>Original reply</article></main>');
 global.document = dom.window.document;
 const Activity = require('./core/activity.js');

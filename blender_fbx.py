@@ -1,15 +1,15 @@
 # Sent to Blender as execute_code. Placeholders:
-#   __SYNERIXCODE_MODE__  export | import | dump
-#   __SYNERIXCODE_FILE__  a Python string literal (r"..." or "")
-#   __SYNERIXCODE_NAMES__ a Python list literal or None
+#   __ELIO_MODE__  export | import | dump
+#   __ELIO_FILE__  a Python string literal (r"..." or "")
+#   __ELIO_NAMES__ a Python list literal or None
 import bpy
 import json
 import os
 import traceback
 
-MODE = """__SYNERIXCODE_MODE__"""
-FILE = __SYNERIXCODE_FILE__
-NAMES = __SYNERIXCODE_NAMES__
+MODE = """__ELIO_MODE__"""
+FILE = __ELIO_FILE__
+NAMES = __ELIO_NAMES__
 
 
 def enable_fbx():
@@ -52,9 +52,9 @@ def run_op(op, **kwargs):
 
 def default_path():
     home = os.path.expanduser("~")
-    folder = os.path.join(home, "Documents", "synerixcode")
+    folder = os.path.join(home, "Documents", "elio")
     os.makedirs(folder, exist_ok=True)
-    return os.path.join(folder, "synerixcode_export.fbx")
+    return os.path.join(folder, "elio_export.fbx")
 
 
 def select_meshes(names):
@@ -109,7 +109,7 @@ def dump_meshes(names):
 
 def emit(payload):
     text = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
-    print("SYNERIXCODE_MESH_JSON:" + text)
+    print("ELIO_MESH_JSON:" + text)
     # blender-mcp execute_code often returns the `result` name from exec()
     global result
     result = payload

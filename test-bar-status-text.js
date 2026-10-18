@@ -7,7 +7,7 @@
 //    reads as a hang.
 const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
 const main=fs.readFileSync(__dirname+'/core/main.js','utf8');
-assert.equal(main,fs.readFileSync(__dirname+'/synerixcode-Extension/core/main.js','utf8'),'main.js copies are in sync');
+assert.equal(main,fs.readFileSync(__dirname+'/elio-Extension/core/main.js','utf8'),'main.js copies are in sync');
 assert(!main.includes('No agent on this chat. Restart to start <b>Roblox</b>.'),'old engine-blind message is gone');
 const m=/const engineName = currentEngine === "local" \? "AgentScript" : "Roblox Studio";\s*msg = `([^`]+)`;/.exec(main);
 assert(m,'engine-aware no-agent message');
@@ -27,7 +27,7 @@ assert.equal(fn({toolRunning:true,toolName:'get_game_tree'},P(false)),'running <
 assert.equal(fn({injecting:true},P(false)),'sending the result to Notion AI');
 assert.equal(fn({},P(true)),'Notion AI is writing');
 assert.equal(fn({},P(false)),'waiting for Notion AI to finish','native Stop gone but loop still settling');
-assert.equal(fn({waitingForClarification:true,toolRunning:true,toolName:'synerixcode_clarify'},P(false)),'','clarification keeps its own panel');
+assert.equal(fn({waitingForClarification:true,toolRunning:true,toolName:'elio_clarify'},P(false)),'','clarification keeps its own panel');
 assert.equal(fn({toolRunning:true,toolName:'<img src=x onerror=1>'},P(false)).includes('<img'),false,'tool names cannot inject markup');
 assert.equal(fn({},{displayName:'Chat<GPT>',isHardGenerating:()=>{throw Error('boom');},isGenerating:()=>false}),'waiting for ChatGPT to finish','provider errors never break the bar');
 assert(/if \(A\.started && A\.running && !A\.stopping && toneClass === "active"\) \{\s*const phase = loopPhaseText\(\);/.test(main),'phase only replaces healthy running text, never warnings');

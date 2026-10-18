@@ -16,7 +16,7 @@
 //    and its header reads "Response provided by <vendor>" ABOVE the .prose body
 //    (we read ONLY .prose, so that header never counts as model output).
 //  - Fenced code is a REAL <pre> (textContent preserves newlines - no
-//    CodeMirror/Monaco), wrapped in a <div class="not-prose">. synerixcode's
+//    CodeMirror/Monaco), wrapped in a <div class="not-prose">. elio's
 //    command markers/JSON survive intact in textContent.
 //  - The composer is a real <textarea> inside a <form> (the ONLY form textarea;
 //    other page textareas are recaptcha/aria-hidden). We set its .value via the
@@ -325,7 +325,7 @@ const RSProvider = (() => {
   const userCount = () => allItems().filter(isUserItem).length;
 
   // The composer textarea = the ONLY <textarea> inside a <form> (other page
-  // textareas are recaptcha/aria-hidden). Scope away synerixcode's own settings
+  // textareas are recaptcha/aria-hidden). Scope away elio's own settings
   // textarea (#rs-root) so the send hooks' "not on a chat page" guard holds on
   // login/OAuth pages that have no site composer.
   const getEditor = () => {
@@ -528,7 +528,7 @@ const RSProvider = (() => {
     if (!text || text.length <= SEND_CAP) return text;
     const omitted = text.length - SEND_MAX;
     const marker =
-      `\n\n[…synerixcode: result truncated to fit Arena's input limit - ` +
+      `\n\n[…elio: result truncated to fit Arena's input limit - ` +
       `${omitted} of ${text.length} characters omitted…]\n\n`;
     const budget = SEND_MAX - marker.length;
     const headLen = Math.floor(budget * 0.85);
@@ -665,7 +665,7 @@ const RSProvider = (() => {
   // Arena has four chat modes (the conversation-mode dropdown): Direct (1 model),
   // Battle Mode (2 anonymous models → always an A/B comparison), Side by Side
   // (2 chosen models → also A/B), and Agent Mode (autonomous, single model).
-  // synerixcode supports DIRECT only. Battle / Side by Side / Agent stay gated.
+  // elio supports DIRECT only. Battle / Side by Side / Agent stay gated.
   // Agent Mode is a SEPARATE app (route /agent) — we warn and disable Start.
   // The mode dropdown's trigger
   // is a `button[role="combobox"]` whose visible text IS the current mode name.
@@ -723,7 +723,7 @@ const RSProvider = (() => {
 
   // ── One-shot: restore Direct on page load ──────────────────────────────────
   // Arena sometimes reloads into Battle mode (e.g. after a login/OAuth round-trip
-  // bounces the tab), which synerixcode can't drive. We nudge the mode dropdown
+  // bounces the tab), which elio can't drive. We nudge the mode dropdown
   // back to Direct ONCE per page load - never on a sweep, so a user who later
   // deliberately picks another mode is not fought (the mode guard/warning still
   // covers that case). We only touch the plain chat route and only when the
@@ -755,7 +755,7 @@ const RSProvider = (() => {
     if (!ok && combo.getAttribute("aria-expanded") === "true") { try { combo.click(); } catch {} } // reclose on failure
   }
 
-  // Visible mode guard for the synerixcode bar (core renderBar reads this every
+  // Visible mode guard for the elio bar (core renderBar reads this every
   // sweep). Returns a warning string while an unsupported mode (Battle / Side by
   // Side / Agent) is selected, "" when Direct (or mode unknown → fail open so a
   // DOM reskin never nags on the supported default). The core turns this into a
@@ -766,18 +766,18 @@ const RSProvider = (() => {
     const um = activeUnsupportedMode();
     if (um)
       return `Turn off <b>${um.label}</b> (${um.tip} in the composer) - ` +
-        `synerixcode only works in plain chat. ${um.label} mode uses a different ` +
+        `elio only works in plain chat. ${um.label} mode uses a different ` +
         `output surface and breaks the agent loop.`;
     if (isSupportedMode()) return "";
     const m = currentMode();
     const name = m ? m.charAt(0).toUpperCase() + m.slice(1) : "another mode";
-    return `Switch the mode dropdown to <b>Direct</b> - synerixcode ` +
+    return `Switch the mode dropdown to <b>Direct</b> - elio ` +
       `does not drive Battle / Side by Side / Agent (current: <b>${name}</b>).`;
   }
 
   // A bot-check challenge is on screen (Cloudflare Turnstile / hCaptcha /
   // reCAPTCHA). We NEVER interact with it: the core reads this only to move the
-  // synerixcode bar out of the way: the anchored bar is transparent but still a
+  // elio bar out of the way: the anchored bar is transparent but still a
   // real, full-width element over the composer's top edge, so it silently eats
   // clicks on the challenge's "Valider" button even though nothing is visible.
   const CAPTCHA_SEL =
@@ -808,7 +808,7 @@ const RSProvider = (() => {
 
   // A modal dialog (login / create-account / consent) is open over the page.
   // Arena renders these as Radix dialogs = a visible [role="dialog"]. While one is
-  // up, the anchored synerixcode bar (a real, full-width element hugging the
+  // up, the anchored elio bar (a real, full-width element hugging the
   // composer's top edge) sits ON TOP of the modal and silently intercepts clicks
   // on its buttons - e.g. "Continue with Google" at sign-in. The core hides the
   // bar whenever this is true (same get-out-of-the-way path as captchaPresent).
@@ -864,7 +864,7 @@ const RSProvider = (() => {
   // network trace showed no request on file-select, and the sent turn then
   // carries an https image). So "attach done" = the preview card has mounted.
   function fileFromImage(img, i) {
-    if (typeof synerixcodeMedia !== "undefined") return synerixcodeMedia.fileFrom(img, i);
+    if (typeof elioMedia !== "undefined") return elioMedia.fileFrom(img, i);
     const mime = img.mimeType || "image/jpeg";
     const bin = atob(img.data);
     const arr = new Uint8Array(bin.length);

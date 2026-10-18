@@ -69,12 +69,12 @@ impl Store {
    return Ok(json!({"ok":true,"skills":starred.into_iter().take(8).chain(rest.into_iter().take(3)).map(|(_,skill)|skill).collect::<Vec<_>>() }));
   }
   let id=request["id"].as_str().unwrap_or("");
-  if action=="read"&&id.starts_with("bundled-ultra-"){return crate::starter_skills::read_ultra(&crate::platform::installation_root().join("synerixcode-Extension/ultra"),id,request);}
+  if action=="read"&&id.starts_with("bundled-ultra-"){return crate::starter_skills::read_ultra(&crate::platform::installation_root().join("elio-Extension/ultra"),id,request);}
   // Hidden GUI methods remain usable at Ultra even if their old library card was deleted.
-  if action=="read"&&id.starts_with("bundled-ultragui-")&&request["effort"]=="ultracode" {let skill=crate::starter_skills::ultragui_catalog().into_iter().find(|s|s["id"]==id).ok_or_else(||anyhow::anyhow!("Unknown built-in Ultra method"))?;let bundle=crate::starter_skills::read_ultragui(&crate::platform::installation_root().join("synerixcode-Extension/ultragui"),id,request)?;return Ok(json!({"ok":true,"skill":skill,"bundle":bundle}));}
+  if action=="read"&&id.starts_with("bundled-ultragui-")&&request["effort"]=="ultracode" {let skill=crate::starter_skills::ultragui_catalog().into_iter().find(|s|s["id"]==id).ok_or_else(||anyhow::anyhow!("Unknown built-in Ultra method"))?;let bundle=crate::starter_skills::read_ultragui(&crate::platform::installation_root().join("elio-Extension/ultragui"),id,request)?;return Ok(json!({"ok":true,"skill":skill,"bundle":bundle}));}
   if action=="read"||action=="export" {let skill=self.data.skills.get(id).ok_or_else(||anyhow::anyhow!("Skill not found."))?;let mut result=json!({"ok":true,"skill":if action=="export"{public(skill)}else{serde_json::to_value(skill)?}});
-   if action=="read" && id.starts_with("starter-syphodev-") {result["bundle"]=crate::starter_skills::read(&crate::platform::installation_root().join("synerixcode-Extension/starter-skills/syphodev"),id,request)?;}
-   if action=="read" && id.starts_with("bundled-ultragui-") {result["bundle"]=crate::starter_skills::read_ultragui(&crate::platform::installation_root().join("synerixcode-Extension/ultragui"),id,request)?;}
+   if action=="read" && id.starts_with("starter-syphodev-") {result["bundle"]=crate::starter_skills::read(&crate::platform::installation_root().join("elio-Extension/starter-skills/syphodev"),id,request)?;}
+   if action=="read" && id.starts_with("bundled-ultragui-") {result["bundle"]=crate::starter_skills::read_ultragui(&crate::platform::installation_root().join("elio-Extension/ultragui"),id,request)?;}
    return Ok(result);}
   let mut data=self.data.clone();
   match action {
@@ -114,9 +114,9 @@ fn placeholder_title(title:&str)->bool{let t=normal_title(title);t.is_empty()||m
 fn untouched_auto_candidate(s:&Skill)->bool{s.id.starts_with("task-")&&s.revision<=1&&!s.confirmed&&!s.enabled&&!s.favorite&&!s.community&&s.description==CANDIDATE_TEXT}
 fn kept_by_delete_all(id:&str)->bool{id.starts_with("starter-syphodev-")||id.starts_with("bundled-ultragui-")||id.starts_with("global-workflow-")}
 fn public(skill:&Skill)->Value {json!({"id":skill.id,"title":skill.title,"description":skill.description,"domain":skill.domain,"scope":"","steps":skill.steps,"pitfalls":skill.pitfalls,"verification":skill.verification,"confirmed":skill.confirmed,"revision":1,"community":true})}
-static STORE:once_cell::sync::Lazy<tokio::sync::Mutex<Store>>=once_cell::sync::Lazy::new(||{let base=std::env::var_os("LOCALAPPDATA").or_else(||std::env::var_os("XDG_CONFIG_HOME")).map(PathBuf::from).unwrap_or_else(||PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join(".config"));tokio::sync::Mutex::new(Store::load(base.join("synerixcode/skills.json")))});
-fn repository()->anyhow::Result<String>{let value=std::env::var("SYNERIXCODE_LEARNING_REPOSITORY").unwrap_or_else(|_|"stoveez/synerixcode".into());let parts=value.split('/').collect::<Vec<_>>();anyhow::ensure!(parts.len()==2&&parts.iter().all(|s|!s.is_empty()&&s.len()<=100&&s.bytes().all(|b|b.is_ascii_alphanumeric()||b"_- .".contains(&b))&&!s.contains(' ')),"Learning repository must be owner/repository on GitHub.");Ok(value)}
-fn client()->anyhow::Result<reqwest::Client>{Ok(reqwest::Client::builder().user_agent("synerixcode-skills").timeout(std::time::Duration::from_secs(25)).build()?)}
+static STORE:once_cell::sync::Lazy<tokio::sync::Mutex<Store>>=once_cell::sync::Lazy::new(||{let base=std::env::var_os("LOCALAPPDATA").or_else(||std::env::var_os("XDG_CONFIG_HOME")).map(PathBuf::from).unwrap_or_else(||PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join(".config"));tokio::sync::Mutex::new(Store::load(base.join("elio/skills.json")))});
+fn repository()->anyhow::Result<String>{let value=std::env::var("ELIO_LEARNING_REPOSITORY").unwrap_or_else(|_|"stoveez/elio".into());let parts=value.split('/').collect::<Vec<_>>();anyhow::ensure!(parts.len()==2&&parts.iter().all(|s|!s.is_empty()&&s.len()<=100&&s.bytes().all(|b|b.is_ascii_alphanumeric()||b"_- .".contains(&b))&&!s.contains(' ')),"Learning repository must be owner/repository on GitHub.");Ok(value)}
+fn client()->anyhow::Result<reqwest::Client>{Ok(reqwest::Client::builder().user_agent("elio-skills").timeout(std::time::Duration::from_secs(25)).build()?)}
 async fn github(client:&reqwest::Client,method:reqwest::Method,path:&str,body:Option<Value>,token:&str)->anyhow::Result<Value>{let mut req=client.request(method,format!("https://api.github.com/{path}")).bearer_auth(token).header("Accept","application/vnd.github+json");if let Some(body)=body{req=req.json(&body);}let response=req.send().await?;let status=response.status();let value:Value=response.json().await?;anyhow::ensure!(status.is_success(),"Shared Git request failed ({}): {}",status,value["message"].as_str().unwrap_or("GitHub rejected the operation"));Ok(value)}
 async fn sync()->anyhow::Result<Value>{
  let repo=repository()?;let response=client()?.get(format!("https://raw.githubusercontent.com/{repo}/main/learned-skills/index.json")).send().await?.error_for_status()?;
@@ -130,13 +130,13 @@ async fn publish(request:&Value)->anyhow::Result<Value>{
  anyhow::ensure!(request["reviewed"]==true,"Review the exact public lesson and remove private project details before sharing.");
  let value=STORE.lock().await.request(&json!({"action":"read","id":request["id"]}))?;let skill:Skill=serde_json::from_value(value["skill"].clone())?;
  anyhow::ensure!(skill.confirmed&&request["revision"].as_u64()==Some(skill.revision),"Only the current tested skill can be shared.");
- let token=std::env::var("SYNERIXCODE_GITHUB_TOKEN").map_err(|_|anyhow::anyhow!("Set SYNERIXCODE_GITHUB_TOKEN with write access to the learning repository, or export the lesson and contribute from GitHub."))?;
+ let token=std::env::var("ELIO_GITHUB_TOKEN").map_err(|_|anyhow::anyhow!("Set ELIO_GITHUB_TOKEN with write access to the learning repository, or export the lesson and contribute from GitHub."))?;
  let repo=repository()?;let client=client()?;let content=serde_json::to_string_pretty(&public(&skill))?;let digest=format!("{:x}",Sha256::digest(content.as_bytes()));let branch=format!("skill-contribution-{}",&digest[..16]);
  let get=reqwest::Method::GET;let post=reqwest::Method::POST;
  let base=github(&client,get.clone(),&format!("repos/{repo}/git/ref/heads/main"),None,&token).await?;let sha=base["object"]["sha"].as_str().ok_or_else(||anyhow::anyhow!("Missing main commit."))?;
  let commit=github(&client,get,&format!("repos/{repo}/git/commits/{sha}"),None,&token).await?;
  let tree=github(&client,post.clone(),&format!("repos/{repo}/git/trees"),Some(json!({"base_tree":commit["tree"]["sha"],"tree":[{"path":format!("learned-skills/proposals/{}.json",&digest[..16]),"mode":"100644","type":"blob","content":content}]})),&token).await?;
- let created=github(&client,post.clone(),&format!("repos/{repo}/git/commits"),Some(json!({"message":"Propose reviewed reusable synerixcode skill","tree":tree["sha"],"parents":[sha]})),&token).await?;
+ let created=github(&client,post.clone(),&format!("repos/{repo}/git/commits"),Some(json!({"message":"Propose reviewed reusable elio skill","tree":tree["sha"],"parents":[sha]})),&token).await?;
  github(&client,post.clone(),&format!("repos/{repo}/git/refs"),Some(json!({"ref":format!("refs/heads/{branch}"),"sha":created["sha"]})),&token).await?;
  let pull=github(&client,post,&format!("repos/{repo}/pulls"),Some(json!({"title":format!("Shared skill: {}",skill.title),"head":branch,"base":"main","body":"Reviewed reusable method. Maintainers: verify the lesson, remove private details and add approved content to learned-skills/index.json. No raw chat logs or project files are included.","draft":true})),&token).await?;
  Ok(json!({"ok":true,"url":pull["html_url"],"message":"Draft contribution created. Global use starts after maintainer review and index approval."}))
@@ -170,7 +170,7 @@ pub async fn post(State(state):State<crate::AppState>,Json(request):Json<Value>)
 }
 #[cfg(test)]mod tests{use super::*;
  #[test]fn explicit_saved_guidance_is_matched_without_claiming_verification(){
-  let path=std::env::temp_dir().join(format!("synerixcode-enabled-skills-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
+  let path=std::env::temp_dir().join(format!("elio-enabled-skills-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
   let mut store=Store::load(path.clone());let mut saved=skill();saved.id="guidance".into();saved.confirmed=false;saved.enabled=true;saved.verification.clear();saved.domain="all".into();
   store.request(&json!({"action":"save","skill":saved,"revision":0})).unwrap();
   let mut candidate=saved.clone();candidate.id="candidate".into();candidate.enabled=false;candidate.scope=String::new();store.request(&json!({"action":"save","skill":candidate,"revision":0})).unwrap();
@@ -183,9 +183,9 @@ pub async fn post(State(state):State<crate::AppState>,Json(request):Json<Value>)
   let _=std::fs::remove_file(path.with_extension("json.backup"));std::fs::remove_file(path).unwrap();
  }
  fn skill()->Skill{Skill{id:"test".into(),title:"Inventory".into(),description:"Inventory menu".into(),domain:"roblox".into(),scope:"project:A".into(),steps:vec!["Inspect existing UI conventions".into()],pitfalls:vec![],verification:vec!["Test open and close".into()],confirmed:true,enabled:false,revision:0,community:false,favorite:false}}
- #[test]fn scope_revision_and_corruption(){let path=std::env::temp_dir().join(format!("synerixcode-skills-{}.json",std::process::id()));let _=std::fs::remove_file(&path);let mut store=Store::load(path.clone());let s=skill();store.request(&json!({"action":"save","skill":s,"revision":0})).unwrap();assert!(store.request(&json!({"action":"save","skill":s,"revision":0})).is_err());assert_eq!(store.request(&json!({"action":"match","domain":"roblox","scope":"project:B","query":"inventory"})).unwrap()["skills"].as_array().unwrap().iter().filter(|s|s["id"]=="test").count(),0);assert_eq!(store.request(&json!({"action":"match","domain":"roblox","scope":"project:A","query":"inventory"})).unwrap()["skills"].as_array().unwrap().iter().filter(|s|s["id"]=="test").count(),1);assert_eq!(public(&s)["scope"],"");std::fs::write(&path,b"broken").unwrap();let mut broken=Store::load(path.clone());assert!(broken.request(&json!({"action":"save","skill":s})).is_err());assert_eq!(std::fs::read(&path).unwrap(),b"broken");let _=std::fs::remove_file(path.with_extension("json.backup"));let _=std::fs::remove_file(path);}
+ #[test]fn scope_revision_and_corruption(){let path=std::env::temp_dir().join(format!("elio-skills-{}.json",std::process::id()));let _=std::fs::remove_file(&path);let mut store=Store::load(path.clone());let s=skill();store.request(&json!({"action":"save","skill":s,"revision":0})).unwrap();assert!(store.request(&json!({"action":"save","skill":s,"revision":0})).is_err());assert_eq!(store.request(&json!({"action":"match","domain":"roblox","scope":"project:B","query":"inventory"})).unwrap()["skills"].as_array().unwrap().iter().filter(|s|s["id"]=="test").count(),0);assert_eq!(store.request(&json!({"action":"match","domain":"roblox","scope":"project:A","query":"inventory"})).unwrap()["skills"].as_array().unwrap().iter().filter(|s|s["id"]=="test").count(),1);assert_eq!(public(&s)["scope"],"");std::fs::write(&path,b"broken").unwrap();let mut broken=Store::load(path.clone());assert!(broken.request(&json!({"action":"save","skill":s})).is_err());assert_eq!(std::fs::read(&path).unwrap(),b"broken");let _=std::fs::remove_file(path.with_extension("json.backup"));let _=std::fs::remove_file(path);}
  #[test]fn ultragui_pack_two_replaces_retired_cards(){
-  let path=std::env::temp_dir().join(format!("synerixcode-ultragui-pack-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
+  let path=std::env::temp_dir().join(format!("elio-ultragui-pack-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
   let mut old=serde_json::from_value::<Skill>(json!({"id":"bundled-ultragui-gui-syntax","title":"Old","description":"old","domain":"ui","steps":["x"],"enabled":true})).unwrap();old.revision=1;
   let mut retired=old.clone();retired.id="bundled-ultragui-gui-layout".into();let mut mine=skill();mine.id="mine".into();
   let mut catalog=Catalog{starter_pack_version:1,ultragui_pack_version:1,..Default::default()};for s in [old,retired,mine]{catalog.skills.insert(s.id.clone(),s);}
@@ -197,7 +197,7 @@ pub async fn post(State(state):State<crate::AppState>,Json(request):Json<Value>)
   std::fs::remove_file(path).unwrap();
  }
  #[test]fn starter_seed_preserves_user_data_and_deletions(){
-  let path=std::env::temp_dir().join(format!("synerixcode-starter-store-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
+  let path=std::env::temp_dir().join(format!("elio-starter-store-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
   let mut store=Store::load(path.clone());assert_eq!(store.data.skills.len(),19);
   let s=skill();store.request(&json!({"action":"save","skill":s,"revision":0})).unwrap();
   store.request(&json!({"action":"delete","id":"starter-syphodev-roblox-code","revision":1})).unwrap();
@@ -208,7 +208,7 @@ pub async fn post(State(state):State<crate::AppState>,Json(request):Json<Value>)
 
  fn auto(id:&str,title:&str)->Skill{Skill{id:id.into(),title:title.into(),description:CANDIDATE_TEXT.into(),domain:"roblox".into(),scope:"chat:x".into(),steps:vec!["execute_luau".into(),"get_children".into(),"execute_luau".into()],pitfalls:vec![],verification:vec![],confirmed:false,enabled:false,revision:1,community:false,favorite:false}}
  #[test]fn cleanup_collapses_untouched_duplicates_once(){
-  let path=std::env::temp_dir().join(format!("synerixcode-candidate-cleanup-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
+  let path=std::env::temp_dir().join(format!("elio-candidate-cleanup-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
   let mut catalog=Catalog{starter_pack_version:1,ultragui_pack_version:2,..Default::default()};
   for n in 0..6 {let s=auto(&format!("task-a{n}"),"Back up the full current map, terrain and lighting");catalog.skills.insert(s.id.clone(),s);}
   for n in 0..4 {let s=auto(&format!("task-p{n}"),"Planning project work");catalog.skills.insert(s.id.clone(),s);}
@@ -224,7 +224,7 @@ pub async fn post(State(state):State<crate::AppState>,Json(request):Json<Value>)
   std::fs::remove_file(path).unwrap();
  }
  #[test]fn favourite_and_delete_all_keep_bundled_and_starred(){
-  let path=std::env::temp_dir().join(format!("synerixcode-favourite-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
+  let path=std::env::temp_dir().join(format!("elio-favourite-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
   let mut store=Store::load(path.clone());let bundled=store.data.skills.len();
   let mut a=skill();a.id="keep-me".into();store.request(&json!({"action":"save","skill":a,"revision":0})).unwrap();
   let mut b=skill();b.id="drop-me".into();store.request(&json!({"action":"save","skill":b,"revision":0})).unwrap();
@@ -239,7 +239,7 @@ pub async fn post(State(state):State<crate::AppState>,Json(request):Json<Value>)
   let _=std::fs::remove_file(path.with_extension("json.backup"));std::fs::remove_file(path).unwrap();
  }
  #[test]fn matching_ignores_filler_words(){
-  let path=std::env::temp_dir().join(format!("synerixcode-match-words-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
+  let path=std::env::temp_dir().join(format!("elio-match-words-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
   let mut store=Store::load(path.clone());
   let mut shop=skill();shop.id="shop".into();shop.title="Sword shop".into();shop.description="Shop UI with prices".into();shop.scope=String::new();store.request(&json!({"action":"save","skill":shop,"revision":0})).unwrap();
   let hit=store.request(&json!({"action":"match","query":"please make the and for with this game","domain":"roblox","scope":""})).unwrap();
@@ -250,7 +250,7 @@ pub async fn post(State(state):State<crate::AppState>,Json(request):Json<Value>)
  }
 
  #[test]fn favourites_get_priority_in_matching(){
-  let path=std::env::temp_dir().join(format!("synerixcode-favourite-match-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
+  let path=std::env::temp_dir().join(format!("elio-favourite-match-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
   let mut store=Store::load(path.clone());
   for (id,title) in [("a","Shop layout one"),("b","Shop layout two"),("c","Shop layout three"),("d","Shop layout four")]{let mut s=skill();s.id=id.into();s.title=title.into();s.description="shop".into();s.scope=String::new();store.request(&json!({"action":"save","skill":s,"revision":0})).unwrap();}
   let ids=|store:&mut Store|store.request(&json!({"action":"match","query":"shop layout","domain":"roblox","scope":""})).unwrap()["skills"].as_array().unwrap().iter().map(|s|s["id"].as_str().unwrap().to_string()).collect::<Vec<_>>();
@@ -276,7 +276,7 @@ pub async fn post(State(state):State<crate::AppState>,Json(request):Json<Value>)
 
 #[cfg(test)] mod deleted_skills_tests {
  use super::*;
- fn path(name:&str)->PathBuf {let p=std::env::temp_dir().join(format!("synerixcode-trash-{name}-{}.json",std::process::id()));for suffix in ["json","json.backup","json.tmp","json.backup.tmp"]{let _=std::fs::remove_file(p.with_extension(suffix));}p}
+ fn path(name:&str)->PathBuf {let p=std::env::temp_dir().join(format!("elio-trash-{name}-{}.json",std::process::id()));for suffix in ["json","json.backup","json.tmp","json.backup.tmp"]{let _=std::fs::remove_file(p.with_extension(suffix));}p}
  fn skill(id:&str)->Value {json!({"id":id,"title":"Reusable method","description":"TRASH_BODY_MUST_NOT_SURVIVE_PURGE","domain":"roblox","scope":"project:A","steps":["Inspect before editing"],"pitfalls":["Keep unrelated state"],"verification":["Run a real test"],"confirmed":true,"enabled":true,"favorite":true})}
  #[test]fn delete_reload_restore_preserves_method_and_rejects_stale_operations(){
   let path=path("restore");let mut store=Store::load(path.clone());store.request(&json!({"action":"save","skill":skill("mine")})).unwrap();

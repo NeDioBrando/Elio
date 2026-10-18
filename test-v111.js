@@ -44,4 +44,4 @@ ok("luau chunks use long-strings not JSONDecode", mainSrc.includes("function lua
 const manifest = JSON.parse(fs.readFileSync(__dirname + "/manifest.json", "utf8"));
 const [maj, min] = manifest.version.split(".").map(Number);
 ok("manifest at 1.11.0 or newer", maj > 1 || min >= 11);
-ok("manifest name is synerixcode", manifest.name.includes("synerixcode"));
+ok("manifest name is elio", manifest.name.includes("elio"));

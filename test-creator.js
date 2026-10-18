@@ -1,6 +1,6 @@
 const assert=require('assert'),fs=require('fs'),vm=require('vm'),{performance}=require('perf_hooks');
 const context=vm.createContext({crypto:require('crypto').webcrypto,console});
-vm.runInContext(fs.readFileSync('core/headless-builder.js','utf8')+'\n'+fs.readFileSync('core/creator.js','utf8')+'\nthis.C=synerixcodeCreator;this.H=ZSHeadlessBuilder;',context);const {C,H}=context;
+vm.runInContext(fs.readFileSync('core/headless-builder.js','utf8')+'\n'+fs.readFileSync('core/creator.js','utf8')+'\nthis.C=elioCreator;this.H=ZSHeadlessBuilder;',context);const {C,H}=context;
 function req(nodes,extra={}){return {action_id:'pass-1',build_id:'creator-test',mode:'model',operation:'replace',target_parent:'game.Workspace',root_name:'CreatedModel',root_id:'root',nodes:extra.operation==='patch'?nodes:[{id:'root',class:'Model'},...nodes],...extra};}
 const part=(id,x=0)=>({id,class:'Part',parent:'root',properties:{Size:{type:'Vector3',x:2,y:2,z:2},Position:{type:'Vector3',x,y:1,z:0},Material:{type:'Enum',value:'Enum.Material.WoodPlanks'}}});
 let draft=C.merge(null,req([part('body')]));assert.equal(draft.nodes.length,2);assert.equal(draft.nodes[1].properties.Material.value,'Enum.Material.WoodPlanks');

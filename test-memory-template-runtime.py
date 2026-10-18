@@ -2,23 +2,23 @@
 from pathlib import Path
 import tempfile,os,subprocess,time,json,shutil,urllib.request,urllib.error,hashlib
 source=Path(__file__).resolve().parent
-with tempfile.TemporaryDirectory(prefix='synerixcode-memory-template-') as temporary:
+with tempfile.TemporaryDirectory(prefix='elio-memory-template-') as temporary:
  root=Path(temporary);config=root/'config';config.mkdir();workspace=root/'workspace';workspace.mkdir()
- name='synerixcode.exe' if os.name=='nt' else 'synerixcode'
- bundle=os.environ.get('SYNERIXCODE_TEST_BUNDLE')
+ name='elio.exe' if os.name=='nt' else 'elio'
+ bundle=os.environ.get('ELIO_TEST_BUNDLE')
  if bundle:
-  shutil.copytree(bundle,root/'synerixcode.app');binary=root/'synerixcode.app/Contents/MacOS/synerixcode'
+  shutil.copytree(bundle,root/'elio.app');binary=root/'elio.app/Contents/MacOS/elio'
  else:
-  binary=root/name;shutil.copy2(Path(os.environ.get('SYNERIXCODE_TEST_BINARY',str(source/'agent/target/debug'/name))),binary)
+  binary=root/name;shutil.copy2(Path(os.environ.get('ELIO_TEST_BINARY',str(source/'agent/target/debug'/name))),binary)
  platform='windows' if os.name=='nt' else 'darwin' if __import__('sys').platform=='darwin' else 'linux'
  arch='arm64' if __import__('platform').machine().lower() in ['arm64','aarch64'] else 'amd64'
  runtime=root/'runtime/engram';runtime.mkdir(parents=True)
  engram=runtime/f'engram-{platform}-{arch}{".exe" if os.name=="nt" else ""}'
- shutil.copy2(os.environ['SYNERIXCODE_TEST_ENGRAM'],engram);engram.chmod(0o755)
- env={**os.environ,'LOCALAPPDATA':str(config),'XDG_CONFIG_HOME':str(config),'SYNERIXCODE_WORKSPACE_ROOT':str(workspace)}
+ shutil.copy2(os.environ['ELIO_TEST_ENGRAM'],engram);engram.chmod(0o755)
+ env={**os.environ,'LOCALAPPDATA':str(config),'XDG_CONFIG_HOME':str(config),'ELIO_WORKSPACE_ROOT':str(workspace)}
  output=(root/'output.log').open('w');process=subprocess.Popen([str(binary),'--headless'],env=env,stdout=output,stderr=output)
  try:
-  keyfile=config/'synerixcode/bridge-key';key=''
+  keyfile=config/'elio/bridge-key';key=''
   def request(path,body=None,raw=None):
    req=urllib.request.Request('http://127.0.0.1:3000'+path,data=raw if raw is not None else json.dumps(body).encode() if body is not None else None,headers={'Authorization':'Bearer '+key,'Content-Type':'application/octet-stream' if raw is not None else 'application/json'})
    with urllib.request.urlopen(req,timeout=30) as response:return json.load(response)
@@ -57,7 +57,7 @@ with tempfile.TemporaryDirectory(prefix='synerixcode-memory-template-') as tempo
   try:request('/api/memory',{'action':'add','text':'over capacity'});raise AssertionError('500K total limit ignored')
   except urllib.error.HTTPError as e:assert e.code==400
   request('/api/memory',{'action':'remove','id':large['memory']['entries'][0]['id']})
-  request('/api/chat-history',{'chat_id':'chat:alpha','provider':'Fixture','history':[{'id':'u1','role':'user','text':'Exact logged request'}],'handoff':{'format':'synerixcode-chat-transfer','version':1,'history':[]}})
+  request('/api/chat-history',{'chat_id':'chat:alpha','provider':'Fixture','history':[{'id':'u1','role':'user','text':'Exact logged request'}],'handoff':{'format':'elio-chat-transfer','version':1,'history':[]}})
   assert request('/api/chat-history',{'action':'list'})['chats'][0]['messages']==1
   assert request('/api/chat-history',{'action':'export','chat_id':'chat:alpha'})['log']['history'][0]['text']=='Exact logged request'
 
@@ -79,7 +79,7 @@ with tempfile.TemporaryDirectory(prefix='synerixcode-memory-template-') as tempo
   assert result['state']=='complete',result
   matches=request('/api/templates',{'action':'match','query':'combat cooldown system'})['matches'];assert matches and matches[0]['source']==code,matches
   read=request('/api/templates',{'action':'read','id':matches[0]['id'],'path':matches[0]['path'],'script_id':matches[0]['script_id']});assert read['source']==code
-  stored=config/'synerixcode/templates'/matches[0]['id']/'template.rbxmx'
+  stored=config/'elio/templates'/matches[0]['id']/'template.rbxmx'
   def digest(path):
    h=hashlib.sha256()
    with path.open('rb') as f:

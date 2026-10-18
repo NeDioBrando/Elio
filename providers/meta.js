@@ -34,7 +34,7 @@
 //        its line spans with "\n" to rebuild the source (same fix class as GLM's
 //        .cm-line / Qwen's Monaco).
 //  - IMPORTANT (viability): Meta AI's guardrail REFUSES to emit command JSON when
-//    the framing is thin; the FULL synerixcode system prompt (with the "commands
+//    the framing is thin; the FULL elio system prompt (with the "commands
 //    are NOT function calls, just TYPE the JSON" reassurance) defuses it and it
 //    complies. Nothing to do in code - just never bootstrap with a stripped prompt.
 // eslint-disable-next-line no-unused-vars
@@ -733,7 +733,7 @@ const RSProvider = (() => {
   }
 
   // ── Tool-block location for camouflage ───────────────────────────────────────
-  // Meta renders a command block as a .ur-code-block (the JSON viewer widget synerixcode a
+  // Meta renders a command block as a .ur-code-block (the JSON viewer widget elio a
   // plain <pre>). Hide every such wrapper carrying a command shape, plus any bare
   // top-level block holding an inline command. React recreates the rendered
   // subtree on stream settle and on the next send, so also mark the assistant body

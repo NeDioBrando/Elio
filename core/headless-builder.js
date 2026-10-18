@@ -21,7 +21,7 @@ const ZSHeadlessBuilder = (() => {
   const NAME_RE = /^[^\u0000-\u001f\u007f.]{1,100}$/;
   const PATH_RE = /^game(?:\.[A-Za-z_][A-Za-z0-9_]*){1,15}$/;
   const BLOCKED_PROPERTIES = new Set(["Name", "Parent", "Source", "LinkedSource", "ScriptGuid", "UniqueId", "HistoryId"]);
-  const RESERVED_ATTRIBUTES = new Set(["synerixcodeBuildId", "synerixcodeNodeId", "synerixcodeActionId", "synerixcodeActionLedger"]);
+  const RESERVED_ATTRIBUTES = new Set(["elioBuildId", "elioNodeId", "elioActionId", "elioActionLedger"]);
   const ASSET_PROPERTIES = new Set(["Image", "Video", "MeshId", "TextureId", "TextureID", "Texture"]);
 
   const UI_CLASSES = new Set([
@@ -530,10 +530,10 @@ const ZSHeadlessBuilder = (() => {
     const json = JSON.stringify(request);
     return `local HttpService = game:GetService("HttpService")
 local request = HttpService:JSONDecode(${longBracket(json)})
-local BUILD_ATTR = "synerixcodeBuildId"
-local NODE_ATTR = "synerixcodeNodeId"
-local ACTION_ATTR = "synerixcodeActionId"
-local LEDGER_ATTR = "synerixcodeActionLedger"
+local BUILD_ATTR = "elioBuildId"
+local NODE_ATTR = "elioNodeId"
+local ACTION_ATTR = "elioActionId"
+local LEDGER_ATTR = "elioActionLedger"
 local function respond(value) return HttpService:JSONEncode(value) end
 local function resolvePath(path)
   local current = game

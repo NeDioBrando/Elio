@@ -314,7 +314,7 @@ const RSProvider = (() => {
     // that outer wrapper the item we hide/decorate (ChatGPT virtualizes it), but it
     // is safe to READ command-shaped descendants from it. Explicitly reject anything
     // inside a user bubble/role so a user who pasted a JSON example can never cause
-    // synerixcode to execute their own text as if it came from the assistant.
+    // elio to execute their own text as if it came from the assistant.
     if (!COMMANDISH_TEXT.test(reply)) {
       let scope = null;
       try { scope = (safeRead(() => item.closest, null) && safeClosest(item, S.turn)) || (safeRead(() => item.closest, null) && safeClosest(item, "[data-turn-key]")); } catch {}
@@ -352,7 +352,7 @@ const RSProvider = (() => {
   // still streaming, which leaves bootstrap stuck at users:0/results:0 forever.
   // Instead start from the actual role-bearing content and climb only to the
   // nearest INNER stable message container. This preserves the site's outer
-  // layout/virtualization node while still giving synerixcode a real DOM element to
+  // layout/virtualization node while still giving elio a real DOM element to
   // mask and decorate.
   function itemRoot(signal) {
     if (!signal || !safeRead(() => signal.closest, null)) return signal;
@@ -795,7 +795,7 @@ const RSProvider = (() => {
     const lines = String(text).split("\n");
     if (text.length <= SEND_MAX_CHARS && lines.length <= SEND_MAX_LINES) return text;
     const marker = (what) =>
-      `\n\n[…synerixcode: result truncated (${what}) so it can be pasted into ` +
+      `\n\n[…elio: result truncated (${what}) so it can be pasted into ` +
       `ChatGPT's composer without freezing the page. Do NOT re-run the command; ` +
       `work with the head and tail shown here…]\n\n`;
     let out, note;
@@ -913,7 +913,7 @@ const RSProvider = (() => {
     const oldCaret = safeRead(() => ed.style.caretColor, "");
     try {
       try { document.documentElement.classList.add("rs-chatgpt-injecting"); } catch {}
-      // Internal synerixcode messages are implementation detail. Keep the composer
+      // Internal elio messages are implementation detail. Keep the composer
       // visually blank while they are inserted so the user does not watch a huge
       // system prompt or tool result appear to be pasted into their chat box.
       ed.style.opacity = "0";
@@ -1073,7 +1073,7 @@ const RSProvider = (() => {
 
   // ── Image attachment (best effort: paste + hidden file input) ─────────────
   function fileFromImage(img, i) {
-    if (typeof synerixcodeMedia !== "undefined") return synerixcodeMedia.fileFrom(img, i);
+    if (typeof elioMedia !== "undefined") return elioMedia.fileFrom(img, i);
     const mime = img.mimeType || "image/jpeg";
     const bin = atob(img.data);
     const arr = new Uint8Array(bin.length);
@@ -1148,7 +1148,7 @@ const RSProvider = (() => {
   // producing a new picture instead of doing the Roblox work the image was
   // meant to illustrate. Its native image tool also runs in the sandbox that
   // cannot touch the user's project, so a generated image is a dead end here.
-  const PROMPT_EXTRA = `- WHEN THE USER SENDS AN IMAGE: by default it is REFERENCE MATERIAL for the work they want done in their project - a screenshot of a bug, a mockup of the UI they want, a photo of the thing to build, a picture of what is wrong in Studio. Look at it, use it to understand what they want, and then do that work with the synerixcode commands. Do NOT generate a new image from it, and do NOT treat it as an image-editing request. Only generate an image when the user EXPLICITLY asks you to create, generate, draw or edit one ("make me an image of...", "generate a texture", "edit this picture"). If what they want from the image is genuinely unclear, ask them in one short sentence rather than guessing - and never guess "they want a picture".`;
+  const PROMPT_EXTRA = `- WHEN THE USER SENDS AN IMAGE: by default it is REFERENCE MATERIAL for the work they want done in their project - a screenshot of a bug, a mockup of the UI they want, a photo of the thing to build, a picture of what is wrong in Studio. Look at it, use it to understand what they want, and then do that work with the elio commands. Do NOT generate a new image from it, and do NOT treat it as an image-editing request. Only generate an image when the user EXPLICITLY asks you to create, generate, draw or edit one ("make me an image of...", "generate a texture", "edit this picture"). If what they want from the image is genuinely unclear, ask them in one short sentence rather than guessing - and never guess "they want a picture".`;
 
   // ── User-send interception ────────────────────────────────────────────────
   async function writeDraft(value, expectedCurrent) {

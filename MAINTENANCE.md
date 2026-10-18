@@ -1,6 +1,7 @@
-# synerixcode v1 maintenance
+# Elio 1.0.1 maintenance
 
-See README-RU.md, Build-Windows.ps1 and .github/workflows/build-windows.yml.
-No product updater or release feed is included.
-Run node test-synerixcode.cjs and cargo test --locked --manifest-path agent/Cargo.toml.
-Future versions require an explicit manual source change and a new build.
+Use README-RU.md, Build-Windows.ps1 and .github/workflows/build-windows.yml.
+The opt-in updater is pinned to NeDioBrando/Elio and exact elio-vX.Y.Z-Windows-x64.zip assets.
+Run test-elio-rename.cjs, test-elio-identity.cjs, test-elio-audit.cjs and cargo test --locked --manifest-path agent/Cargo.toml.
+Install matching elio.exe and elio-Extension together. Original product storage/pairing is not automatically migrated.
+Historical appearance publishing helpers are retired. Future versions require synchronized package versions and a new tested build.

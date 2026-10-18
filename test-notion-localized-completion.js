@@ -9,7 +9,7 @@ for(const label of ['Helpful','Erneut generieren','Gute Antwort','Régénérer',
   assert.equal(p.softGenerationSettled(item,'Finished response',700),true,label+' avoids the nine-second soft tail');
   const stop=w.document.createElement('button');stop.setAttribute('aria-label','Stop');w.document.querySelector('#composer').appendChild(stop);assert.equal(p.softGenerationSettled(item,'Finished response',12000),false,'Native Stop always wins');stop.remove();
   const other=w.document.createElement('div');other.textContent='Unfinished response';w.document.querySelector('main').appendChild(other);assert.equal(p.softGenerationSettled(other,'Unfinished response',12000),false,'Historical completion actions never complete another response');
-  assert.equal(p.softGenerationSettled(other,'synerixcode ist bereit.',700),true,'German ready acknowledgement avoids the soft tail');
+  assert.equal(p.softGenerationSettled(other,'elio ist bereit.',700),true,'German ready acknowledgement avoids the soft tail');
  }finally{w.close();}
 }
 console.log('PASS localized final response controls remove unnecessary soft-tail waits while requiring stable current-response text and no native Stop.');

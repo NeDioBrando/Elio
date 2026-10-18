@@ -1,7 +1,7 @@
 // The Notion bar must sit on the chat box even when Notion's placeholder text
 // changes, follow the chat box when it moves, and centre any fallback on the
 // main content column instead of the whole window (which is offset by the sidebar).
-const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict'),{JSDOM}=require(process.env.SYNERIXCODE_TEST_JSDOM||'jsdom');
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict'),{JSDOM}=require(process.env.ELIO_TEST_JSDOM||'jsdom');
 const source=fs.readFileSync(__dirname+'/providers/notion.js','utf8');
 // Reuse the exact Notion AI route used by the established bar-seat test.
 const AI_URL=/url:'([^']+)'/.exec(fs.readFileSync(__dirname+'/test-notion-bar-seat.js','utf8'))[1];

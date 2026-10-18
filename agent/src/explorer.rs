@@ -27,7 +27,7 @@ fn payload(text:&str)->anyhow::Result<Value> {
         }}
         if let Some(value)=visit(&value){return Ok(value);}
     }
-    let marker="SYNERIXCODE_EXPLORER:";
+    let marker="ELIO_EXPLORER:";
     let start=text.find(marker).ok_or_else(||anyhow::anyhow!("Studio did not confirm Explorer result: {}",text.chars().take(1200).collect::<String>()))?+marker.len();
     serde_json::Deserializer::from_str(&text[start..]).into_iter::<Value>().next().ok_or_else(||anyhow::anyhow!("Empty Explorer result."))?.map_err(Into::into)
 }
@@ -45,6 +45,6 @@ pub async fn post(State(state):State<crate::AppState>,Json(request):Json<Value>)
 }
 #[cfg(test)]mod tests {use super::*;
  #[test]fn quoted_request_is_data(){let v=json!({"action":"write","id":"12","session":"s","source":"]];error('bad') --","expected":""});let s=code(&v).unwrap();assert!(s.contains("JSONDecode([=["));assert!(code(&json!({"action":"read","id":"1;error()"})).is_err());}
- #[test]fn nested_mcp_payload_is_decoded(){let text="SYNERIXCODE_EXPLORER:{\"ok\":true,\"session\":\"test\"}";assert_eq!(payload(text).unwrap()["session"],"test");let wrapper=json!({"result":{"text":text}}).to_string();assert_eq!(payload(&wrapper).unwrap()["ok"],true);}
+ #[test]fn nested_mcp_payload_is_decoded(){let text="ELIO_EXPLORER:{\"ok\":true,\"session\":\"test\"}";assert_eq!(payload(text).unwrap()["session"],"test");let wrapper=json!({"result":{"text":text}}).to_string();assert_eq!(payload(&wrapper).unwrap()["ok"],true);}
  #[test]fn guards_are_required(){let source=include_str!("explorer.luau");for guard in ["request.session ~= state.session","current ~= request.expected","Run:IsRunning()","UpdateSourceAsync","TryBeginRecording","IsDescendantOf(game)"]{assert!(source.contains(guard));}}
 }

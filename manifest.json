@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "synerixcode × Roblox Studio & AgentScript",
-  "version": "1.0.0",
+  "name": "Elio",
+  "version": "1.0.1",
   "minimum_chrome_version": "111",
-  "description": "synerixcode connects supported AI chats to Roblox Studio and local AgentScript with animation, VFX, Luau knowledge, web research, and project tools.",
+  "description": "Your AI, connected to Roblox Studio, Blender and your creative tools.",
   "permissions": [
     "storage",
     "activeTab",
@@ -86,7 +86,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "synerixcode 1.0.0 — RS/AS",
+    "default_title": "Elio",
     "default_icon": {
       "16": "icon.png",
       "48": "icon.png",
@@ -225,10 +225,13 @@
         "core/media.js",
         "core/reliability.js",
         "providers/media.js",
+        "core/chat-view.js",
+        "core/theme.js",
         "core/main.js"
       ],
       "css": [
-        "overlay.css"
+        "overlay.css",
+        "core/theme.css"
       ],
       "run_at": "document_idle"
     },
@@ -284,10 +287,13 @@
         "core/media.js",
         "core/reliability.js",
         "providers/media.js",
+        "core/chat-view.js",
+        "core/theme.js",
         "core/main.js"
       ],
       "css": [
-        "overlay.css"
+        "overlay.css",
+        "core/theme.css"
       ],
       "run_at": "document_idle"
     },
@@ -334,10 +340,13 @@
         "core/media.js",
         "core/reliability.js",
         "providers/media.js",
+        "core/chat-view.js",
+        "core/theme.js",
         "core/main.js"
       ],
       "css": [
-        "overlay.css"
+        "overlay.css",
+        "core/theme.css"
       ],
       "run_at": "document_idle"
     },
@@ -381,10 +390,13 @@
         "core/media.js",
         "core/reliability.js",
         "providers/media.js",
+        "core/chat-view.js",
+        "core/theme.js",
         "core/main.js"
       ],
       "css": [
-        "overlay.css"
+        "overlay.css",
+        "core/theme.css"
       ],
       "run_at": "document_idle"
     },
@@ -431,10 +443,13 @@
         "core/media.js",
         "core/reliability.js",
         "providers/media.js",
+        "core/chat-view.js",
+        "core/theme.js",
         "core/main.js"
       ],
       "css": [
-        "overlay.css"
+        "overlay.css",
+        "core/theme.css"
       ],
       "run_at": "document_idle"
     },
@@ -478,10 +493,13 @@
         "core/media.js",
         "core/reliability.js",
         "providers/media.js",
+        "core/chat-view.js",
+        "core/theme.js",
         "core/main.js"
       ],
       "css": [
-        "overlay.css"
+        "overlay.css",
+        "core/theme.css"
       ],
       "run_at": "document_idle"
     },
@@ -525,10 +543,13 @@
         "core/media.js",
         "core/reliability.js",
         "providers/media.js",
+        "core/chat-view.js",
+        "core/theme.js",
         "core/main.js"
       ],
       "css": [
-        "overlay.css"
+        "overlay.css",
+        "core/theme.css"
       ],
       "run_at": "document_idle"
     },
@@ -575,10 +596,13 @@
         "core/media.js",
         "core/reliability.js",
         "providers/media.js",
+        "core/chat-view.js",
+        "core/theme.js",
         "core/main.js"
       ],
       "css": [
-        "overlay.css"
+        "overlay.css",
+        "core/theme.css"
       ],
       "run_at": "document_idle"
     },
@@ -632,10 +656,13 @@
         "core/media.js",
         "core/reliability.js",
         "providers/media.js",
+        "core/chat-view.js",
+        "core/theme.js",
         "core/main.js"
       ],
       "css": [
-        "overlay.css"
+        "overlay.css",
+        "core/theme.css"
       ],
       "run_at": "document_idle"
     },
@@ -689,10 +716,13 @@
         "core/media.js",
         "core/reliability.js",
         "providers/media.js",
+        "core/chat-view.js",
+        "core/theme.js",
         "core/main.js"
       ],
       "css": [
-        "overlay.css"
+        "overlay.css",
+        "core/theme.css"
       ],
       "run_at": "document_idle"
     },
@@ -737,10 +767,13 @@
         "core/media.js",
         "core/reliability.js",
         "providers/media.js",
+        "core/chat-view.js",
+        "core/theme.js",
         "core/main.js"
       ],
       "css": [
-        "overlay.css"
+        "overlay.css",
+        "core/theme.css"
       ],
       "run_at": "document_idle"
     },
@@ -787,10 +820,13 @@
         "core/media.js",
         "core/reliability.js",
         "providers/media.js",
+        "core/chat-view.js",
+        "core/theme.js",
         "core/main.js"
       ],
       "css": [
-        "overlay.css"
+        "overlay.css",
+        "core/theme.css"
       ],
       "run_at": "document_idle"
     },
@@ -838,10 +874,13 @@
         "core/media.js",
         "core/reliability.js",
         "providers/media.js",
+        "core/chat-view.js",
+        "core/theme.js",
         "core/main.js"
       ],
       "css": [
-        "overlay.css"
+        "overlay.css",
+        "core/theme.css"
       ],
       "run_at": "document_idle"
     },
@@ -885,10 +924,13 @@
         "core/media.js",
         "core/reliability.js",
         "providers/media.js",
+        "core/chat-view.js",
+        "core/theme.js",
         "core/main.js"
       ],
       "css": [
-        "overlay.css"
+        "overlay.css",
+        "core/theme.css"
       ],
       "run_at": "document_idle"
     },
@@ -934,13 +976,16 @@
         "core/media.js",
         "core/reliability.js",
         "providers/media.js",
+        "core/chat-view.js",
+        "core/theme.js",
         "core/main.js"
       ],
       "css": [
-        "overlay.css"
+        "overlay.css",
+        "core/theme.css"
       ],
       "run_at": "document_idle"
     }
   ],
-  "version_name": "1.0.0"
+  "version_name": "1.0.1"
 }

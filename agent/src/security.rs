@@ -16,7 +16,7 @@ fn firefox_uuid(id: &str) -> bool {
 }
 
 pub fn can_auto_pair(headers: &HeaderMap) -> bool {
-    let Some(id) = headers.get("x-synerixcode-extension").and_then(|v| v.to_str().ok()) else { return false; };
+    let Some(id) = headers.get("x-elio-extension").and_then(|v| v.to_str().ok()) else { return false; };
     let scheme = if chromium_id(id) { "chrome-extension" }
         else if firefox_uuid(id) { "moz-extension" } else { return false; };
     if headers.get("content-type").and_then(|v| v.to_str().ok()) != Some("application/json") { return false; }
@@ -31,7 +31,7 @@ pub fn allowed_origin(headers: &HeaderMap) -> bool {
         None => true,
         Some(value) => {
             let Ok(origin) = value.to_str() else { return false; };
-            if matches!(origin, "http://127.0.0.1:3000" | "http://localhost:3000" | "http://synerixcode.localhost") {
+            if matches!(origin, "http://127.0.0.1:3000" | "http://localhost:3000" | "http://elio.localhost") {
                 return true;
             }
             origin.strip_prefix("chrome-extension://").map(chromium_id).unwrap_or(false)
@@ -45,7 +45,7 @@ pub fn authorized(headers: &HeaderMap, key: &str) -> bool {
     let bearer = headers.get("authorization").and_then(|v| v.to_str().ok())
         .and_then(|v| v.strip_prefix("Bearer "));
     let protocol = headers.get("sec-websocket-protocol").and_then(|v| v.to_str().ok())
-        .and_then(|v| v.split(',').find_map(|p| p.trim().strip_prefix("synerixcode-auth.")));
+        .and_then(|v| v.split(',').find_map(|p| p.trim().strip_prefix("elio-auth.")));
     bearer.or(protocol).map(|candidate| {
         candidate.len() == key.len() && candidate.bytes().zip(key.bytes()).fold(0u8, |d, (a, b)| d | (a ^ b)) == 0
     }).unwrap_or(false)
@@ -57,7 +57,7 @@ pub fn load_key() -> anyhow::Result<String> {
         .map(std::path::PathBuf::from)
         .or_else(|| std::env::var_os("HOME").map(|p| std::path::PathBuf::from(p).join(".config")))
         .ok_or_else(|| anyhow::anyhow!("Cannot locate the user's pairing-key directory"))?;
-    let dir = base.join("synerixcode");
+    let dir = base.join("elio");
     std::fs::create_dir_all(&dir)?;
     #[cfg(unix)] {
         use std::os::unix::fs::PermissionsExt;
@@ -99,11 +99,11 @@ mod tests {
         h.insert("origin", format!("chrome-extension://{}", "a".repeat(32)).parse().unwrap());
         assert!(authorized(&h, &key));
         h.remove("authorization");
-        h.insert("sec-websocket-protocol", format!("synerixcode, synerixcode-auth.{key}").parse().unwrap());
+        h.insert("sec-websocket-protocol", format!("elio, elio-auth.{key}").parse().unwrap());
         assert!(authorized(&h, &key));
         h.insert("origin", "null".parse().unwrap());
         assert!(!authorized(&h, &key));
-        h.insert("origin", "http://synerixcode.localhost".parse().unwrap());
+        h.insert("origin", "http://elio.localhost".parse().unwrap());
         assert!(authorized(&h, &key));
     }
 }
@@ -122,7 +122,7 @@ pub async fn require_pairing(
         return response;
     }
     if !authorized(request.headers(), &key) {
-        return (axum::http::StatusCode::UNAUTHORIZED, "Pair synerixcode using the key in the agent window").into_response();
+        return (axum::http::StatusCode::UNAUTHORIZED, "Pair elio using the key in the agent window").into_response();
     }
     next.run(request).await
 }

@@ -1,9 +1,9 @@
-const synerixcodeChatCreators = (() => {
+const elioChatCreators = (() => {
   'use strict';
-  const policy = 'CHAT MODEL/UI CREATION: When asked to make a Roblox model or UI, automatically use synerixcode creation_preview in this chat; no desktop navigation is needed. Read relevant saved creator feedback, save a shape/layout pass, then bounded stable-ID detail patches. Use the headless_build blueprint schema, actual Roblox materials, world-space part centers and native UI properties. Each save is at most 120 nodes/55,000 characters, total at most 800 nodes. Save status ready only after validation and finish detailing. A RobloxScript model/UI creation request defaults to Studio insertion unless explicitly preview/draft/planning/export-only. Call creation_insert with the saved build_id and exact current revision, then verify the returned result and inspect/playtest relevant behavior. Never recreate the design independently in Luau: insertion uses the saved preview blueprint. Preview-only, draft-only, planning, export-only and do-not-insert requests MUST NOT insert. The desktop Create preview flow explicitly remains preview-only until Insert is chosen. Revise the same saved build for follow-up visual changes; preserve unrelated instances and gameplay scripts. Existing script bug fixes, gameplay logic and edits to unrelated existing UI/models use their normal tools. Creator preview rendering approximates Studio lighting/materials/fonts/layout; identical blueprint properties are not a promise of pixel-identical rendering. Studio insertion success must come from confirmed tool results.';
+  const policy = 'CHAT MODEL/UI CREATION: When asked to make a Roblox model or UI, automatically use elio creation_preview in this chat; no desktop navigation is needed. Read relevant saved creator feedback, save a shape/layout pass, then bounded stable-ID detail patches. Use the headless_build blueprint schema, actual Roblox materials, world-space part centers and native UI properties. Each save is at most 120 nodes/55,000 characters, total at most 800 nodes. Save status ready only after validation and finish detailing. A RobloxScript model/UI creation request defaults to Studio insertion unless explicitly preview/draft/planning/export-only. Call creation_insert with the saved build_id and exact current revision, then verify the returned result and inspect/playtest relevant behavior. Never recreate the design independently in Luau: insertion uses the saved preview blueprint. Preview-only, draft-only, planning, export-only and do-not-insert requests MUST NOT insert. The desktop Create preview flow explicitly remains preview-only until Insert is chosen. Revise the same saved build for follow-up visual changes; preserve unrelated instances and gameplay scripts. Existing script bug fixes, gameplay logic and edits to unrelated existing UI/models use their normal tools. Creator preview rendering approximates Studio lighting/materials/fonts/layout; identical blueprint properties are not a promise of pixel-identical rendering. Studio insertion success must come from confirmed tool results.';
   const tool = {
     name: 'creation_insert', server: 'roblox',
-    description: 'Insert a READY saved synerixcode creator model/UI directly from this chat using its exact blueprint and revision. No desktop Insert button is required. Use after creation_preview for Studio creation requests; never for preview-only requests. Uses bounded, owned, exactly-once Studio passes; inspect partial/ambiguous failures before retrying.',
+    description: 'Insert a READY saved elio creator model/UI directly from this chat using its exact blueprint and revision. No desktop Insert button is required. Use after creation_preview for Studio creation requests; never for preview-only requests. Uses bounded, owned, exactly-once Studio passes; inspect partial/ambiguous failures before retrying.',
     inputSchema: {type:'object',required:['build_id','revision','action_id'],additionalProperties:false,properties:{
       build_id:{type:'string',description:'The saved creation_preview build_id.'},
       revision:{type:'integer',description:'Exact revision returned by the latest save/read.'},
@@ -36,7 +36,7 @@ const synerixcodeChatCreators = (() => {
     if(!creation || !visual || /\b(?:machine learning|language model|data model|view model|database model)\b/i.test(request))return '';
     return policy+'\nAvailable chat insertion command: '+JSON.stringify(tool)+'\nContinue the current request through the creator tools. Preserve explicit preview-only and placement instructions; do not restart the agent.';
   }
-  function enhancementRequest(raw){return '(System note: Automatically enhance the current synerixcode model/UI request before any creator mutation. Output only an improved prompt; do not create, save or insert anything in this rewrite turn.)\n'+synerixcodeEnhancer.buildRequest(raw);}
+  function enhancementRequest(raw){return '(System note: Automatically enhance the current elio model/UI request before any creator mutation. Output only an improved prompt; do not create, save or insert anything in this rewrite turn.)\n'+elioEnhancer.buildRequest(raw);}
   function executionRequest(raw,enhanced){return '(System note: The creator prompt enhancement pass is complete. Continue the current task using the enhanced wording below. The exact original request remains authoritative: retain its names, dimensions, placement, style, constraints, preview-only instructions and all unfinished goals. Do not repeat the rewrite pass. No earlier proposed creator command was executed.)\n'+policy+'\nEXACT ORIGINAL REQUEST:\n'+raw+'\nENHANCED CREATION BRIEF:\n'+enhanced;}
   function createEnhancer(env){
     const pending=new Map();
@@ -49,9 +49,9 @@ const synerixcodeChatCreators = (() => {
     }};
   }
   function batches(blueprint) {
-    const draft=synerixcodeCreator.clone(blueprint);
+    const draft=elioCreator.clone(blueprint);
     for(const node of draft.nodes||[]){if(node.id===draft.root_id && node.parent==='')delete node.parent;if(node.name==='')delete node.name;}
-    return synerixcodeCreator.batches(draft);
+    return elioCreator.batches(draft);
   }
   function create(env) {
     const outcomes = new Map();
@@ -80,7 +80,7 @@ const synerixcodeChatCreators = (() => {
           if(record.revision!==args.revision)throw Error('Draft changed. Read the latest revision before inserting.');
           if(record.status!=='ready')throw Error('Finish the draft and save status ready before inserting; partial/building drafts are not inserted automatically.');
           if(record.blueprint?.build_id!==args.build_id)throw Error('Saved build identity does not match.');
-          const draft=synerixcodeCreator.clone(record.blueprint);
+          const draft=elioCreator.clone(record.blueprint);
           const passes=batches(draft);
           total=passes.length;
           for(let index=0;index<passes.length;index++) {
@@ -111,4 +111,4 @@ const synerixcodeChatCreators = (() => {
   }
   return {policy,tool,routeRequest,previewOnly,recoverPreview,batches,create,enhancementRequest,executionRequest,createEnhancer};
 })();
-if(typeof module!=='undefined')module.exports=synerixcodeChatCreators;
+if(typeof module!=='undefined')module.exports=elioChatCreators;

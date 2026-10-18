@@ -1,6 +1,6 @@
 # One-shot JSON round-trip to the blender-mcp addon (TCP 9876).
 #   powershell -File blender_once.ps1 -Probe
-#   powershell -File blender_once.ps1 synerixcode_blender_in.json synerixcode_blender_out.json
+#   powershell -File blender_once.ps1 elio_blender_in.json elio_blender_out.json
 param(
   [Parameter(Position = 0)] [string]$InFile = "",
   [Parameter(Position = 1)] [string]$OutFile = "",
@@ -63,12 +63,12 @@ try {
   $rawOut = Recv-Json $stream
   $stream.Close(); $client.Close()
   Write-Utf8NoBom $OutFile $rawOut
-  Write-Output "SYNERIXCODE_BLENDER_OK"
+  Write-Output "ELIO_BLENDER_OK"
   exit 0
 } catch {
   $msg = [string]$_.Exception.Message
   $err = (@{ status = "error"; message = $msg } | ConvertTo-Json -Compress)
   try { Write-Utf8NoBom $OutFile $err } catch {}
-  Write-Output ("SYNERIXCODE_BLENDER_ERR " + $msg)
+  Write-Output ("ELIO_BLENDER_ERR " + $msg)
   exit 1
 }

@@ -2,7 +2,7 @@
 // an on/off setting (default ON) in the bar settings and the desktop Settings
 // page. Off never shows the prompt and closes an open one; on keeps the
 // existing behavior. The preference syncs with the desktop app.
-const {JSDOM,VirtualConsole}=require(process.env.SYNERIXCODE_TEST_JSDOM || 'jsdom');const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const {JSDOM,VirtualConsole}=require(process.env.ELIO_TEST_JSDOM || 'jsdom');const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
 const root=__dirname;const manifest=JSON.parse(fs.readFileSync(root+'/manifest.json'));
 const handoff={chat_id:'chatgpt|previous',provider:'ChatGPT',reason:'Latest captured chat',handoff:{has_user_request:true},history:[{role:'user',text:'Build a round system for my obby'}]};
 async function run(stored){
@@ -49,6 +49,6 @@ const offer=d=>d.querySelector('.rs-continuation-offer');
  assert(/"rsVisualCheck",\s*"rsContinuationOffer",/.test(bg),'extension syncs the preference with the desktop app');
  assert(desk.includes('<div class="toggle" data-pref="rsContinuationOffer"></div>'),'desktop Settings has the toggle');
  assert(/#\[serde\(rename = "rsContinuationOffer"\)\]\s*pub continuation_offer: bool/.test(prefs)&&prefs.includes('continuation_offer:true'),'desktop preference defaults to on');
- for(const f of ['core/main.js','background.js'])assert.equal(fs.readFileSync(root+'/'+f,'utf8'),fs.readFileSync(root+'/synerixcode-Extension/'+f,'utf8'),f+' copies are in sync');
+ for(const f of ['core/main.js','background.js'])assert.equal(fs.readFileSync(root+'/'+f,'utf8'),fs.readFileSync(root+'/elio-Extension/'+f,'utf8'),f+' copies are in sync');
  console.log('Continuation prompt toggle: on by default, off never prompts and closes an open prompt, synced between the bar and desktop settings.');
 })().catch(e=>{console.error(e);process.exit(1);});

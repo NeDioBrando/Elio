@@ -4,13 +4,13 @@
 const {chromium}=require('playwright');
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const root=__dirname;
-const output=process.env.SYNERIXCODE_TEST_OUTPUT || process.cwd();
+const output=process.env.ELIO_TEST_OUTPUT || process.cwd();
 fs.mkdirSync(output,{recursive:true});
 function html(){
  let text=fs.readFileSync(path.join(root,'agent/src/desktop.html'),'utf8');
- const tokens={I18N_CATALOG:'i18n-catalog',I18N:'i18n',SKILLS_UI:'skills-ui',EXPLORER_UI:'explorer-ui',MEDIA_UI:'media',MEMORY_UI:'memory',TOOLKIT_UI:'toolkit-ui',TASK_UI:'task-center',TEMPLATE_UI:'templates',VERSION_UI:'version'};
- for(const [token,file] of Object.entries(tokens))text=text.replace('__SYNERIXCODE_'+token+'__',()=>fs.readFileSync(path.join(root,'synerixcode-Extension/core',file+'.js'),'utf8'));
- return text.replaceAll('__SYNERIXCODE_VERSION__','1.0.0').replaceAll('__SYNERIXCODE_PAIRING_KEY__','a'.repeat(64)).replace('__SYNERIXCODE_DESKTOP_CHAT_CSS__',()=>fs.readFileSync(path.join(root,'desktop/chat.css'),'utf8')).replace('__SYNERIXCODE_DESKTOP_CHAT_JS__',()=>fs.readFileSync(path.join(root,'desktop/chat.js'),'utf8'));
+ const tokens={I18N_CATALOG:'i18n-catalog',I18N:'i18n',SKILLS_UI:'skills-ui',EXPLORER_UI:'explorer-ui',MEDIA_UI:'media',MEMORY_UI:'memory',TOOLKIT_UI:'toolkit-ui',TASK_UI:'task-center',TEMPLATE_UI:'templates',VERSION_UI:'version',CHAT_VIEW:'chat-view'};
+ for(const [token,file] of Object.entries(tokens))text=text.replace('__ELIO_'+token+'__',()=>fs.readFileSync(path.join(root,'elio-Extension/core',file+'.js'),'utf8'));
+ return text.replace('__ELIO_THEME_CSS__',()=>fs.readFileSync(path.join(root,'core/theme.css'),'utf8')).replace('__ELIO_THEME_JS__',()=>fs.readFileSync(path.join(root,'core/theme.js'),'utf8')).replaceAll('__ELIO_VERSION__',require('./manifest.json').version).replaceAll('__ELIO_PAIRING_KEY__','a'.repeat(64)).replace('__ELIO_SHELL_CSS__',()=>fs.readFileSync(path.join(root,'desktop/elio.css'),'utf8')).replace('__ELIO_DESKTOP_CHAT_CSS__',()=>fs.readFileSync(path.join(root,'desktop/chat.css'),'utf8')).replace('__ELIO_DESKTOP_CHAT_JS__',()=>fs.readFileSync(path.join(root,'desktop/chat.js'),'utf8'));
 }
 async function main(){
  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH || chromium.executablePath(),args:['--no-sandbox']});
@@ -18,7 +18,7 @@ async function main(){
  const page=await browser.newPage({viewport:{width:1460,height:900}});const errors=[];page.on('pageerror',e=>errors.push(String(e)));
  let control={},history=[],revision=0,fail=false,requests=[];
  const state=()=>({ok:true,browser_agent:control,preferences:{},tools:[],logs:[],servers:[],roblox_connected:true,blender_connected:false});
- await page.addInitScript(()=>{window.__SYNERIXCODE_BOOT__={key:'a'.repeat(64),apiUrl:'http://127.0.0.1:3000'};});
+ await page.addInitScript(()=>{window.__ELIO_BOOT__={key:'a'.repeat(64),apiUrl:'http://127.0.0.1:3000'};});
  await page.route('http://127.0.0.1:3000/**',async route=>{
   const request=route.request(),url=new URL(request.url());
   if(url.pathname==='/desktop-ui')return route.fulfill({contentType:'text/html',body:html()});
@@ -36,14 +36,14 @@ async function main(){
  await page.goto('http://127.0.0.1:3000/desktop-ui');
  await page.waitForSelector('#sc-chat-input');await page.waitForTimeout(1300);
  assert.equal(await page.locator('#page-chat').evaluate(e=>e.classList.contains('active')),true);
- await page.screenshot({path:path.join(output,'synerix-chat-empty.png')});
+ await page.screenshot({path:path.join(output,'elio-chat-empty.png')});
  control={canChatRead:true,canChatPin:true,canTaskSend:true,canStart:false,canStop:false,chat:'mock|first',provider:'ChatGPT',browser_id:'browser-1',tab_id:42,engine:'roblox',status:'Готов к вашему запросу.'};
  history=[{id:'u',role:'user',text:'Создай небольшую сцену с мягким вечерним светом в Roblox Studio.'},{id:'a',role:'assistant',text:'Начну с освещения и базовой геометрии. Затем проверю сцену через подключённые инструменты.\n\n```lua\nlocal Lighting = game:GetService("Lighting")\nLighting.ClockTime = 18.5\nLighting.Brightness = 2\n```\nДобавлю тёплый направленный свет и сохраню исходные объекты проекта.'}];revision++;
  await page.waitForSelector('.sc-chat-message');
  await page.locator('#sc-chat-pin').click();await page.waitForFunction(()=>document.querySelector('#sc-chat-pin').getAttribute('aria-pressed')==='true');
 
  assert.equal(await page.locator('#sc-chat-pin').getAttribute('aria-pressed'),'true');
- await page.screenshot({path:path.join(output,'synerix-chat-ready.png')});
+ await page.screenshot({path:path.join(output,'elio-chat-ready.png')});
  history[1].text+='\n<img src=x onerror="window.bad=true"><script>window.bad=true</script>';revision++;
  await page.waitForTimeout(2300);assert.equal(await page.locator('.sc-chat-message img,.sc-chat-message script').count(),0);assert.equal(await page.evaluate(()=>window.bad),undefined);
  // New streaming text replaces the existing row rather than creating a duplicate.
@@ -55,7 +55,7 @@ async function main(){
  const firstId=requests.filter(x=>x.action==='task-send').at(-1).request_id;
  await page.locator('#sc-chat-send').click();await page.waitForTimeout(200);
  assert.equal(requests.filter(x=>x.action==='task-send').at(-1).request_id,firstId);
- await page.screenshot({path:path.join(output,'synerix-chat-error.png')});
+ await page.screenshot({path:path.join(output,'elio-chat-error.png')});
  // Target switch hides old messages and separates drafts; no automatic send.
  const sendCount=requests.filter(x=>x.action==='task-send').length;
  control={...control,chat:'mock|second'};history=[];revision++;
@@ -65,7 +65,7 @@ async function main(){
  // Module also remains usable in narrow host surfaces (native minimum is 900px).
  await page.setViewportSize({width:390,height:844});
  await page.addStyleTag({content:'.app{display:block}.sidebar,.titlebar{display:none!important}.main{height:100vh!important}.content{padding:16px!important}'});
- await page.screenshot({path:path.join(output,'synerix-chat-mobile.png')});
+ await page.screenshot({path:path.join(output,'elio-chat-mobile.png')});
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
  assert.deepEqual(errors,[]);
  await page.close();console.log('PASS UI: real desktop bootstrap, empty/ready/error, live updates, inert HTML, pinning, send, manual retry ID, draft isolation, 390px layout');

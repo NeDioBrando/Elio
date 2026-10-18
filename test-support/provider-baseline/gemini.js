@@ -116,7 +116,7 @@ const RSProvider = (() => {
   const assistantItems = () => [...document.querySelectorAll(S.assistantItem)];
   const assistantCount = () => assistantItems().length;
   const userCount = () => document.querySelectorAll(S.userItem).length;
-  // Scope to the SITE's composer only: skip synerixcode's own injected UI (the
+  // Scope to the SITE's composer only: skip elio's own injected UI (the
   // settings textarea #rs-set-text in #rs-root). On login/OAuth pages with no
   // site editor this returns null, keeping the "not on a chat page" guard in
   // the send hooks intact (otherwise our own textarea would defeat it and the
@@ -147,7 +147,7 @@ const RSProvider = (() => {
   // message is actually sent, validated live 2026-07). Gating on the URL left
   // isFreshChat() - and, transitively, conversationKey() below - still seeing
   // the OLD conversation id on a chat that was visually empty, so the
-  // synerixcode bar stuck on "Agent active" with no way to start a new session.
+  // elio bar stuck on "Agent active" with no way to start a new session.
   const isFreshChat = () => chatIsEmpty() && !!getEditor();
 
   // The composer box the Start gate hides as one unit.
@@ -359,7 +359,7 @@ const RSProvider = (() => {
     const lines = String(text).split("\n");
     if (text.length <= SEND_MAX_CHARS && lines.length <= SEND_MAX_LINES) return text;
     const marker = (what) =>
-      `\n\n[…synerixcode: result truncated (${what}) so it can be pasted into ` +
+      `\n\n[…elio: result truncated (${what}) so it can be pasted into ` +
       `Gemini's composer without freezing the page. Do NOT re-run the command; ` +
       `work with the head and tail shown here…]\n\n`;
     let out, note;
@@ -492,7 +492,7 @@ const RSProvider = (() => {
 
   // ── Image attachment (best effort: paste onto the composer) ──────────────
   function fileFromImage(img, i) {
-    if (typeof synerixcodeMedia !== "undefined") return synerixcodeMedia.fileFrom(img, i);
+    if (typeof elioMedia !== "undefined") return elioMedia.fileFrom(img, i);
     const mime = img.mimeType || "image/jpeg";
     const bin = atob(img.data);
     const arr = new Uint8Array(bin.length);
@@ -688,7 +688,7 @@ const RSProvider = (() => {
     // watcher uses this to refuse finalizing before this send's reply turn
     // exists (fixes premature loop.end on the previous turn's stable text).
     reliableCounts: true,
-    // Shown as a permanent, non-intrusive notice in the synerixcode panel.
+    // Shown as a permanent, non-intrusive notice in the elio panel.
     // Gemini drifts away from emitting tool blocks after a while in long
     // sessions - observed live, model behavior, not something the prompt fixes.
     unstableWarning:

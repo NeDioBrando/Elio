@@ -4,13 +4,13 @@
 // route interception and mocked chrome.runtime of test-clickup-browser.cjs.
 // No live service, install, packaging, native tools or network is used.
 //
-// Run from a complete synerixcode source tree:
-//   SYNERIXCODE_CHROMIUM=/usr/local/bin/chromium node release-tools/test-clickup-performance.cjs
-// For an overlay before packaging, point SYNERIXCODE_PERF_ROOT to a complete fixture
-// tree and SYNERIXCODE_PERF_OVERLAY to the overlay. Overrides happen IN MEMORY only;
+// Run from a complete elio source tree:
+//   ELIO_CHROMIUM=/usr/local/bin/chromium node release-tools/test-clickup-performance.cjs
+// For an overlay before packaging, point ELIO_PERF_ROOT to a complete fixture
+// tree and ELIO_PERF_OVERLAY to the overlay. Overrides happen IN MEMORY only;
 // every executed JS source hash is recorded. NODE_PATH may point to existing deps.
-// SYNERIXCODE_PERF_REPORT is an optional JSON output path.
-// SYNERIXCODE_PERF_REPORT_ONLY=1 records
+// ELIO_PERF_REPORT is an optional JSON output path.
+// ELIO_PERF_REPORT_ONLY=1 records
 // structural failures without failing (useful for reproducible old baselines).
 // Timing/heartbeat/long tasks are diagnostic, NOT brittle pass/fail criteria.
 'use strict';
@@ -19,13 +19,13 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
-const root = path.resolve(process.env.SYNERIXCODE_PERF_ROOT || process.cwd());
-const overlay = process.env.SYNERIXCODE_PERF_OVERLAY && path.resolve(process.env.SYNERIXCODE_PERF_OVERLAY);
-const reportOnly = process.env.SYNERIXCODE_PERF_REPORT_ONLY === '1';
-const minimal = process.env.SYNERIXCODE_PERF_DIAGNOSTIC_UNINSTRUMENTED === '1';
+const root = path.resolve(process.env.ELIO_PERF_ROOT || process.cwd());
+const overlay = process.env.ELIO_PERF_OVERLAY && path.resolve(process.env.ELIO_PERF_OVERLAY);
+const reportOnly = process.env.ELIO_PERF_REPORT_ONLY === '1';
+const minimal = process.env.ELIO_PERF_DIAGNOSTIC_UNINSTRUMENTED === '1';
 assert(!minimal || reportOnly, 'uninstrumented diagnostic runs cannot count as structural validation');
-const reportPath = path.resolve(process.env.SYNERIXCODE_PERF_REPORT || 'clickup-performance-report.json');
-const sizes = (process.env.SYNERIXCODE_PERF_SIZES || '64,512').split(',').map(Number);
+const reportPath = path.resolve(process.env.ELIO_PERF_REPORT || 'clickup-performance-report.json');
+const sizes = (process.env.ELIO_PERF_SIZES || '64,512').split(',').map(Number);
 assert(sizes.length && sizes.every(n => Number.isInteger(n) && n >= 16 && n <= 4096), 'valid fixture sizes');
 process.chdir(root); // The shared fixture deliberately uses source-relative paths.
 const { pageFor } = require(path.join(root, 'release-tools/test-clickup-browser.cjs'));
@@ -310,9 +310,9 @@ async function correctness(page, size) {
     content(old).firstChild.nodeValue = oldRaw;
     p.allItems();
     results.oldTurnBecomingResultMasked = old.hasAttribute('data-rs-clickup-injected') && p.itemText(old) === oldRaw;
-    globalThis.synerixcodeI18n?.setLanguage('es');
+    globalThis.elioI18n?.setLanguage('es');
     results.localizationPreservesPayload = p.itemText(old) === oldRaw;
-    globalThis.synerixcodeI18n?.setLanguage('en');
+    globalThis.elioI18n?.setLanguage('en');
     // A chip's owned text cannot pollute provider text or invalidate correctness.
     const chip = document.createElement('span'); chip.className = 'rs-chip'; chip.textContent = 'OWNED CHIP'; old.append(chip);
     results.ownedChipExcluded = p.itemText(old) === oldRaw;
@@ -484,7 +484,7 @@ async function correctness(page, size) {
 (async () => {
   // Local sandbox provides Chromium here; GitHub runners normally use the
   // Playwright-managed browser installed by CI. Never require a sandbox path.
-  const executablePath = process.env.SYNERIXCODE_CHROMIUM || (fs.existsSync('/usr/local/bin/chromium') ? '/usr/local/bin/chromium' : undefined);
+  const executablePath = process.env.ELIO_CHROMIUM || (fs.existsSync('/usr/local/bin/chromium') ? '/usr/local/bin/chromium' : undefined);
   const browser = await chromium.launch({ headless: true, ...(executablePath ? { executablePath } : {}), args: ['--no-sandbox'] });
   try {
     report.browser = await browser.version();

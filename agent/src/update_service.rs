@@ -8,7 +8,7 @@ use sha2::{Digest, Sha256};
 use std::{path::{Path, PathBuf}, sync::{Arc, Mutex, atomic::{AtomicBool, AtomicUsize, Ordering}}, time::Duration};
 use tokio::io::AsyncWriteExt;
 
-pub const REPOSITORY: &str = "NeDioBrando/SynerixCode";
+pub const REPOSITORY: &str = "NeDioBrando/Elio";
 pub const MAX_ZIP: u64 = 256 * 1024 * 1024;
 #[derive(Clone, Debug)]
 pub struct Release { pub version: String, pub url: String, pub sha256: String, pub size: u64 }
@@ -31,7 +31,7 @@ pub fn parse_release(value:&Value)->anyhow::Result<Release> {
     ensure!(value["draft"]==false && value["prerelease"]==false,"Only published stable releases are accepted");
     let tag=value["tag_name"].as_str().context("Release has no tag")?;
     let v=tag.strip_prefix('v').context("Tag must start with v")?;version(v)?;
-    let name=format!("synerixcode-v{v}-Windows-x64.zip");
+    let name=format!("elio-v{v}-Windows-x64.zip");
     let candidates=value["assets"].as_array().context("Missing release assets")?.iter().filter(|a|a["name"]==name).collect::<Vec<_>>();
     ensure!(candidates.len()==1,"Release must contain exactly one {name}");let asset=candidates[0];
     let url=format!("https://github.com/{REPOSITORY}/releases/download/{tag}/{name}");
@@ -42,7 +42,7 @@ pub fn parse_release(value:&Value)->anyhow::Result<Release> {
     Ok(Release{version:v.into(),url,sha256:digest.to_ascii_lowercase(),size})
 }
 fn client()->anyhow::Result<reqwest::Client>{
-    Ok(reqwest::Client::builder().user_agent(concat!("SynerixCode/",env!("CARGO_PKG_VERSION")))
+    Ok(reqwest::Client::builder().user_agent(concat!("Elio/",env!("CARGO_PKG_VERSION")))
         .connect_timeout(Duration::from_secs(15)).timeout(Duration::from_secs(600))
         .redirect(reqwest::redirect::Policy::custom(|attempt|{
             let host=attempt.url().host_str().unwrap_or("");
@@ -134,7 +134,7 @@ impl Service {
 }
 pub struct ToolGuard<'a>(&'a Service);
 impl Drop for ToolGuard<'_>{fn drop(&mut self){self.0.active_tools.fetch_sub(1,Ordering::SeqCst);}}
-pub fn update_root()->anyhow::Result<PathBuf>{Ok(std::env::var_os("LOCALAPPDATA").or_else(||std::env::var_os("XDG_CONFIG_HOME")).map(PathBuf::from).or_else(||std::env::var_os("HOME").map(|p|PathBuf::from(p).join(".config"))).context("Missing user data directory")?.join("synerixcode").join("updates"))}
+pub fn update_root()->anyhow::Result<PathBuf>{Ok(std::env::var_os("LOCALAPPDATA").or_else(||std::env::var_os("XDG_CONFIG_HOME")).map(PathBuf::from).or_else(||std::env::var_os("HOME").map(|p|PathBuf::from(p).join(".config"))).context("Missing user data directory")?.join("elio").join("updates"))}
 fn nonce()->anyhow::Result<String>{let mut bytes=[0u8;16];getrandom::getrandom(&mut bytes).map_err(|e|anyhow::anyhow!("Random source failed: {e}"))?;Ok(bytes.iter().map(|b|format!("{b:02x}")).collect())}
 pub fn mark_ready(path:&Path)->anyhow::Result<()> {
     let root=update_root()?.canonicalize()?;let parent=path.parent().context("Invalid update receipt")?.canonicalize()?;
@@ -144,7 +144,17 @@ pub fn mark_ready(path:&Path)->anyhow::Result<()> {
 }
 #[cfg(test)] mod tests {
     use super::*;
-    fn release()->Value{json!({"tag_name":"v1.2.3","draft":false,"prerelease":false,"assets":[{"name":"synerixcode-v1.2.3-Windows-x64.zip","state":"uploaded","browser_download_url":"https://github.com/NeDioBrando/SynerixCode/releases/download/v1.2.3/synerixcode-v1.2.3-Windows-x64.zip","digest":format!("sha256:{}","a".repeat(64)),"size":123}]})}
+    fn release()->Value{json!({"tag_name":"v1.2.3","draft":false,"prerelease":false,"assets":[{"name":"elio-v1.2.3-Windows-x64.zip","state":"uploaded","browser_download_url":"https://github.com/NeDioBrando/Elio/releases/download/v1.2.3/elio-v1.2.3-Windows-x64.zip","digest":format!("sha256:{}","a".repeat(64)),"size":123}]})}
+    #[test]fn renamed_repository_is_the_only_update_authority(){
+        assert_eq!(REPOSITORY,"NeDioBrando/Elio");
+        let accepted=parse_release(&release()).unwrap();
+        assert!(accepted.url.starts_with("https://github.com/NeDioBrando/Elio/releases/download/"));
+        for repo in ["NeDioBrando/retired-project","another-owner/Elio","NeDioBrando/Elio-other"] {
+            let mut old=release();
+            old["assets"][0]["browser_download_url"]=json!(format!("https://github.com/{repo}/releases/download/v1.2.3/elio-v1.2.3-Windows-x64.zip"));
+            assert!(parse_release(&old).is_err());
+        }
+    }
     #[test]fn numeric_versions_not_lexical(){assert!(version("1.10.0").unwrap()>version("1.9.9").unwrap());for bad in ["1","1.2","1.2.3.4","01.2.3","1.2.3-beta","1.2.-3","9999999999.1.1"]{assert!(version(bad).is_err());}}
     #[test]fn strict_repository_digest_and_stable_release(){assert!(parse_release(&release()).is_ok());for(field,value)in [("draft",json!(true)),("prerelease",json!(true)),("tag_name",json!("v1.2.3-beta"))]{let mut v=release();v[field]=value;assert!(parse_release(&v).is_err());}for(field,value)in [("browser_download_url",json!("https://example.com/evil.zip")),("digest",Value::Null),("size",json!(MAX_ZIP+1)),("state",json!("new"))]{let mut v=release();v["assets"][0][field]=value;assert!(parse_release(&v).is_err());}let mut v=release();let duplicate=v["assets"][0].clone();v["assets"].as_array_mut().unwrap().push(duplicate);assert!(parse_release(&v).is_err());}
     #[test]fn tool_gate_blocks_during_install(){let s=Service::default();{let _guard=s.begin_tool().unwrap();assert_eq!(s.active_tools.load(Ordering::SeqCst),1);}assert_eq!(s.active_tools.load(Ordering::SeqCst),0);s.installing.store(true,Ordering::SeqCst);assert!(s.begin_tool().is_err());assert_eq!(s.active_tools.load(Ordering::SeqCst),0);}

@@ -4,7 +4,7 @@ param(
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 if (-not $env:LOCALAPPDATA) { throw 'LOCALAPPDATA is unavailable.' }
-$Base = Join-Path $env:LOCALAPPDATA 'synerixcode\runtimes'
+$Base = Join-Path $env:LOCALAPPDATA 'elio\runtimes'
 if ($Runtime -eq 'npx') {
     $Name = 'node-22.22.0'
     $Url = 'https://nodejs.org/dist/v22.22.0/node-v22.22.0-win-x64.zip'
@@ -18,12 +18,12 @@ if ($Runtime -eq 'npx') {
 }
 $Destination = Join-Path $Base $Name
 $Identity = [BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes($Destination))).Replace('-', '')
-$Mutex = New-Object Threading.Mutex($false, "Local\synerixcodeRuntime-$Identity")
+$Mutex = New-Object Threading.Mutex($false, "Local\elioRuntime-$Identity")
 $Locked = $false
 $Stage = $null
 try {
     try { $Locked = $Mutex.WaitOne(240000) } catch [Threading.AbandonedMutexException] { $Locked = $true }
-    if (-not $Locked) { throw 'Another synerixcode runtime setup is still running. Retry shortly.' }
+    if (-not $Locked) { throw 'Another elio runtime setup is still running. Retry shortly.' }
     $Marker = Join-Path $Destination '.complete'
     $Ready = (Test-Path -LiteralPath $Marker -PathType Leaf)
     foreach ($File in $Files) { $Ready = $Ready -and (Test-Path -LiteralPath (Join-Path $Destination $File) -PathType Leaf) }

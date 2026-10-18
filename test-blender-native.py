@@ -16,13 +16,13 @@ def serve():
   try:connection,_=listener.accept();threading.Thread(target=client,args=(connection,),daemon=True).start()
   except OSError:return
 threading.Thread(target=serve,daemon=True).start()
-with tempfile.TemporaryDirectory(prefix='synerixcode-blender-native-') as temporary:
- install=Path(temporary);name='synerixcode.exe' if os.name=='nt' else 'synerixcode';shutil.copy2(root/'agent/target/release'/name,install/name)
- config=install/'config';config.mkdir();env={**os.environ,'LOCALAPPDATA':str(config),'XDG_CONFIG_HOME':str(config),'SYNERIXCODE_WORKSPACE_ROOT':str(install/'workspace'),'BLENDER_HOST':'127.0.0.1','BLENDER_PORT':str(port)}
+with tempfile.TemporaryDirectory(prefix='elio-blender-native-') as temporary:
+ install=Path(temporary);name='elio.exe' if os.name=='nt' else 'elio';shutil.copy2(root/'agent/target/release'/name,install/name)
+ config=install/'config';config.mkdir();env={**os.environ,'LOCALAPPDATA':str(config),'XDG_CONFIG_HOME':str(config),'ELIO_WORKSPACE_ROOT':str(install/'workspace'),'BLENDER_HOST':'127.0.0.1','BLENDER_PORT':str(port)}
  log=(install/'output.log').open('w');process=subprocess.Popen([str(install/name),'--headless'],env=env,stdout=log,stderr=log);key=''
  try:
   for _ in range(100):
-   path=config/'synerixcode/bridge-key'
+   path=config/'elio/bridge-key'
    if path.exists():
     key=path.read_text()
     try:

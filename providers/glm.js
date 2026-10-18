@@ -150,7 +150,7 @@ const RSProvider = (() => {
   const assistantItems = () => [...safeQueryAll(document, S.assistantItem)];
   const assistantCount = () => assistantItems().length;
   const userCount = () => safeQueryAll(document, S.userItem).length;
-  // Scope to the SITE's composer only: skip synerixcode's own injected UI (the
+  // Scope to the SITE's composer only: skip elio's own injected UI (the
   // settings textarea #rs-set-text in #rs-root). On login/OAuth pages with no
   // site editor this returns null, keeping the "not on a chat page" guard in
   // the send hooks intact (otherwise our own textarea would defeat it and the
@@ -437,7 +437,7 @@ const RSProvider = (() => {
 
   // ── Image attachment (best effort) ────────────────────────────────────────
   function fileFromImage(img, i) {
-    if (typeof synerixcodeMedia !== "undefined") return synerixcodeMedia.fileFrom(img, i);
+    if (typeof elioMedia !== "undefined") return elioMedia.fileFrom(img, i);
     const mime = img.mimeType || "image/jpeg";
     const bin = atob(img.data);
     const arr = new Uint8Array(bin.length);

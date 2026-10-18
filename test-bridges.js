@@ -7,8 +7,8 @@ const ENGINES = [
   { port: 17613, id: "roblox",  name: "Roblox" },
   { port: 17615, id: "local",   name: "AgentScript" },
 ];
-const key = process.env.SYNERIXCODE_TEST_KEY;
-if (!key) throw new Error("Run against an isolated bridge with SYNERIXCODE_TEST_KEY set.");
+const key = process.env.ELIO_TEST_KEY;
+if (!key) throw new Error("Run against an isolated bridge with ELIO_TEST_KEY set.");
 const failures = [];
 const notes = [];
 
@@ -25,7 +25,7 @@ function introFor(ws, id) {
 }
 
 async function checkEngine({ port, id, name }) {
-  const ws = new WebSocket(`ws://127.0.0.1:${port}`, ["synerixcode", "synerixcode-auth." + key]);
+  const ws = new WebSocket(`ws://127.0.0.1:${port}`, ["elio", "elio-auth." + key]);
   const received = introFor(ws, id);
   await new Promise((res, rej) => {
     ws.onopen = res;
@@ -43,10 +43,10 @@ async function checkEngine({ port, id, name }) {
 (async () => {
   // Distinct Chromium extension identities pair independently; web origins remain rejected.
   for(const id of ["a".repeat(32),"b".repeat(32),"c".repeat(32)]) {
-    const response=await fetch(`${HTTP}/api/pair`,{method:"POST",headers:{"Content-Type":"application/json","X-synerixcode-Extension":id,Origin:"chrome-extension://"+id},body:"{}"});
+    const response=await fetch(`${HTTP}/api/pair`,{method:"POST",headers:{"Content-Type":"application/json","X-elio-Extension":id,Origin:"chrome-extension://"+id},body:"{}"});
     if(!response.ok || (await response.json()).key!==key)failures.push("Independent browser extension pairing failed");
   }
-  const denied=await fetch(`${HTTP}/api/pair`,{method:"POST",headers:{"Content-Type":"application/json","X-synerixcode-Extension":"a".repeat(32),Origin:"https://example.com"},body:"{}"});if(denied.status!==403)failures.push("Web origin was allowed to auto-pair");
+  const denied=await fetch(`${HTTP}/api/pair`,{method:"POST",headers:{"Content-Type":"application/json","X-elio-Extension":"a".repeat(32),Origin:"https://example.com"},body:"{}"});if(denied.status!==403)failures.push("Web origin was allowed to auto-pair");
   // Agent process itself
   let st;
   try {
@@ -74,7 +74,7 @@ async function checkEngine({ port, id, name }) {
     }
   }
 
-  const first=new WebSocket("ws://127.0.0.1:17615",["synerixcode","synerixcode-auth."+key]);const second=new WebSocket("ws://127.0.0.1:17615",["synerixcode","synerixcode-auth."+key]);
+  const first=new WebSocket("ws://127.0.0.1:17615",["elio","elio-auth."+key]);const second=new WebSocket("ws://127.0.0.1:17615",["elio","elio-auth."+key]);
   await Promise.all([first,second].map(socket=>new Promise((resolve,reject)=>{socket.onopen=resolve;socket.onerror=()=>reject(Error("Concurrent browser socket failed"))})));
   second.close();await new Promise(resolve=>second.addEventListener("close",resolve,{once:true}));
   const retained=await fetch(HTTP+"/api/status",{headers:{Authorization:"Bearer "+key}}).then(r=>r.json());if(!retained.local_bridge_connected)failures.push("Closing one browser removed the other browser connection");

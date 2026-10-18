@@ -125,7 +125,7 @@ const withChip = P.textWithout(
 ok("excluded subtree is skipped", withChip.includes("real reply") && !withChip.includes("execute_luau"));
 
 // ── Current ChatGPT inner turn containers ──────────────────────────────────
-// ChatGPT may virtualize the OUTER conversation-turn wrapper. synerixcode should
+// ChatGPT may virtualize the OUTER conversation-turn wrapper. elio should
 // enumerate from real content signals and return the nearest inner stable
 // data-turn-key/message container instead, so hiding a system/result turn does
 // not collapse the outer virtualization node.

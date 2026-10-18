@@ -1,5 +1,5 @@
 const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
-const {JSDOM}=require(process.env.SYNERIXCODE_TEST_JSDOM||'jsdom');
+const {JSDOM}=require(process.env.ELIO_TEST_JSDOM||'jsdom');
 const Cowork=require('./core/cowork.js');
 const source=fs.readFileSync('core/main.js','utf8');
 const start=source.indexOf('    function renderCowork() {'),end=source.indexOf('    function renderCoworkReceipts(',start);

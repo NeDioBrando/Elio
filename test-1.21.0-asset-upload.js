@@ -3,7 +3,7 @@ const fs=require('fs'),path=require('path'),vm=require('vm');
 const root=__dirname;let pass=0,fail=0;
 function ok(name,cond){if(cond){pass++;console.log('PASS '+name);}else{fail++;console.log('FAIL '+name);}}
 const ui=fs.readFileSync(path.join(root,'core','creator-ui.js'),'utf8');
-const uiExt=fs.readFileSync(path.join(root,'synerixcode-Extension','core','creator-ui.js'),'utf8');
+const uiExt=fs.readFileSync(path.join(root,'elio-Extension','core','creator-ui.js'),'utf8');
 const rs=fs.readFileSync(path.join(root,'agent','src','toolkit.rs'),'utf8');
 ok('root and extension creator-ui.js match',ui===uiExt);
 let compiles=true;try{new vm.Script(ui);}catch(e){compiles=false;console.log(e.message);}

@@ -21,7 +21,7 @@ const ZSLuauKnowledge = (() => {
 
   const TOOL = Object.freeze({
     name: "luau_guidance", server: "roblox",
-    description: "Return synerixcode's universal, current Roblox/Luau engineering playbook for a complex task: deprecated/API migration candidates, native/custom framework fit, modular boundaries, networking/data safety, runtime/render/memory/asset optimization, and verification. Read-only and provider-independent; use after live project inspection, not as permission to rewrite working architecture.",
+    description: "Return elio's universal, current Roblox/Luau engineering playbook for a complex task: deprecated/API migration candidates, native/custom framework fit, modular boundaries, networking/data safety, runtime/render/memory/asset optimization, and verification. Read-only and provider-independent; use after live project inspection, not as permission to rewrite working architecture.",
     inputSchema: {
       type: "object",
       properties: {
@@ -36,7 +36,7 @@ const ZSLuauKnowledge = (() => {
 
   const CORE_PROMPT = `
 ━━━ UNIVERSAL ROBLOX/LUAU ENGINEERING DOCTRINE ━━━
-These rules are supplied by synerixcode and apply identically to every supported AI/provider.
+These rules are supplied by elio and apply identically to every supported AI/provider.
 
 Project truth before generic advice: inspect the live project map, project memory, target instances, exact source ranges, package manifests, requires, bootstrap order, lifecycle, networking, and cleanup conventions before designing or editing. Detect native Roblox patterns and any custom/community framework already in use. Preserve its boundaries and public contracts unless the user explicitly requested a migration. Never inject Knit/Fusion/React/Promise/Maid or any other framework merely because it is familiar; do not mix competing Signal, Promise, state, networking, or cleanup implementations inside one subsystem. Treat generated/transpiled files and package internals as read-only unless their build source is the requested target.
 
@@ -350,7 +350,7 @@ MEASURED VERIFICATION
   function formatReview(diagnostics) {
     if (!Array.isArray(diagnostics) || !diagnostics.length) return "";
     const lines = diagnostics.slice(0, 12).map((item) => `- [${item.severity}] ${item.title}: ${item.advice}`);
-    return `\n\nsynerixcode universal Luau engineering review (advisory; inspect semantics before another edit):\n${lines.join("\n")}\nResolve behavior-preserving issues within scope, verify current API status when relevant, and do not perform a broad framework/style rewrite.`;
+    return `\n\nelio universal Luau engineering review (advisory; inspect semantics before another edit):\n${lines.join("\n")}\nResolve behavior-preserving issues within scope, verify current API status when relevant, and do not perform a broad framework/style rewrite.`;
   }
 
   function guide(args, projectContext = "") {

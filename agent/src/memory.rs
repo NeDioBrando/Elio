@@ -80,7 +80,7 @@ impl Store {
 pub static STORE: once_cell::sync::Lazy<Store> = once_cell::sync::Lazy::new(|| {
     let root = std::env::var_os("LOCALAPPDATA").or_else(|| std::env::var_os("XDG_CONFIG_HOME")).map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join(".config"));
-    Store::load(root.join("synerixcode").join("memory.json"))
+    Store::load(root.join("elio").join("memory.json"))
 });
 pub async fn get() -> axum::Json<Memory> { axum::Json(STORE.snapshot()) }
 pub async fn post(axum::Json(req): axum::Json<Value>) -> axum::response::Response {
@@ -95,7 +95,7 @@ mod tests {
     use super::*;
     #[test]
     fn large_memory_capacity_is_durable_and_transactional(){
-        let dir=std::env::temp_dir().join(format!("synerixcode-memory-capacity-{}",std::process::id()));let _=std::fs::remove_dir_all(&dir);let path=dir.join("memory.json");let store=Store::load(path.clone());let text="A".repeat(500000);
+        let dir=std::env::temp_dir().join(format!("elio-memory-capacity-{}",std::process::id()));let _=std::fs::remove_dir_all(&dir);let path=dir.join("memory.json");let store=Store::load(path.clone());let text="A".repeat(500000);
         store.update(json!({"action":"add","text":text})).unwrap();assert_eq!(Store::load(path.clone()).snapshot().entries[0].text.len(),500000);
         assert!(store.update(json!({"action":"add","text":"exceeds total"})).is_err());assert_eq!(store.snapshot().entries.len(),1);
         assert!(store.update(json!({"action":"edit","id":1,"text":"B".repeat(500001)})).is_err());assert_eq!(store.snapshot().entries[0].text.len(),500000);
@@ -103,7 +103,7 @@ mod tests {
     }
     #[test]
     fn durable_manual_and_automatic_memory() {
-        let dir = std::env::temp_dir().join(format!("synerixcode-memory-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("elio-memory-{}", std::process::id()));
         let path = dir.join("memory.json"); let _ = std::fs::remove_dir_all(&dir);
         let store = Store::load(path.clone());
         store.update(json!({"action":"remember","text":"Use SourceSansPro","source":"chat-a","chat_id":"chatgpt|/c/a"})).unwrap();
@@ -126,7 +126,7 @@ mod tests {
     }
     #[test]
     fn every_note_has_a_title() {
-        let dir = std::env::temp_dir().join(format!("synerixcode-memory-title-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("elio-memory-title-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir); let path = dir.join("memory.json"); let store = Store::load(path.clone());
         store.update(json!({"action":"add","text":"\n  Combat cooldown lives in CombatService\nsecond line"})).unwrap();
         assert_eq!(store.snapshot().entries[0].title, "Combat cooldown lives in CombatService");

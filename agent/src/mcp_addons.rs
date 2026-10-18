@@ -231,7 +231,7 @@ impl AddonRuntime {
 
     /// mcp-server-git uses GitPython, which aborts during `initialize` with
     /// "Bad git executable" when git is not on the child's PATH (for example when
-    /// synerixcode was started by the updater or at sign-in with a PATH captured
+    /// elio was started by the updater or at sign-in with a PATH captured
     /// before Git for Windows was installed). Resolve git explicitly instead.
     fn git_override(&self) -> Option<anyhow::Result<PathBuf>> {
         if !wants_git(&self.id, &self.spec.args) || self.spec.env.contains_key("GIT_PYTHON_GIT_EXECUTABLE") {
@@ -250,7 +250,7 @@ impl AddonRuntime {
             let app = config_path().parent().unwrap_or_else(|| std::path::Path::new(".")).to_path_buf();
             if low == "npx" || low == "uvx" {
                 let cache = std::env::var_os("LOCALAPPDATA").map(PathBuf::from)
-                    .map(|base| base.join("synerixcode").join("runtimes"));
+                    .map(|base| base.join("elio").join("runtimes"));
                 let mut roots = vec![app.join("runtimes").join("node"), app.join("runtimes").join("uv")];
                 if let Some(cache) = cache {
                     roots.push(cache.join(if low == "npx" { "node-22.22.0" } else { "uv-0.12.21" }));
@@ -259,7 +259,7 @@ impl AddonRuntime {
                     let profile = PathBuf::from(profile);
                     roots.push(profile.join(".local").join("bin"));
                     roots.push(profile.join(".cargo").join("bin"));
-                    let node_root = profile.join("synerixcodeWorkspace").join("node");
+                    let node_root = profile.join("elioWorkspace").join("node");
                     if let Ok(entries) = std::fs::read_dir(node_root) {
                         roots.extend(entries.flatten().map(|entry| entry.path()));
                     }
@@ -365,7 +365,7 @@ impl AddonRuntime {
         self.request("initialize", serde_json::json!({
             "protocolVersion": "2025-06-18",
             "capabilities": {},
-            "clientInfo": {"name": "synerixcode", "version": env!("CARGO_PKG_VERSION")}
+            "clientInfo": {"name": "elio", "version": env!("CARGO_PKG_VERSION")}
         })).await?;
         self.notify("notifications/initialized", serde_json::json!({})).await?;
         self.initialized = true;
@@ -427,7 +427,7 @@ impl AddonRuntime {
                     // Keep the server: a Studio add-on such as robloxstudio-mcp owns the
                     // plugin connection, and killing it mid-playtest disconnects Studio.
                     // Ask it to cancel; a late reply is skipped by request id.
-                    let _ = tokio::time::timeout(std::time::Duration::from_secs(2),self.notify("notifications/cancelled", serde_json::json!({"requestId": call_id, "reason": "synerixcode timeout"}))).await;
+                    let _ = tokio::time::timeout(std::time::Duration::from_secs(2),self.notify("notifications/cancelled", serde_json::json!({"requestId": call_id, "reason": "elio timeout"}))).await;
                 }
                 return Err(error);
             }
@@ -583,7 +583,7 @@ mod tests {
             let method = message["method"].as_str().unwrap_or("");
             if method == "notifications/initialized" { initialized = true; continue; }
             let result = match method {
-                "initialize" if std::env::var("SYNERIXCODE_TEST_REJECT").is_ok() => {
+                "initialize" if std::env::var("ELIO_TEST_REJECT").is_ok() => {
                     println!("{}", serde_json::json!({"jsonrpc":"2.0","id":message["id"],"error":{"code":-32603,"message":"fixture initialization rejected"}}));
                     std::io::stdout().flush().unwrap();
                     continue;
@@ -600,7 +600,7 @@ mod tests {
 
     fn fixture(reject: bool) -> AddonRuntime {
         let mut env = HashMap::new();
-        if reject { env.insert("SYNERIXCODE_TEST_REJECT".into(), "1".into()); }
+        if reject { env.insert("ELIO_TEST_REJECT".into(), "1".into()); }
         AddonRuntime::new("fixture".into(), ServerSpec {
             command: std::env::current_exe().unwrap().to_string_lossy().into_owned(),
             args: vec!["--ignored".into(), "--exact".into(), "mcp_addons::tests::stdio_fixture".into(), "--nocapture".into()],
@@ -713,7 +713,7 @@ fn standard_git_dirs() -> Vec<PathBuf> {
                 }
             }
         }
-        // The PATH synerixcode inherited can predate a Git install (started at sign-in
+        // The PATH elio inherited can predate a Git install (started at sign-in
         // or relaunched by the updater). Read the current user and machine PATH.
         for key in [r"HKCU\Environment", r"HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment"] {
             let mut cmd = std::process::Command::new("reg.exe");
@@ -738,7 +738,7 @@ fn is_studio_addon(args: &[String]) -> bool {
     args.iter().any(|arg| arg.to_ascii_lowercase().contains("robloxstudio-mcp"))
 }
 
-/// Seconds synerixcode waits for one add-on tools/call. A tool's own requested
+/// Seconds elio waits for one add-on tools/call. A tool's own requested
 /// timeout (timeoutMs, timeout_ms, timeout_seconds, timeoutSeconds) is honored
 /// plus 30 s of grace, capped at 630 s; Studio add-ons default to 330 s.
 fn call_timeout_secs(spec_args: &[String], call_args: &serde_json::Value) -> u64 {
@@ -819,7 +819,7 @@ mod git_runtime_tests {
 
     #[test]
     fn git_is_found_on_path_or_in_standard_locations() {
-        let dir = std::env::temp_dir().join(format!("synerixcode-git-test-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("elio-git-test-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         let exe = dir.join(GIT_EXE);
@@ -877,7 +877,7 @@ mod git_runtime_tests {
     #[test]
     fn missing_git_reports_an_actionable_error() {
         let mut env = HashMap::new();
-        env.insert("PATH".to_string(), std::env::temp_dir().join("synerixcode-no-git-here").to_string_lossy().into_owned());
+        env.insert("PATH".to_string(), std::env::temp_dir().join("elio-no-git-here").to_string_lossy().into_owned());
         let runtime = AddonRuntime::new("git".into(), ServerSpec { command: "uvx".into(), args: vec!["mcp-server-git".into()], env });
         match runtime.git_override() {
             Some(Ok(found)) => assert!(found.is_file()), // machine has Git in a standard location

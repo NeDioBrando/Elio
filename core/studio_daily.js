@@ -201,8 +201,8 @@
       const walk = Number(a.walk_speed) || 16;
       const sprint = Number(a.sprint_speed) || 24;
       return wrap(
-        `local sps=game:GetService("StarterPlayer").StarterPlayerScripts local old=sps:FindFirstChild("SYNERIXCODE_Sprint") if old then old:Destroy() end\n` +
-        `local ls=Instance.new("LocalScript") ls.Name="SYNERIXCODE_Sprint" ls.Parent=sps\n` +
+        `local sps=game:GetService("StarterPlayer").StarterPlayerScripts local old=sps:FindFirstChild("ELIO_Sprint") if old then old:Destroy() end\n` +
+        `local ls=Instance.new("LocalScript") ls.Name="ELIO_Sprint" ls.Parent=sps\n` +
         `ls.Source="local uis=game:GetService('UserInputService') local p=game:GetService('Players').LocalPlayer local function hum() local c=p.Character return c and c:FindFirstChildOfClass('Humanoid') end uis.InputBegan:Connect(function(i,g) if g then return end if i.KeyCode==Enum.KeyCode.LeftShift then local h=hum() if h then h.WalkSpeed=${sprint} end end end) uis.InputEnded:Connect(function(i) if i.KeyCode==Enum.KeyCode.LeftShift then local h=hum() if h then h.WalkSpeed=${walk} end end end)"\n` +
         `return ok({walk=${walk},sprint=${sprint}},"sprint on LeftShift (${walk} -> ${sprint})")`
       );
@@ -274,7 +274,7 @@
       const path = luaStr(a.path || "");
       const fill = Array.isArray(a.color) ? num3(a.color, [0, 1, 1]) : [0, 1, 1];
       return wrap(
-        `local inst=resolve(${path}) if not inst then return fail("not found") end local h=inst:FindFirstChildOfClass("Highlight") if not h then h=Instance.new("Highlight") h.Name="SYNERIXCODE_Highlight" h.Parent=inst end h.FillColor=Color3.new(${fill[0]},${fill[1]},${fill[2]}) h.OutlineColor=Color3.new(1,1,1) h.FillTransparency=0.65 h.OutlineTransparency=0 return ok({path=h:GetFullName()},"highlight on "..inst:GetFullName())`
+        `local inst=resolve(${path}) if not inst then return fail("not found") end local h=inst:FindFirstChildOfClass("Highlight") if not h then h=Instance.new("Highlight") h.Name="ELIO_Highlight" h.Parent=inst end h.FillColor=Color3.new(${fill[0]},${fill[1]},${fill[2]}) h.OutlineColor=Color3.new(1,1,1) h.FillTransparency=0.65 h.OutlineTransparency=0 return ok({path=h:GetFullName()},"highlight on "..inst:GetFullName())`
       );
     }
     if (op === "script_set_source") {

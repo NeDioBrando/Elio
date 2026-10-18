@@ -3,7 +3,7 @@
 // extension rejected as "Invalid desktop agent action."; (2) creation_preview
 // save failed with "action_id must be a string" when the model omitted the
 // blueprint's action_id; (3) models called a Studio MCP `skill` tool with a
-// synerixcode tool name ("Unknown skill: creation_preview").
+// elio tool name ("Unknown skill: creation_preview").
 const fs = require('fs'), assert = require('node:assert/strict');
 const BG = process.argv[2] || 'background.js', MAIN = process.argv[3] || 'core/main.js', GUARD = process.argv[4] || './core/tool-guard.js';
 // (1) Every action the desktop sends and the bridge forwards is accepted by the extension.

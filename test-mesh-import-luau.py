@@ -13,6 +13,6 @@ process.stdout.write(cases.map(([name,id,index])=>'local function '+name+'()\n'+
 '''
 production=subprocess.run(['node','-e',script],cwd=root,check=True,capture_output=True,text=True).stdout
 fixture=(root/'test-support/mesh-import-fixture.luau').read_text().replace('__PRODUCTION__',production)
-with tempfile.TemporaryDirectory(prefix='synerixcode-mesh-luau-') as temporary:
+with tempfile.TemporaryDirectory(prefix='elio-mesh-luau-') as temporary:
  path=Path(temporary)/'mesh-import.luau';path.write_text(fixture)
- subprocess.run([os.environ.get('SYNERIXCODE_LUAU','luau'),str(path)],check=True,timeout=30)
+ subprocess.run([os.environ.get('ELIO_LUAU','luau'),str(path)],check=True,timeout=30)

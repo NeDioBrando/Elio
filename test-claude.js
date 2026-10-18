@@ -23,7 +23,7 @@ ok("manifest loads providers/claude.js", JSON.stringify(manifest.content_scripts
 ok("glass tokens untouched", fs.readFileSync(path.join(root, "overlay.css"), "utf8").includes("rgba(16, 17, 25, 0.82)"));
 
 ok("every Claude family has caps", ["haiku", "sonnet", "opus", "fable", "mythos"].every((f) => claude.includes(f + ":")));
-ok("does not lock the model picker", claude.includes("synerixcode never clicks it") && claude.includes("applyModelCaps") && !/modelBtn\(\)\.click|target\.click\(\)/.test(claude));
+ok("does not lock the model picker", claude.includes("elio never clicks it") && claude.includes("applyModelCaps") && !/modelBtn\(\)\.click|target\.click\(\)/.test(claude));
 ok("thinking is read for every model", claude.includes("thinkingText") && claude.includes('data-is-thinking="true"'));
 ok("Haiku gets a compact prompt", claude.includes("sysMaxChars: 12000") && claude.includes("get sysMaxChars"));
 ok("Opus/Fable get long thinking windows", claude.includes("REASON_NOREPLY_MS: 180000") && claude.includes("REASON_NOREPLY_MS: 210000"));

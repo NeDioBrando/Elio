@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// synerixcode-owned interface text only. Never translates host websites, chat,
+// elio-owned interface text only. Never translates host websites, chat,
 // user values, tool names/protocols, source code, or external-service errors.
 (function(global){
 'use strict';
@@ -22,16 +22,16 @@ const languages=Object.freeze([
 ]);
 const normalize=code=>languages.find(x=>x.code===code)?.code||'en';
 const key=text=>String(text??'').replace(/\s+/g,' ').trim();
-const data=()=>global.synerixcodeLocaleData||{en:{}};
-const has=source=>Object.prototype.hasOwnProperty.call(data().en||{},key(source));
+const data=()=>global.elioLocaleData||{en:{}};
+const has=source=>Object.prototype.hasOwnProperty.call(data().en||{},key(source))||/elio(?![_:/])/i.test(String(source));
 let language='en';const bindings=new Set(),nodeBindings=new WeakMap(),mounts=new WeakMap(),owners=new Set(),pickers=new Set(),listeners=new Set();
 const EXCLUDE='.brand-word,.pc-ultra-label,script,style,textarea,input,pre,code,kbd,samp,[contenteditable],[data-i18n-user-content],[data-pc-language-options],.rs-mcp-info,.rs-task-title,.rs-task-label,.rs-tool-raw,.rs-tool-output,.rs-template-name,.rs-memory-content,.rs-lib-card,.rs-cowork-item,.rs-task-row,[data-prompt-index]';
-const SAFE_NEW='button,label,option,summary,[data-pc-i18n],[data-synerixcode-version],#rs-action,#rs-status,#rs-state,#titleEffort,#sidebarEffort';
+const SAFE_NEW='button,label,option,summary,[data-pc-i18n],[data-elio-version],#rs-action,#rs-status,#rs-state,#titleEffort,#sidebarEffort';
 const excluded=node=>{const e=node.nodeType===1?node:node.parentElement;return !e||!!e.closest(EXCLUDE);};
 function t(source,values){
  const k=key(source),value=(data()[language]||{})[k];let result=typeof value==='string'&&value?value:String(source??'');
  if(values)result=result.replace(/\{([A-Za-z0-9_]+)\}/g,(m,k)=>Object.prototype.hasOwnProperty.call(values,k)?String(values[k]):m);
- return result;
+ return result.replace(/elio\.exe/g,"elio.exe").replace(/elio(?![_:/])/gi,"Elio");
 }
 function addBinding(node,attr){
  if(excluded(node)&&!(attr&&['placeholder','aria-label'].includes(attr)&&node.matches?.('input,textarea')&&!node.parentElement?.closest('[data-i18n-user-content]')))return;
@@ -45,7 +45,7 @@ function applyBinding(b){
  const current=b.attr?node.getAttribute(b.attr):node.nodeValue;
  if(current!==b.last){if(!has(current))return;b.source=key(current);b.raw=current;}
  const translated=t(b.source),leading=b.raw.match(/^\s*/)?.[0]||'',trailing=b.raw.match(/\s*$/)?.[0]||'';
- const next=language==='en'?b.raw:leading+translated+trailing;
+ const next=leading+translated+trailing;
  if(current!==next){if(b.attr)node.setAttribute(b.attr,next);else node.nodeValue=next;}b.last=next;
 }
 function scan(root){
@@ -65,9 +65,9 @@ function ensureStyles(doc){
  .language-card .settings-summary p{font-size:14px!important;line-height:1.5!important}
  .pc-language-picker{display:grid;gap:10px;min-width:0;width:100%;max-width:520px;font-family:inherit}
  .pc-language-picker label{display:block;font-size:14px;font-weight:600;line-height:1.5}
- .pc-language-picker input,.pc-language-picker select{box-sizing:border-box;width:100%;min-width:0;min-height:44px;padding:10px 12px;border:1px solid var(--rs-border,rgba(160,175,195,.5));border-radius:8px;background:var(--rs-bg,#151a22);color:var(--rs-text,#f4f6fb);font:inherit;font-size:16px;line-height:1.5}
- .pc-language-picker select option{background:#151a22;color:#f4f6fb}
- .pc-language-picker :is(input,select):focus-visible{outline:2px solid #e9ba53;outline-offset:2px}
+ .pc-language-picker input,.pc-language-picker select{box-sizing:border-box;width:100%;min-width:0;min-height:44px;padding:10px 12px;border:1px solid var(--rs-border,rgba(160,175,195,.5));border-radius:8px;background:var(--rs-bg,var(--elio-text));color:var(--rs-text,var(--elio-surface));font:inherit;font-size:16px;line-height:1.5}
+ .pc-language-picker select option{background:var(--elio-surface);color:var(--elio-text)}
+ .pc-language-picker :is(input,select):focus-visible{outline:2px solid var(--elio-muted);outline-offset:2px}
  .pc-language-picker small{font-size:14px;line-height:1.5;color:inherit;opacity:.85}
  [data-pc-locale] :is(pre,code,kbd,samp){direction:ltr;unicode-bidi:isolate;text-align:start}
  @media(forced-colors:active){.pc-language-picker :is(input,select){background:Canvas;color:CanvasText;border-color:ButtonText}}
@@ -122,7 +122,7 @@ function mountPicker(host,options={}){
   // Filtering must never select/save a different language by itself.
   for(const lang of languages.filter(x=>x.code===value||filtered.includes(x))){const o=doc.createElement('option');o.value=lang.code;o.textContent=lang.nativeName===lang.name?lang.name:lang.nativeName+' — '+lang.name;o.lang=lang.code;o.dir=lang.dir;select.append(o);}
   select.value=value;select.disabled=saving||!filtered.length;
-  searchLabel.textContent=t('Search languages');search.placeholder=t('Search by name or language code');label.textContent=t('Interface language');help.textContent=t('Changes synerixcode’s interface in the desktop app and extension.');
+  searchLabel.textContent=t('Search languages');search.placeholder=t('Search by name or language code');label.textContent=t('Interface language');help.textContent=t('Changes elio’s interface in the desktop app and extension.');
   status.textContent=saving?t('Saving language…'):saveError?t('Language could not be saved. Try again.'):!filtered.length?t('No languages found.'):'';
  }
  search.addEventListener('input',fill);
@@ -132,5 +132,5 @@ function mountPicker(host,options={}){
  host._pcLanguagePicker=picker;pickers.add(picker);fill();return picker;
 }
 const api={languages,normalize,t,setLanguage,getLanguage:()=>language,mountStatic,mountPicker,onChange(fn){listeners.add(fn);return()=>listeners.delete(fn);}};
-global.synerixcodeI18n=api;
+global.elioI18n=api;
 })(globalThis);

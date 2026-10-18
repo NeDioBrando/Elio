@@ -1,7 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
 const source=fs.readFileSync('core/ultracode.js','utf8');
 const context=vm.createContext({});
-vm.runInContext(source+';globalThis.mode=synerixcodeUltracode;',context);
+vm.runInContext(source+';globalThis.mode=elioUltracode;',context);
 const names=['server-authority','docs-lookup','toolbox','project-layout','map-placement','tunables-config','remote-events','roblox-gotchas','review-for-exploits','report-what-you-verified'];
 // Compare the actual injected method pack with the preceding full instruction
 // pack, retained in this module as complete skill references.

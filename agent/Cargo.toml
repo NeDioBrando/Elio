@@ -1,13 +1,13 @@
 [package]
-name = "synerixcode-agent"
-version = "1.0.0"
+name = "elio-agent"
+version = "1.0.1"
 edition = "2021"
-description = "synerixcode native agent — Roblox Studio MCP + AgentScript workspace bridge"
+description = "elio native agent — Roblox Studio MCP + AgentScript workspace bridge"
 license = "GPL-3.0-or-later"
 authors = ["PlazCode contributors", "synerixcode fork contributors"]
 
 [[bin]]
-name = "synerixcode"
+name = "elio"
 path = "src/main.rs"
 
 [dependencies]

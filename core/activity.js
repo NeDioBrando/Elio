@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-const synerixcodeActivity = (() => {
+const elioActivity = (() => {
   function replacesTask(text) {
     text=String(text||'').replace(/[‘’]/g,"'");
     if(/\b(?:do not|don't|never)\s+(?:change|replace|reset|clear|drop|forget|discard|ignore|abandon|stop)\b/i.test(text))return false;
@@ -14,14 +14,14 @@ const synerixcodeActivity = (() => {
     const short=clean.replace(/[`*]/g,'').replace(/[.!?]+$/,'').trim();
     if(!short)return 'conversation';
     if(/^(?:continue(?: working)?|keep (?:going|working)|resume(?: working)?|go on|carry on|stop|pause)$/i.test(short))return 'control';
-    if(/^(?:hello|hi|hey|hello there|good (?:morning|afternoon|evening)|thanks(?: you)?|thank you|ok(?:ay)?|yes|no|got it|cool|great|nice|are you there|hello again|how are you|hello how are you|hi how are you|yo|sup|hey there|nice job|good job|thank you so much|are you ready|can you help me)(?:\s+(?:synerixcode|there|again))?$/i.test(short))return 'conversation';
+    if(/^(?:hello|hi|hey|hello there|good (?:morning|afternoon|evening)|thanks(?: you)?|thank you|ok(?:ay)?|yes|no|got it|cool|great|nice|are you there|hello again|how are you|hello how are you|hi how are you|yo|sup|hey there|nice job|good job|thank you so much|are you ready|can you help me)(?:\s+(?:elio|there|again))?$/i.test(short))return 'conversation';
     if(short.length<=180 && /^(?:thanks|thank you)\b/i.test(short) && !/(?:\b(?:can|could|would|will) you\b|(?:[,;]|\b(?:please|also|now|next|and))\s*(?:please\s+)?(?:build|create|make|add|fix|change|edit|implement|investigate|debug|test|verify|run|execute|optimi[sz]e|continue|resume)\b)/i.test(short))return 'conversation';
     const workIntent=/\b(?:build|create|make|add|fix|change|edit|implement|investigate|debug|test|verify|run|execute|optimi[sz]e|continue|resume|broken|bug|issue|problem|stuck|hangs?)\b/i.test(short);
     if(!workIntent && short.length<=180 && /^(?:hello(?!\s+world\b)|hi|hey|thanks|thank you|good morning|good afternoon|good evening)\b/i.test(short))return 'conversation';
     if(/^(?:awesome|bye|goodbye|sure|alright|understood|sounds good|nice to meet you|see you|you there|are you working|how are things)(?:[.!?\s]|$)/i.test(short)&&!workIntent)return 'conversation';
     if(!workIntent && /^(?:[a-z][a-z0-9]*_)+[a-z0-9_]+(?:\s|$)/i.test(short))return 'quick';
     if(/\b(?:commands?|tools?)\b/i.test(short)&&/^(?:list|show|display|what are|which|tell me|give me|can you (?:list|show)|please (?:list|show))\b/i.test(short)&&! /\b(?:build|fix|create|implement|edit|run|execute|test)\b/i.test(short))return 'quick';
-    if(/^(?:list|show|display|what (?:are|is)|which|tell me|give me|can you (?:list|show)|please (?:list|show))\s+(?:(?:me|the|all|available|supported|your|synerixcode|a list of)\s+)*(?:commands?|tools?|capabilities|status|help)(?:\s+(?:please|available|you (?:have|support)|are available))?$/i.test(short) || /^(?:help|status|commands|tools)$/i.test(short))return 'quick';
+    if(/^(?:list|show|display|what (?:are|is)|which|tell me|give me|can you (?:list|show)|please (?:list|show))\s+(?:(?:me|the|all|available|supported|your|elio|a list of)\s+)*(?:commands?|tools?|capabilities|status|help)(?:\s+(?:please|available|you (?:have|support)|are available))?$/i.test(short) || /^(?:help|status|commands|tools)$/i.test(short))return 'quick';
     if(/^(?:[a-z][a-z0-9]*_)+[a-z0-9_]+(?:\s*\([^\n]*\)|\s*\{[\s\S]*\})?$/i.test(short) || /^(?:```(?:json)?\s*)?\{\s*"(?:command|tool|name)"\s*:/i.test(clean))return 'quick';
     // Informational questions do not establish an editing/build goal.
     if(/^(?:what|why|who|where|when|which|how)\b/i.test(short) || /^(?:explain|describe|tell me about|can you explain)\b/i.test(short))return 'quick';
@@ -31,7 +31,7 @@ const synerixcodeActivity = (() => {
     return requestKind(text)==='quick' && /(?:^[a-z0-9]+_[a-z0-9_]+|"(?:command|tool)"\s*:)/i.test(String(text).trim());
   }
   // 1.24.10: automatic goal/step detection. Most AIs never call
-  // synerixcode_checklist, so derive numbered steps from the user's request and
+  // elio_checklist, so derive numbered steps from the user's request and
   // from plans the AI writes, and advance them as the AI reports progress.
   const cleanLabel=text=>String(text||'').replace(/\*\*|__|`/g,'').replace(/^\s*(?:step\s+\d+\s*[:.)-]\s*)/i,'').replace(/\s+/g,' ').replace(/[\s.;:,]+$/,'').trim().slice(0,180);
   // 1.24.13: the checklist used to echo the user's sentences word for word
@@ -91,7 +91,7 @@ const synerixcodeActivity = (() => {
   function create(changed = () => {}, storage = null) {
     let current, sequence = 0;
     const groups = [], tasks = new Map();
-    const taskStorageKey='synerixcode.mainTasks.v1';
+    const taskStorageKey='elio.mainTasks.v1';
     try {
       if(typeof storage==='function')storage=storage();
       const raw=storage?.getItem(taskStorageKey);
@@ -239,7 +239,7 @@ const synerixcodeActivity = (() => {
   }
   function exempt(text, calls = []) {
     const clean = String(text || '').replace(/[`*#]/g, '').trim();
-    return /^(?:SYNERIXCODE_READY|synerixcode is ready)[.!]?$/i.test(clean) ||
+    return /^(?:ELIO_READY|elio is ready)[.!]?$/i.test(clean) ||
       /^Output of '(?:list_commands|list_tools)'/.test(clean) ||
       /^⟦RS-SYS⟧/.test(clean) ||
       (calls.length > 0 && calls.every(call => /^(?:list_commands|list_tools)$/.test(call.tool)));
@@ -293,4 +293,4 @@ const synerixcodeActivity = (() => {
   }
   return { create, renderer, exempt, progress, replacesTask, requestKind, commandLabel };
 })();
-if (typeof module !== 'undefined' && module.exports) module.exports = synerixcodeActivity;
+if (typeof module !== 'undefined' && module.exports) module.exports = elioActivity;

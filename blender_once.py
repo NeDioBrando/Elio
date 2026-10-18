@@ -67,7 +67,7 @@ def send_file(in_path: str, out_path: str) -> int:
             pass
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False)
-    print("SYNERIXCODE_BLENDER_OK", flush=True)
+    print("ELIO_BLENDER_OK", flush=True)
     return 0
 
 
@@ -86,7 +86,7 @@ def main(argv: list[str]) -> int:
                 json.dump(err, f)
         except OSError:
             pass
-        print("SYNERIXCODE_BLENDER_ERR " + str(e), flush=True)
+        print("ELIO_BLENDER_ERR " + str(e), flush=True)
         return 1
 
 

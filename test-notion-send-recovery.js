@@ -4,7 +4,7 @@
 // a result that never came. Now a consumed draft gets a bounded late window
 // (never a second click). Failures that happened BEFORE the commit are marked
 // retryable so core can deliver once more; anything ambiguous stays ambiguous.
-const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict'),{JSDOM}=require(process.env.SYNERIXCODE_TEST_JSDOM||'jsdom');
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict'),{JSDOM}=require(process.env.ELIO_TEST_JSDOM||'jsdom');
 const source=fs.readFileSync(__dirname+'/providers/notion.js','utf8');
 async function scenario(name,{ackAfter=null,consume=true,ready=true,stopAt=null,options={}}){
  const dom=new JSDOM('<main><div data-agent-service-scroll-anchor="old-user" style="justify-content:flex-end">Earlier question</div><div data-agent-service-scroll-anchor="old-assistant" style="justify-content:flex-start">Earlier answer</div><section id="composer"><textarea placeholder="Ask Notion AI"></textarea><button data-testid="agent-chat-send-button" aria-label="Submit AI message"'+(ready?'':' aria-disabled="true" disabled')+'>Send</button></section></main>',{url:'https://app.notion.com/chat/thread',runScripts:'outside-only',pretendToBeVisual:true});
@@ -54,6 +54,6 @@ async function scenario(name,{ackAfter=null,consume=true,ready=true,stopAt=null,
  // Core wiring: one safe retry only for a provably unsent delivery.
  const main=fs.readFileSync(__dirname+'/core/main.js','utf8');
  assert(/const retryable = !A\.stop && !retriedUnsent && !\(images && images\.length\) && payloadText\.length < 4000 && typeof P\.sendRetryable === "function" &&\s*P\.sendRetryable\(\) === true && !\(P\.sendFailureAmbiguous && P\.sendFailureAmbiguous\(\)\);/.test(main),'core retries only provably unsent, attachment-free, short deliveries, once (1.20.0)');
- assert(fs.readFileSync(__dirname+'/synerixcode-Extension/providers/notion.js','utf8')===source,'Notion copies are in sync');
+ assert(fs.readFileSync(__dirname+'/elio-Extension/providers/notion.js','utf8')===source,'Notion copies are in sync');
  console.log('Notion delivery recovery: late acknowledgements accepted without resending; only provably unsent deliveries retry.');
 })().catch(e=>{console.error(e);process.exit(1);});

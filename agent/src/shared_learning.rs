@@ -5,7 +5,7 @@ use serde_json::{json,Value};
 use sha2::{Digest,Sha256};
 use futures::StreamExt;
 use std::{collections::BTreeMap,path::PathBuf,sync::atomic::{AtomicBool,Ordering}};
-const SERVICE:&str="https://synerixcode-learning.still-crow-5311.chatgpt.site/api/v1";
+const SERVICE:&str="https://elio-learning.still-crow-5311.chatgpt.site/api/v1";
 #[derive(Clone,Copy,Debug,Serialize,Deserialize,PartialEq,Eq)]
 #[serde(rename_all="kebab-case")]
 pub enum Recipe {LocalEditTest,LocalSearchEditTest,LocalCreateTest}
@@ -45,10 +45,10 @@ pub struct Lesson {pub recipe:Recipe,pub successes:u32,pub failures:u32,pub revi
 struct Index {schema:u32,lessons:Vec<Lesson>}
 #[derive(Default,Serialize,Deserialize)]
 struct Ledger {#[serde(default)]lessons:Vec<Lesson>,#[serde(default)]synced:i64,#[serde(default)]pending:BTreeMap<String,Report>,#[serde(default)]sent:BTreeMap<String,String>}
-fn path()->PathBuf{let base=std::env::var_os("LOCALAPPDATA").or_else(||std::env::var_os("XDG_CONFIG_HOME")).map(PathBuf::from).unwrap_or_else(||PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join(".config"));base.join("synerixcode/shared-learning.json")}
+fn path()->PathBuf{let base=std::env::var_os("LOCALAPPDATA").or_else(||std::env::var_os("XDG_CONFIG_HOME")).map(PathBuf::from).unwrap_or_else(||PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join(".config"));base.join("elio/shared-learning.json")}
 static LEDGER:once_cell::sync::Lazy<tokio::sync::Mutex<Ledger>>=once_cell::sync::Lazy::new(||tokio::sync::Mutex::new(std::fs::read(path()).ok().filter(|b|b.len()<=65536).and_then(|b|serde_json::from_slice(&b).ok()).unwrap_or_default()));
 fn save(ledger:&Ledger)->anyhow::Result<()>{let path=path();std::fs::create_dir_all(path.parent().unwrap())?;let temporary=path.with_extension("json.tmp");std::fs::write(&temporary,serde_json::to_vec(ledger)?)?;std::fs::rename(temporary,path)?;Ok(())}
-fn client()->anyhow::Result<reqwest::Client>{Ok(reqwest::Client::builder().user_agent("synerixcode-shared-learning").redirect(reqwest::redirect::Policy::none()).timeout(std::time::Duration::from_secs(3)).build()?)}
+fn client()->anyhow::Result<reqwest::Client>{Ok(reqwest::Client::builder().user_agent("elio-shared-learning").redirect(reqwest::redirect::Policy::none()).timeout(std::time::Duration::from_secs(3)).build()?)}
 async fn bounded(response:reqwest::Response)->anyhow::Result<Value>{let response=response.error_for_status()?;anyhow::ensure!(response.content_length().unwrap_or(0)<=8192,"Learning response too large");let mut stream=response.bytes_stream();let mut bytes=Vec::new();while let Some(chunk)=stream.next().await{let chunk=chunk?;anyhow::ensure!(bytes.len()+chunk.len()<=8192,"Learning response too large");bytes.extend_from_slice(&chunk);}Ok(serde_json::from_slice(&bytes)?)}
 static LAST_ATTEMPT:std::sync::atomic::AtomicI64=std::sync::atomic::AtomicI64::new(0);
 static SYNC_LOCK:tokio::sync::Mutex<()>=tokio::sync::Mutex::const_new(());

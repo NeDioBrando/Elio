@@ -12,7 +12,7 @@ pub fn public_tools(tools: &[Value]) -> Vec<Value> {
         if needs_id(tools, tool["name"].as_str().unwrap_or("")) {
             if let Some(required) = visible["inputSchema"]["required"].as_array_mut() { required.retain(|key| key != "studio_id"); }
             if let Some(property) = visible["inputSchema"]["properties"]["studio_id"].as_object_mut() {
-                property.insert("description".into(), Value::String("Optional when one Studio is connected: synerixcode supplies its ID. With multiple Studios, list_roblox_studios and select the intended ID.".into()));
+                property.insert("description".into(), Value::String("Optional when one Studio is connected: elio supplies its ID. With multiple Studios, list_roblox_studios and select the intended ID.".into()));
             }
         }
         visible

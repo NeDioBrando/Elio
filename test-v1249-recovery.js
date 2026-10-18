@@ -20,7 +20,7 @@ function extract(path,names){const source=fs.readFileSync(path,'utf8'),found={};
  }
  // First displayed skill editor saves without clicking Add skill or Refresh.
  const dom=new JSDOM('<div id="root"></div>',{runScripts:'outside-only',url:'https://example.com',pretendToBeVisual:true}),w=dom.window;w.TextEncoder=TextEncoder;
- w.eval(fs.readFileSync('core/skills-ui.js','utf8')+';window.Skills=synerixcodeSkillsUI;');let records=[],saved=0;
+ w.eval(fs.readFileSync('core/skills-ui.js','utf8')+';window.Skills=elioSkillsUI;');let records=[],saved=0;
  const api=async request=>{if(request.action==='save'){saved++;const skill={...request.skill,revision:1};records.push(skill);return {ok:true,skill};}if(request.action==='list')return{ok:true,skills:records};if(request.action==='export')return{ok:true,skill:records[0]};if(request.action==='delete'){records=[];return{ok:true};}throw Error(request.action);};
  const host=w.document.getElementById('root');w.Skills.mount(host,api,()=>{},()=>({}),async()=>{},async()=>({tasks:[]}));host.querySelector('[data-sk=steps]').value='Reuse this project’s combat controls';host.querySelector('[data-sk=save]').click();await new Promise(r=>setTimeout(r,20));assert.equal(saved,1);assert(host.querySelector('[data-sk=status]').textContent.startsWith('Saved.'),'A background refresh must preserve the Save receipt');assert.equal(host.querySelector('[data-sk=delete]').hidden,false);assert(host.querySelector('[data-sk=import-file]').accept.includes('.markdown'));host.querySelector('[data-sk=delete]').click();await new Promise(r=>setTimeout(r,20));assert.equal(records.length,0);w.close();
  console.log('PASS complete result pagination, goal tracking, stream deadlines/cleanup, initial skill Save, visible removal and Markdown imports.');

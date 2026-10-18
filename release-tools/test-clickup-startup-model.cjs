@@ -7,7 +7,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
-const source = fs.readFileSync(process.env.SYNERIXCODE_CLICKUP_PROVIDER || path.join(__dirname, '../providers/clickup.js'), 'utf8');
+const source = fs.readFileSync(process.env.ELIO_CLICKUP_PROVIDER || path.join(__dirname, '../providers/clickup.js'), 'utf8');
 const reproduce = process.argv.includes('--reproduce');
 const html = `<!doctype html><style>body{margin:0}cu-refinement-prompt{display:block;position:fixed;left:100px;bottom:50px;width:700px;padding:20px}.ql-editor{min-height:100px;white-space:pre-wrap}button{height:35px}</style>
 <section data-test="chat-thread-container" data-brain-prompt-surface="true" data-id="thread-1"></section>
@@ -89,7 +89,7 @@ async function result(page) {
   return page.evaluate(async () => ({...await resultPromise, sent, trace, model, draft:provider.editorText(), editable:provider.getEditor()?.getAttribute('contenteditable'), locked:provider.getEditor()?.hasAttribute('data-rs-locked'), ambiguous:provider.sendFailureAmbiguous(), retry:provider.sendRetryable(), outgoing}));
 }
 (async () => {
-  const browser = await chromium.launch({headless:true, executablePath:process.env.SYNERIXCODE_CHROMIUM || (fs.existsSync('/usr/local/bin/chromium') ? '/usr/local/bin/chromium' : undefined), args:['--no-sandbox']});
+  const browser = await chromium.launch({headless:true, executablePath:process.env.ELIO_CHROMIUM || (fs.existsSync('/usr/local/bin/chromium') ? '/usr/local/bin/chromium' : undefined), args:['--no-sandbox']});
   try {
     for (const delay of (process.argv.includes('--prior-model-only') ? [] : [40, 350])) {
       const page = await fixture(browser, {delay, overlay:true});

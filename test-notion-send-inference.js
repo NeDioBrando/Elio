@@ -30,5 +30,5 @@ const svg='<svg width="16" height="16"></svg>';
   const {w,p}=boot('<div role="button" data-testid="agent-chat-send-button" aria-label="Submit AI message">'+svg+'</div><div role="button">'+svg+'</div>');
   w.document.querySelector('[role=textbox]').textContent='hello';assert.equal(p.sendButton().getAttribute('data-testid'),'agent-chat-send-button');w.close();
 }
-assert.deepEqual(fs.readFileSync('providers/notion.js'),fs.readFileSync('synerixcode-Extension/providers/notion.js'));
+assert.deepEqual(fs.readFileSync('providers/notion.js'),fs.readFileSync('elio-Extension/providers/notion.js'));
 console.log('Notion send inference: relabelled arrow found only with a draft, ambiguous/utility controls refused, stable control preferred.');

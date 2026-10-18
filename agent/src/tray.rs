@@ -45,7 +45,7 @@ impl State {
     fn register(&mut self) -> bool {
         if self.registered { return true; }
         self.registered = unsafe { Shell_NotifyIconW(0, &self.data) != 0 };
-        if !self.registered { self.shared.log("Windows could not register the synerixcode tray icon."); }
+        if !self.registered { self.shared.log("Windows could not register the elio tray icon."); }
         self.registered
     }
 }
@@ -53,9 +53,9 @@ fn show_menu(window: Handle, shared: Arc<UiShared>) {
         unsafe {
             let menu = CreatePopupMenu();
             if menu.is_null() { return; }
-            AppendMenuW(menu, 0, 1, wide("Open synerixcode").as_ptr());
+            AppendMenuW(menu, 0, 1, wide("Open Elio").as_ptr());
             AppendMenuW(menu, 0x800, 0, std::ptr::null());
-            AppendMenuW(menu, 0, 2, wide("Quit synerixcode").as_ptr());
+            AppendMenuW(menu, 0, 2, wide("Quit Elio").as_ptr());
             let mut point = Point { x: 0, y: 0 };
             if GetCursorPos(&mut point) != 0 {
                 SetForegroundWindow(window);
@@ -94,9 +94,9 @@ impl Tray {
         // system icon size from the multi-resolution icon rather than downscaling 32px.
         data.icon = unsafe { LoadImageW(window.hinstance() as Handle, 1usize as *const u16, 1, GetSystemMetrics(49), GetSystemMetrics(50), 0x8000) };
         if data.icon.is_null() { data.icon = unsafe { LoadIconW(window.hinstance() as Handle, 1usize as *const u16) }; }
-        if data.icon.is_null() { shared.log("Embedded synerixcode application icon could not be loaded."); }
+        if data.icon.is_null() { shared.log("Embedded elio application icon could not be loaded."); }
         if data.icon.is_null() { data.icon = unsafe { LoadIconW(std::ptr::null_mut(), 32512usize as *const u16) }; }
-        let tip = wide("synerixcode — click to reopen; right-click for menu");
+        let tip = wide("Elio — click to reopen; right-click for menu");
         data.tip[..tip.len()].copy_from_slice(&tip);
         let mut state = Box::new(State { data, shared, restart: unsafe { RegisterWindowMessageW(wide("TaskbarCreated").as_ptr()) }, registered: false });
         let hooked = unsafe { SetWindowSubclass(state.data.window, procedure, SUBCLASS, (&mut *state as *mut State) as usize) != 0 };

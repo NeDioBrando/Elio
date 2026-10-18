@@ -2134,7 +2134,7 @@ function api.marketplace_setup(a)
 	local passId = tonumber(a.gamepass_id or a.pass_id) or 0
 	local productId = tonumber(a.devproduct_id or a.product_id) or 0
 	local reward = tostring(a.reward or "Coins +100")
-	if passId==0 and productId==0 then return fail("supply gamepass_id synerixcode devproduct_id") end
+	if passId==0 and productId==0 then return fail("supply gamepass_id elio devproduct_id") end
 	local scr = ServerScriptService:FindFirstChild("RobloxScript_Marketplace")
 	if not scr then scr=Instance.new("Script"); scr.Name="RobloxScript_Marketplace"; scr.Parent=ServerScriptService end
 	if passId~=0 then
@@ -2497,10 +2497,10 @@ function api.plugin_create(a)
 	src = Instance.new("Script")
 	src.Name = "Plugin"
 	src.Parent = folder
-	src.Source = string.format([==[-- synerixcode local plugin: %s
+	src.Source = string.format([==[-- elio local plugin: %s
 -- Save this folder (or this Script) via Plugins > Save as Local Plugin.
 -- The plugin global only exists after it is installed as a plugin.
-local toolbar = plugin:CreateToolbar("synerixcode · %s")
+local toolbar = plugin:CreateToolbar("elio · %s")
 local btn = toolbar:CreateButton("%s", "Toggle %s", "rbxassetid://6031075938")
 local info = DockWidgetPluginGuiInfo.new(Enum.InitialDockState.Left, true, false, 320, 420, 240, 280)
 local widget = plugin:CreateDockWidgetPluginGui("%s_widget", info)
@@ -2532,7 +2532,7 @@ body.TextColor3 = Color3.fromRGB(180, 176, 168)
 body.TextWrapped = true
 body.TextXAlignment = Enum.TextXAlignment.Left
 body.TextYAlignment = Enum.TextYAlignment.Top
-body.Text = "synerixcode plugin widget. Hook Studio selection / DataModel from here."
+body.Text = "elio plugin widget. Hook Studio selection / DataModel from here."
 body.Parent = root
 btn.Click:Connect(function()
 	widget.Enabled = not widget.Enabled
@@ -2779,7 +2779,7 @@ const SKILL_COMMANDS = [
   },
   {
     name: "asset_bridge_import",
-    description: "Import an FBX exported from Blender into Studio as Workspace.SYNERIXCODE_Imported (EditableMesh). Pass asset = the filepath from blender_export_fbx. Also accepts rbxassetid://. Requires Connect Blender for FBX.",
+    description: "Import an FBX exported from Blender into Studio as Workspace.ELIO_Imported (EditableMesh). Pass asset = the filepath from blender_export_fbx. Also accepts rbxassetid://. Requires Connect Blender for FBX.",
     params: {
       source: { type: "string", req: false, desc: "blender, crax, roblox, or URL" },
       asset: { type: "string", req: true, desc: "FBX path from Blender, rbxassetid://…, or https://…" },

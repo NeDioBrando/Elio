@@ -2,19 +2,19 @@ const fs=require('fs');const {chromium}=require('playwright');
 (async()=>{
  const original=fs.readFileSync('agent/src/desktop.html','utf8');
  const themeScript='function Byid(id){return document.getElementById(id)};'+original.slice(original.indexOf('  var Desktopthemes ='),original.indexOf('  function Saveappearance()'));
- const html=original.replaceAll('__SYNERIXCODE_VERSION__','1.22.1').replace(/<script>[\s\S]*?<\/script>/g,'');
+ const html=original.replaceAll('__ELIO_VERSION__','1.22.1').replace(/<script>[\s\S]*?<\/script>/g,'');
  const mcpScript='var State={servers:[{id:"blender",alive:true,tools:30}],mcp_alive:true};var PendingMcp={};function Escape(s){return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll(String.fromCharCode(34),"&quot;")};function Toarray(n){return [...n]};function Refresh(){return Promise.resolve()};function Showerror(e){throw e};function Api(path){return Promise.resolve(path==="/api/mcp/catalog"?{servers:[{id:"blender",name:"Blender",enabled:true,command:"uvx",args:["blender-mcp"],description:"Install and enable the Blender MCP addon inside Blender. Keep Blender open, press N, open MCP for Blender, and click Start MCP Server. Enabling here starts the MCP process only; Test Blender connection checks the actual scene response."}]}:{ok:false,error:"Blender did not answer get_scene_info within 8 seconds. Keep Blender open and responsive, close blocking dialogs, then stop and start the MCP server in Blender."})};'+original.slice(original.indexOf('  var Blendercheck ='),original.indexOf('  function Renderlogs()'));
  const browser=await chromium.launch({headless:true});const page=await browser.newPage();
  await page.setContent(html);
  await page.addScriptTag({content:themeScript});
  await page.addScriptTag({content:mcpScript});await page.evaluate(()=>Loadcatalog());
- await page.evaluate(()=>Applyappearance({theme:'default'})); await page.addScriptTag({content:['core/headless-builder.js','core/creator.js','core/creator-ui.js'].map(file=>fs.readFileSync(file,'utf8')).join('\n')+'\nwindow.CreatorUI=synerixcodeCreatorUI;'});
+ await page.evaluate(()=>Applyappearance({theme:'default'})); await page.addScriptTag({content:['core/headless-builder.js','core/creator.js','core/creator-ui.js'].map(file=>fs.readFileSync(file,'utf8')).join('\n')+'\nwindow.CreatorUI=elioCreatorUI;'});
  await page.evaluate(async()=>{
   const api=async()=>({ok:true,records:[],feedback:[],text:'Action complete'}),send=async()=>({ok:true}),control=()=>({canTaskSend:true,engine:'roblox'});
   window.ModelWorkspace=CreatorUI.mount(document.getElementById('modelWorkspace'),api,send,send,send,control,{mode:'model'});
   window.UiWorkspace=CreatorUI.mount(document.getElementById('uiWorkspace'),api,send,send,send,control,{mode:'ui'});
-  window.KitWorkspace=synerixcodeToolkitUI.mount(document.getElementById('toolkitWorkspace'),api,send,()=>({roblox_connected:true,browser_agent:control()}),()=>{});
-  window.NoticeWorkspace=synerixcodeNotifications.mount(document.getElementById('notificationCenter'),{getItem:()=>null,setItem:()=>{}});
+  window.KitWorkspace=elioToolkitUI.mount(document.getElementById('toolkitWorkspace'),api,send,()=>({roblox_connected:true,browser_agent:control()}),()=>{});
+  window.NoticeWorkspace=elioNotifications.mount(document.getElementById('notificationCenter'),{getItem:()=>null,setItem:()=>{}});
   await Promise.all([ModelWorkspace.refresh(),UiWorkspace.refresh(),KitWorkspace.refresh()]);
  });
 
@@ -106,11 +106,11 @@ const fs=require('fs');const {chromium}=require('playwright');
  await page.emulateMedia({reducedMotion:'reduce'});
  const motion=await page.locator('.page.active').evaluate(n=>getComputedStyle(n).animationName);if(motion!=='none')throw Error('Reduced motion was ignored');
  const barSource=fs.readFileSync('core/main.js','utf8');
- const barHtml=barSource.slice(barSource.indexOf('<div id="rs-bar">'),barSource.indexOf('<div id="rs-cowork-panel"')).replace(/\$\{BRAND_NAME\}/g,'synerixcode').replace(/\$\{EXT_VERSION\}/g,'1.19.32');
+ const barHtml=barSource.slice(barSource.indexOf('<div id="rs-bar">'),barSource.indexOf('<div id="rs-cowork-panel"')).replace(/\$\{BRAND_NAME\}/g,'elio').replace(/\$\{EXT_VERSION\}/g,'1.19.32');
  const sample=await browser.newPage();
  await sample.setContent('<style>body{background:#11151c;margin:20px}.host{max-width:740px;margin:auto}.site-turn{margin:0;text-align:right}p{color:#eee}</style><main class="host"><article class="site-turn"><div class="rs-chip err"><div class="rs-chip-head"><span class="rs-chip-tx">execute_luau · ERROR: '+('Long error text ').repeat(30)+'</span><span class="rs-chip-dt">failed</span></div></div></article><article class="site-turn rs-hidden"><div class="rs-chip result"><div class="rs-chip-head"><span class="rs-chip-tx">execute_luau · result</span></div></div></article><article class="site-turn rs-hidden"><div class="rs-chip err"><div class="rs-chip-head"><span class="rs-chip-tx">result · '+('Wrapped error ').repeat(15)+'</span></div></div></article><p>Connecting a few dots</p><section class="rs-cowork-receipt"><strong>Co-work follow-up · Sent to AI</strong><div>Keep this exact follow-up visible</div></section></main><div id="rs-root">'+barHtml+'</div>');
  await sample.addStyleTag({content:fs.readFileSync('overlay.css','utf8')});
- await sample.addScriptTag({content:fs.readFileSync('core/version.js','utf8')+'\nwindow.VersionUI=synerixcodeVersion;'});
+ await sample.addScriptTag({content:fs.readFileSync('core/version.js','utf8')+'\nwindow.VersionUI=elioVersion;'});
  await sample.evaluate(()=>{const bar=document.getElementById('rs-bar');bar.style.position='relative';bar.style.width='100%';});
  for(const width of [1440,760,390]){
   await sample.setViewportSize({width,height:1000});
@@ -163,7 +163,7 @@ const fs=require('fs');const {chromium}=require('playwright');
  await page.addScriptTag({path:'core/clarification.js'});
  await page.evaluate(()=>{
   const original=Element.prototype.attachShadow;Element.prototype.attachShadow=function(options){const root=original.call(this,options);if(this.id==='rs-clarification-host')window.ClarificationShadow=root;return root;};
-  window.ClarificationPanel=synerixcodeClarification.create({document,context:()=> 'visual-chat|roblox',provider:()=> 'Claude',mount:()=>document.body});
+  window.ClarificationPanel=elioClarification.create({document,context:()=> 'visual-chat|roblox',provider:()=> 'Claude',mount:()=>document.body});
  });
  for(const width of [320,390,760,1440])for(const theme of ['default','ocean','orchid']){
   await page.setViewportSize({width,height:900});

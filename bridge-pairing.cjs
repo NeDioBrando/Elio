@@ -19,7 +19,7 @@ const source = fs.readFileSync(path.join(__dirname, '../background.js'), 'utf8')
   vm.runInContext(source, context);
   await Promise.all([vm.runInContext('ensurePairing()', context), vm.runInContext('ensurePairing()', context)]);
   assert.equal(requests.length, 1, 'concurrent pairing must share one request');
-  assert.equal(requests[0][1].headers['X-synerixcode-Extension'], 'a'.repeat(32));
+  assert.equal(requests[0][1].headers['X-elio-Extension'], 'a'.repeat(32));
   await vm.runInContext('bridgeFetch("http://127.0.0.1:3000/api/status")', context);
   assert.equal(requests[1][1].headers.get('Authorization'), 'Bearer ' + 'b'.repeat(64));
   assert.equal(requests[1][1].redirect, 'error');

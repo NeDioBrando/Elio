@@ -20,15 +20,15 @@ try {
   assert(p.canRenderImmutableChip(item,{whole:true}));
   p.renderImmutableChip(item,{whole:true,label:'script_read · result',phase:'result',body:p.itemText(item)});
   assert.equal(item.innerHTML,before,'No locked children modified');
-  const key=item.getAttribute('data-synerixcode-notion-card');assert(key);
+  const key=item.getAttribute('data-elio-notion-card');assert(key);
   const rules=Array.from(d.querySelector('#zs-notion-immutable-cards').sheet.cssRules);
-  assert(rules.some(r=>r.selectorText===`[data-synerixcode-notion-card="${key}"]>*`&&r.style.display==='none'));
+  assert(rules.some(r=>r.selectorText===`[data-elio-notion-card="${key}"]>*`&&r.style.display==='none'));
   assert(p.immutableChipPresent(item));assert(p.itemText(item).startsWith("Output of 'script_read':"));
   p.syncImmutableChips();assert(p.immutableChipPresent(item),'Whole-bubble mask survives cleanup');
  }
- const original=d.querySelector('#plain-result'),fresh=original.cloneNode(true);fresh.removeAttribute('data-synerixcode-notion-card');original.replaceWith(fresh);p.invalidateItems();
+ const original=d.querySelector('#plain-result'),fresh=original.cloneNode(true);fresh.removeAttribute('data-elio-notion-card');original.replaceWith(fresh);p.invalidateItems();
  assert.equal(p.userCount(),3);assert(p.isUserItem(fresh));p.renderImmutableChip(fresh,{whole:true,label:'script_read · result',phase:'result'});assert(p.immutableChipPresent(fresh));
- p.clearImmutableChip(fresh,{force:true});assert.equal(fresh.getAttribute('data-synerixcode-notion-card'),null,'Recycled user message immediately loses its old visual mask');
+ p.clearImmutableChip(fresh,{force:true});assert.equal(fresh.getAttribute('data-elio-notion-card'),null,'Recycled user message immediately loses its old visual mask');
  const recycled=d.querySelector('#block-result');d.querySelector('main').append(recycled);p.invalidateItems();assert(p.isAssistantItem(recycled),'Role cache follows a moved/recycled block root');
  const history=d.createDocumentFragment();for(let i=0;i<1000;i++){const row=d.createElement('div');row.style.justifyContent='flex-end';const inner=d.createElement('div');inner.style.justifyContent='flex-end';inner.textContent='Earlier request '+i;row.append(inner);history.append(row);}d.querySelector('main').append(history);p.invalidateItems();
  let queries=0,contains=0;const query=d.querySelectorAll.bind(d),originalContains=w.Node.prototype.contains;d.querySelectorAll=(...args)=>{queries++;return query(...args);};w.Node.prototype.contains=function(node){contains++;return originalContains.call(this,node);};

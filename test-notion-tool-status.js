@@ -1,5 +1,5 @@
 const fs = require('fs'), vm = require('vm'), assert = require('node:assert/strict');
-const { JSDOM } = require(process.env.SYNERIXCODE_TEST_JSDOM || 'jsdom');
+const { JSDOM } = require(process.env.ELIO_TEST_JSDOM || 'jsdom');
 const dom = new JSDOM('<div id="rs-root"></div><main><article data-agent-service-scroll-anchor="one"><pre data-block-id="tool-one">{"command":"execute_luau"}</pre></article></main>', { url: 'https://app.notion.com/chat', runScripts: 'outside-only' });
 try {
   vm.runInContext(fs.readFileSync('providers/notion.js', 'utf8') + ';this.provider=RSProvider;', dom.getInternalVMContext());

@@ -1,7 +1,7 @@
 // Notion protocol-file uploads: a dropped file that never previews or an upload
 // spinner that never finishes is retried safely (nothing was submitted yet),
 // while Stop, foreign attachments and exhausted retries still fail closed.
-const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict'),{JSDOM}=require(process.env.SYNERIXCODE_TEST_JSDOM||'jsdom');
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict'),{JSDOM}=require(process.env.ELIO_TEST_JSDOM||'jsdom');
 async function scenario(name,{ignore=0,stuck=0,stopOnDrop=false,foreignOnRetry=false}){
  const dom=new JSDOM('<main><section id="host"><div id="uploads"></div><section id="composer"><div role="textbox" contenteditable="true" data-placeholder="Ask Notion AI"></div><div role="button" data-testid="agent-chat-send-button" aria-label="Submit AI message" aria-disabled="true">Send</div></section></section></main>',{url:'https://app.notion.com/ai',runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window,doc=w.document,ed=doc.querySelector('[role=textbox]'),button=doc.querySelector('[role=button]'),frame=doc.querySelector('#composer'),fileArea=doc.querySelector('#uploads');
@@ -23,7 +23,7 @@ async function scenario(name,{ignore=0,stuck=0,stopOnDrop=false,foreignOnRetry=f
   const r=new w.FileReader();r.onload=()=>{fileText=r.result;card.removeAttribute('aria-busy');};r.readAsText(file);});
  button.addEventListener('click',()=>{assert.equal(button.getAttribute('aria-disabled'),'false');assert.equal(fileArea.querySelector('[aria-busy=true]'),null,'never submit while uploading');assert.equal(fileArea.querySelectorAll('.fixture-card').length,1,'exactly one file is submitted');commits++;sent.push({text,fileText});text='';ed.textContent='';fileArea.querySelectorAll('.fixture-card').forEach(c=>c.remove());button.setAttribute('aria-disabled','true');const row=doc.createElement('div');row.setAttribute('data-agent-service-scroll-anchor','user-'+commits);row.style.justifyContent='flex-end';row.textContent=sent.at(-1).text;doc.body.append(row);w.provider.invalidateItems();w.history.replaceState({},'','/chat/thread-1');});
  try{
-  vm.runInContext(fs.readFileSync(process.env.SYNERIXCODE_NOTION_PROVIDER_SOURCE||'providers/notion.js','utf8')+';globalThis.provider=RSProvider;',dom.getInternalVMContext());
+  vm.runInContext(fs.readFileSync(process.env.ELIO_NOTION_PROVIDER_SOURCE||'providers/notion.js','utf8')+';globalThis.provider=RSProvider;',dom.getInternalVMContext());
   const p=w.provider;p.init({isStopped:()=>stopped,diag:(e,d)=>{diags.push([e,d]);if(foreignOnRetry&&e==='notion.attach.previewMissing'){const f=doc.createElement('div');f.setAttribute('data-testid','attachment');f.textContent='Pasted text';fileArea.append(f);}}});p.setInputLock(true);
   const result="Output of 'read_script':\n"+'local x = 1\n'.repeat(400);
   const ok=await p.typeAndSend(result);

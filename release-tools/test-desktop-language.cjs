@@ -18,13 +18,13 @@ const codes = ['en','es','fr','ru','ar','zh-CN','zh-TW','ja','ko','de','pt-BR','
 const actual = process.argv.includes('--actual-i18n');
 const htmlSource = read('agent/src/desktop.html');
 const main = read('agent/src/main.rs'), build = read('agent/build.rs');
-for (const [placeholder, name] of [['__SYNERIXCODE_I18N_CATALOG__','i18n-catalog.js'],['__SYNERIXCODE_I18N__','i18n.js']]) {
+for (const [placeholder, name] of [['__ELIO_I18N_CATALOG__','i18n-catalog.js'],['__ELIO_I18N__','i18n.js']]) {
   assert.equal(main.split(`.replace("${placeholder}",`).length - 1, 2, 'both native HTML handlers inject shared i18n');
   assert(main.includes(`/core/${name}`));
   assert(build.includes(`"${name}"`), 'native rebuild follows shared runtime changes');
   assert.equal(htmlSource.split(placeholder).length - 1, 1);
 }
-assert(htmlSource.indexOf('I18n.mountStatic(document.body)') < htmlSource.indexOf('synerixcodeNotifications.mount('), 'bind static body before user widgets');
+assert(htmlSource.indexOf('I18n.mountStatic(document.body)') < htmlSource.indexOf('elioNotifications.mount('), 'bind static body before user widgets');
 assert(htmlSource.includes('Patchpref("rsLanguage", I18n.normalize(Code))'));
 
 // Small test-only adapter for the exact shared runtime API. Not a shipped engine/catalog.
@@ -36,7 +36,7 @@ function contractRuntime() {
   const normalize = code => languages.some(x=>x.code===code) ? code : 'en';
   const t = source => ({es:{Language:'Idioma',Settings:'Configuración',Appearance:'Apariencia'},ar:{Language:'اللغة',Settings:'الإعدادات',Appearance:'المظهر'}}[language] || {})[source] || source;
   function setLanguage(code) { language=normalize(code); for (const [node,source] of bindings) if(node.isConnected) node.nodeValue=t(source); return language; }
-  globalThis.synerixcodeI18n = {
+  globalThis.elioI18n = {
     languages, normalize, t, getLanguage:()=>language, setLanguage,
     mountStatic(root) {
       window.__staticMountedBeforeData = ['taskCenter','explorerWorkspace','memorySettings','skillsWorkspace'].every(id=>!document.getElementById(id).children.length);
@@ -56,15 +56,15 @@ function contractRuntime() {
   };
 }
 let html=htmlSource;
-html=html.replace('__SYNERIXCODE_I18N_CATALOG__',actual?read('core/i18n-catalog.js'):'');
-html=html.replace('__SYNERIXCODE_I18N__',actual?read('core/i18n.js'):`(${contractRuntime.toString()})();`);
-for(const [token,file] of Object.entries({SKILLS:'skills-ui.js',EXPLORER:'explorer-ui.js',MEDIA:'media.js',MEMORY:'memory.js',TASK:'task-center.js',TEMPLATE:'templates.js',TOOLKIT:'toolkit-ui.js',VERSION:'version.js'})) html=html.replace(`__SYNERIXCODE_${token}_UI__`,()=>read(`core/${file}`));
-html=html.replace(/__SYNERIXCODE_VERSION__/g,'1.24.18').replace(/__SYNERIXCODE_PAIRING_KEY__/g,'fixture-only-key');
+html=html.replace('__ELIO_I18N_CATALOG__',actual?read('core/i18n-catalog.js'):'');
+html=html.replace('__ELIO_I18N__',actual?read('core/i18n.js'):`(${contractRuntime.toString()})();`);
+for(const [token,file] of Object.entries({SKILLS:'skills-ui.js',EXPLORER:'explorer-ui.js',MEDIA:'media.js',MEMORY:'memory.js',TASK:'task-center.js',TEMPLATE:'templates.js',TOOLKIT:'toolkit-ui.js',VERSION:'version.js'})) html=html.replace(`__ELIO_${token}_UI__`,()=>read(`core/${file}`));
+html=html.replace(/__ELIO_VERSION__/g,'1.24.18').replace(/__ELIO_PAIRING_KEY__/g,'fixture-only-key');
 const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
 new vm.Script(script, {filename:'desktop-injected.js'});
 
 (async()=>{
-  const temporary=fs.mkdtempSync(path.join(os.tmpdir(),'synerixcode-language-fixture-'));
+  const temporary=fs.mkdtempSync(path.join(os.tmpdir(),'elio-language-fixture-'));
   const prefsPath=path.join(temporary,'settings.json');
   const authored='Settings\nLanguage مرحبا café 你好 C:\\Game\\main.lua';
   let preferences={'rs-engine':'local',rsStopMode:'safe',rsThinkingLevel:'ultracode',rsAutoUpdate:false,rsCustomPrompt:authored,rsAppearance:{theme:'cyan',glow:'strong',gradients:'off'}};
@@ -95,13 +95,13 @@ new vm.Script(script, {filename:'desktop-injected.js'});
     await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
     const base=`http://127.0.0.1:${server.address().port}`;
     // Native source defaults to :3000; the fixture boot redirects only to this private local server.
-    browser=await playwright.chromium.launch({headless:true,...(process.env.SYNERIXCODE_TEST_CHROMIUM?{executablePath:process.env.SYNERIXCODE_TEST_CHROMIUM}:fs.existsSync('/usr/local/bin/chromium')?{executablePath:'/usr/local/bin/chromium'}:{}),args:['--no-sandbox']});
+    browser=await playwright.chromium.launch({headless:true,...(process.env.ELIO_TEST_CHROMIUM?{executablePath:process.env.ELIO_TEST_CHROMIUM}:fs.existsSync('/usr/local/bin/chromium')?{executablePath:'/usr/local/bin/chromium'}:{}),args:['--no-sandbox']});
     const context=await browser.newContext({viewport:{width:1360,height:1000}});
-    await context.addInitScript(url=>{window.__SYNERIXCODE_BOOT__={apiUrl:url,key:'fixture-only-key'};},base);
+    await context.addInitScript(url=>{window.__ELIO_BOOT__={apiUrl:url,key:'fixture-only-key'};},base);
     const page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));
     await page.goto(base,{waitUntil:'load'});
-    await page.waitForFunction(()=>window.synerixcodeDesktop && document.documentElement.dataset.desktopThinking==='ultracode');
-    await page.evaluate(()=>synerixcodeDesktop.go('settings'));
+    await page.waitForFunction(()=>window.elioDesktop && document.documentElement.dataset.desktopThinking==='ultracode');
+    await page.evaluate(()=>elioDesktop.go('settings'));
     const host=page.locator('#desktopLanguagePicker'), select=host.locator('select'), search=host.locator('input[type=search], input[type=text]').first();
     await select.waitFor({state:'visible'});
     assert.equal(await select.inputValue(),'en','old settings without language default to English');
@@ -119,12 +119,12 @@ new vm.Script(script, {filename:'desktop-injected.js'});
     await search.fill('');
     for(const code of codes.slice(1)) {
       await select.selectOption(code);
-      await page.waitForFunction(code=>document.documentElement.lang===code && synerixcodeI18n.getLanguage()===code,code);
+      await page.waitForFunction(code=>document.documentElement.lang===code && elioI18n.getLanguage()===code,code);
       assert.equal(await page.locator('html').getAttribute('dir'),code==='ar'?'rtl':'ltr');
       assert.equal(JSON.parse(fs.readFileSync(prefsPath,'utf8')).rsLanguage,code);
-      assert.equal(await page.locator('#customInstructions').inputValue(),authored,'language never rewrites instructions');assert.equal(await page.locator('.brand-word').innerText(),'synerixcode','brand is never translated');
-      if(process.env.SYNERIXCODE_LANGUAGE_SCREENSHOTS && ['es','ar'].includes(code)) {
-        const dir=process.env.SYNERIXCODE_LANGUAGE_SCREENSHOTS;fs.mkdirSync(dir,{recursive:true});
+      assert.equal(await page.locator('#customInstructions').inputValue(),authored,'language never rewrites instructions');assert.equal(await page.locator('.brand-word').innerText(),'elio','brand is never translated');
+      if(process.env.ELIO_LANGUAGE_SCREENSHOTS && ['es','ar'].includes(code)) {
+        const dir=process.env.ELIO_LANGUAGE_SCREENSHOTS;fs.mkdirSync(dir,{recursive:true});
         await page.locator('#languageSettings').scrollIntoViewIfNeeded();
         await page.screenshot({path:path.join(dir,'desktop-settings-'+code+'.png')});
         if(code==='ar') {await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(dir,'desktop-settings-ar-mobile.png')});await page.setViewportSize({width:1360,height:1000});}
@@ -141,33 +141,33 @@ new vm.Script(script, {filename:'desktop-injected.js'});
       assert.equal(item.url,'/api/desktop/preferences');assert.deepEqual(Object.keys(item.body),['rsLanguage']);
     }
     const languagePosts=posts.filter(p=>p.body.rsLanguage!==undefined).length;
-    preferences.rsLanguage='fr';await page.evaluate(()=>synerixcodeDesktop.refresh());
+    preferences.rsLanguage='fr';await page.evaluate(()=>elioDesktop.refresh());
     assert.equal(await select.inputValue(),'fr','external preference changes refresh the shared picker');
     assert.equal(await page.locator('html').getAttribute('lang'),'fr');
     assert.equal(posts.filter(p=>p.body.rsLanguage!==undefined).length,languagePosts,'refresh never writes a preference');
-    preferences.rsLanguage='not-supported';await page.evaluate(()=>synerixcodeDesktop.refresh());
+    preferences.rsLanguage='not-supported';await page.evaluate(()=>elioDesktop.refresh());
     assert.equal(await select.inputValue(),'en');assert.equal(await page.locator('html').getAttribute('lang'),'en');
     preferences.rsLanguage='en';
     failNext=true;await select.selectOption('es');
     await page.waitForFunction(()=>document.getElementById('fatal').textContent.includes('Fixture save refused'));
     await page.waitForFunction(()=>{const node=document.querySelector('#desktopLanguagePicker select');return !node.disabled && node.value==='en';});
     assert.equal(await select.inputValue(),'en','failed saves revert the picker');
-    assert.equal(await page.evaluate(()=>synerixcodeI18n.getLanguage()),'en','failed save must reject onChange');
+    assert.equal(await page.evaluate(()=>elioI18n.getLanguage()),'en','failed save must reject onChange');
     assert.equal(preferences.rsLanguage,'en');
     assert.equal(await page.locator('#homeActivityLabel').innerText(),'Language','user-authored labels are not localized');
-    await page.evaluate(()=>synerixcodeDesktop.go('tools'));
+    await page.evaluate(()=>elioDesktop.go('tools'));
     assert.equal(await page.locator('#toolsGrid .toolname').first().innerText(),'Settings');
     assert.equal(await page.locator('#toolsGrid .tooldesc').first().innerText(),'Language');
-    await page.evaluate(()=>synerixcodeDesktop.go('mcp'));
+    await page.evaluate(()=>elioDesktop.go('mcp'));
     await page.locator('#mcpGrid .mcpcommand').last().waitFor();
     assert.equal(await page.locator('#mcpGrid .mcpcommand').last().innerText(),'C:\\Game\\main.exe --language en');
-    await page.evaluate(()=>synerixcodeDesktop.go('settings'));
+    await page.evaluate(()=>elioDesktop.go('settings'));
     await select.selectOption('ar');await page.waitForFunction(()=>document.documentElement.lang==='ar');
     await page.locator('[data-settings-section="languageSettings"] > summary').click();
-    await page.waitForFunction(()=>JSON.parse(localStorage.getItem('synerixcodeSettingsSections')).languageSettings===false);
+    await page.waitForFunction(()=>JSON.parse(localStorage.getItem('elioSettingsSections')).languageSettings===false);
     preferences=JSON.parse(fs.readFileSync(prefsPath,'utf8'));await page.reload();
-    await page.waitForFunction(()=>window.synerixcodeDesktop && document.documentElement.lang==='ar');
-    await page.evaluate(()=>synerixcodeDesktop.go('settings'));
+    await page.waitForFunction(()=>window.elioDesktop && document.documentElement.lang==='ar');
+    await page.evaluate(()=>elioDesktop.go('settings'));
     assert.equal(await select.inputValue(),'ar','language survives desktop reopen');
     assert(!(await page.locator('[data-settings-section="languageSettings"]').evaluate(n=>n.open)),'saved collapsed section is respected on reopen');
     assert.equal(await page.locator('#customInstructions').inputValue(),authored);

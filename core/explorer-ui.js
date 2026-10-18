@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-const synerixcodeExplorerUI=(()=>{
+const elioExplorerUI=(()=>{
  'use strict';
  function mount(host,api,preferences,setPreference){
   // Snapshot only owned UI; user/tool data is marked before it enters the DOM.
-  const localize=()=>globalThis.synerixcodeI18n?.mountStatic?.(host);
+  const localize=()=>globalThis.elioI18n?.mountStatic?.(host);
   host.innerHTML=`<div class="explorer-heading"><div><span class="eyebrow">YOUR WORKSPACE</span><h1>Explorer</h1><p>Browse your game’s objects and scripts in one place.</p></div><span class="explorer-source-badge">Roblox Studio</span></div>
   <div class="explorer-toolbar"><div class="explorer-sync-tools"><button class="softbtn" data-ex="refresh"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6.2 6.2A8 8 0 0 1 20 12M4 12a8 8 0 0 0 13.8 5.8"/></svg>Sync Studio</button><label class="explorer-auto"><input type="checkbox" data-ex="auto" checked> Auto-sync <b data-ex="auto-label">ON</b></label></div><div class="explorer-sync-actions"><button class="softbtn" data-ex="compare" disabled>Compare with Studio</button><button class="accentbtn" data-ex="push" disabled>Push changes</button></div></div>
   <div class="explorer-layout"><aside class="explorer-tree-panel"><div class="explorer-tree-heading"><strong>Game hierarchy</strong><span>OBJECTS &amp; SCRIPTS</span></div><label class="explorer-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input data-ex="filter" placeholder="Search loaded objects…" aria-label="Filter Explorer"></label><div data-ex="tree" role="tree" aria-label="Game Explorer"></div></aside>
@@ -12,7 +12,7 @@ const synerixcodeExplorerUI=(()=>{
   find('filter').dir='auto';find('path').dir='ltr';find('selection').dir='auto';find('kind').dir='ltr';
   const editor=find('editor'),tree=find('tree'),auto=find('auto'),status=find('status');
   let session='',selected=null,expected='',busy=false,blocked=false,timer=null,epoch=0,active=true;
-  const key=()=>selected?'synerixcode-explorer-draft:'+session+':'+selected.id:'';
+  const key=()=>selected?'elio-explorer-draft:'+session+':'+selected.id:'';
   const dirty=()=>!!selected&&editor.value!==expected;
   function message(text){status.textContent=text;find('push').disabled=busy||!dirty();find('compare').disabled=busy||!selected;}
   function store(){try{if(dirty())localStorage.setItem(key(),JSON.stringify({expected,source:editor.value,path:find('path').textContent}));else localStorage.removeItem(key());}catch{message('Draft storage unavailable. Keep this editor open until you push.');}}
@@ -104,4 +104,4 @@ const synerixcodeExplorerUI=(()=>{
  }
  return {mount};
 })();
-if(typeof module!=='undefined')module.exports=synerixcodeExplorerUI;
+if(typeof module!=='undefined')module.exports=elioExplorerUI;

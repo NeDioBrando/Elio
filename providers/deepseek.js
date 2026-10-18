@@ -193,7 +193,7 @@ const RSProvider = (() => {
   const assistantItems = () => allItems().filter(isAssistantItem);
   const assistantCount = () => assistantItems().length;
   const userCount = () => allItems().filter(isUserItem).length;
-  // Scope to the SITE's composer only: never match synerixcode's own injected
+  // Scope to the SITE's composer only: never match elio's own injected
   // UI (e.g. the settings textarea #rs-set-text in #rs-root). Otherwise on the
   // login/OAuth pages - which have no site textarea - getEditor() would return
   // our own panel's textarea, defeating the "not on a chat page" guard in the
@@ -201,7 +201,7 @@ const RSProvider = (() => {
   // itself a .ds-button--primary, the same selector as the send button).
   let lockedEditor = null;
   const getEditor = () => {
-    // A rich composer becomes contenteditable=false while synerixcode locks it.
+    // A rich composer becomes contenteditable=false while elio locks it.
     // Keep that exact site editor discoverable for readiness and our own writes.
     if (lockedEditor && safeRead(() => lockedEditor.isConnected, false) && safeRead(() => lockedEditor.offsetParent, null) !== null) return lockedEditor;
     const site = [...safeQueryAll(document, S.editor)].filter(
@@ -210,7 +210,7 @@ const RSProvider = (() => {
     // Prefer the bottom composer over the inline message-EDIT box. When the user
     // edits a turn, DeepSeek mounts a bordered .ds-textarea up in the turn list;
     // it precedes the composer in DOM order, so the old "first textarea" pick
-    // returned it - and barMount() then dragged the whole synerixcode bar INTO the
+    // returned it - and barMount() then dragged the whole elio bar INTO the
     // editor. Skip any textarea inside that DS component; the composer isn't one.
     const ta = site.find((e) => safeRead(() => e.tagName, "") === "TEXTAREA" && !safeClosest(e, S.msgEditBox));
     if (ta) return ta;
@@ -461,7 +461,7 @@ const RSProvider = (() => {
     // We only DRIVE the composer when given a reason (i.e. at session startup).
     // Per-sweep calls pass no reason and are READ-ONLY: that leaves the user free
     // to switch the model tab afterwards (e.g. Expert → Instant to turn thinking
-    // off) without synerixcode reverting their choice every frame.
+    // off) without elio reverting their choice every frame.
     if (!reason) return composerModeState();
     try {
       // LEGACY picker only (the unified 2026-09 UI has none, so findExpertRadio()
@@ -509,7 +509,7 @@ const RSProvider = (() => {
     for (let i = 0; i < (legacyPicker ? 12 : 1); i++) {
       state = enforceComposer(reason);
       if (!legacyPicker) break;
-      // Ready as soon as the agent model is on (Expert, synerixcode Vision if the user
+      // Ready as soon as the agent model is on (Expert, elio Vision if the user
       // chose it) and Search is off. DeepThink is only required if a legacy toggle
       // is actually present (V4 has none).
       if ((state.expertOn || state.visionOn) && state.searchOff && (state.deepThinkOn || !state.deepThinkFound)) break;
@@ -528,7 +528,7 @@ const RSProvider = (() => {
   // filled rounded square). Older builds drew the stop glyph with a <rect>; the
   // current V4 build draws BOTH as a <path>: the send arrow's path starts
   // mid-glyph ("M8.31…"), the stop square's path starts at a corner near the
-  // origin ("M2 …"). We treat the button as "stop" when it carries a <rect> synerixcode a
+  // origin ("M2 …"). We treat the button as "stop" when it carries a <rect> elio a
   // square-ish path (leading move to x ≤ 3) - never the M8 arrow. One-liner to
   // update if DeepSeek reskins the footer button.
   function isStopBtn(btn) {
@@ -782,7 +782,7 @@ const RSProvider = (() => {
     if (!text || text.length <= SEND_MAX) return text;
     const omitted = text.length - SEND_MAX;
     const marker =
-      `\n\n[…synerixcode: result truncated to fit DeepSeek's ${SEND_CAP}-character ` +
+      `\n\n[…elio: result truncated to fit DeepSeek's ${SEND_CAP}-character ` +
       `input limit - ${omitted} of ${text.length} characters omitted. Do NOT re-run ` +
       `the command; work with the head and tail shown here…]\n\n`;
     const budget = SEND_MAX - marker.length;
@@ -872,7 +872,7 @@ const RSProvider = (() => {
 
   // ── Image attachment (Studio captures → composer) ────────────────────────
   function fileFromImage(img, i) {
-    if (typeof synerixcodeMedia !== "undefined") return synerixcodeMedia.fileFrom(img, i);
+    if (typeof elioMedia !== "undefined") return elioMedia.fileFrom(img, i);
     const mime = img.mimeType || "image/jpeg";
     const bin = atob(img.data);
     const arr = new Uint8Array(bin.length);
@@ -952,7 +952,7 @@ const RSProvider = (() => {
   // composer events (Enter key, send-button click, native stop / continue).
   // handlers = {
   //   isBlocked():bool        - agent busy (injecting/running/starting)
-  //   isStarted():bool        - a synerixcode session exists in this chat
+  //   isStarted():bool        - a elio session exists in this chat
   //   onBlockedAttempt()      - user tried to send before starting (fresh chat)
   //   onUserMessage(base)     - a genuine user message is being sent
   //   onNativeStop()          - user clicked the site's own stop button

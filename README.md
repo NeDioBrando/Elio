@@ -1,18 +1,26 @@
-# Elio v1
+# Elio 1.0.1
 
-Independent GPL-3.0-or-later fork of PlazCode 1.24.20, originally derived from ZeroScript-Free.
+A quiet desktop workspace in soft linen or warm charcoal for browser AI, Roblox Studio, AgentScript and Blender. Independent GPL-3.0-or-later fork. Original authorship, origin and third-party notices remain intact; see UPSTREAM-SOURCE.txt and BRANDING-NOTICE.txt.
 
-**This source package does not contain a prebuilt Windows executable.**
-See [README-RU.md](README-RU.md) for build, installation, limitations and Windows validation.
-Build on Windows x64 using `Build-Windows.ps1` or the GitHub Actions build/release workflow.
-Do not reuse the upstream EXE, because it still contains its original updater.
+## This delivery
 
-Upstream license/branding and third-party notices are preserved. This is not an official PlazCode release.
+- Rebuilt native chat: assistant left, human right, anchored composer, optimistic delivery status and expandable tool cards.
+- Elio identity and supplied icon, matching light/dark themes throughout native UI and extension controls, with a saved sun/moon toggle. Provider websites are not recolored.
+- New UI strings in all 15 existing languages. Conversations and source code are never translated.
+- Delivery ACK now waits for the provider submit operation, fresh history reads, stable target selection while the native window has focus, explicit post-Stop resume and same-ID retry deduplication.
 
-## Desktop chat
+**This is source, not a prebuilt Windows executable.** Rebuild the native binary; copying HTML beside an old EXE does not replace its embedded UI. Back up personal data, remove previous project source files while preserving `.git`, then extract this archive directly into the repository root, not a second nested project directory. Copying over old files alone leaves renamed legacy directories behind.
 
-This working-tree update adds a native Chat page backed by the existing Chromium extension. See [DESKTOP-CHAT-RU.md](DESKTOP-CHAT-RU.md) for setup, architecture, limitations and the future Lightpanda adapter boundary. Rebuild the native executable and reload the updated extension together.
+See [README-RU.md](README-RU.md) for Windows build/release instructions, [ELIO-RU.md](ELIO-RU.md) for implementation notes and [ELIO-TEST-REPORT.md](ELIO-TEST-REPORT.md) for actual validation and remaining limits.
 
-## Product updates
+Use **Actions → Build and release Elio (Windows x64)** or `Build-Windows.ps1` on Windows. The artifact is `Elio-Windows-x64`; the installable asset is `elio-v1.0.1-Windows-x64.zip`, containing one `elio/elio.exe` and the matching `elio-Extension`.
 
-Both the desktop app and AI-site extension show **Версия устарела · Outdated** with an **Обновить** action. The native bridge owns checking, download verification and Windows installation. See [UPDATES-RU.md](UPDATES-RU.md) for first installation, release publishing, trust boundaries and limitations, and [UPDATES-TEST-REPORT.md](UPDATES-TEST-REPORT.md) for actual validation. Windows installation has not been executed in the Linux development environment.
+All owned product identifiers now use Elio, including Cargo, tools, protocol, storage, helper paths and release assets. Install the new application and extension together; old product storage and pairing files are not migrated automatically. This unpublished source remains **1.0.1**. Publish `v1.0.1` only after validating the Windows build; never overwrite an already published tag.
+
+Start Agent identifies the assistant as Elio and requests exactly `Elio is ready to assist you.` after tool discovery. Only identity and its acknowledgement were changed in the prompt; functional tool instructions remain intact.
+
+The historical publishing helpers in `release-tools/package-appearance.py` and `publisher-appearance.py` are retired, fail-closed stubs. Use the current Windows workflow instead.
+
+Chromium is still required. Lightpanda is a future transport adapter, not implemented in this release. Windows GUI, live AI accounts and actual Windows update installation have not been validated by Linux mock tests.
+
+Canonical repository: https://github.com/NeDioBrando/Elio. Update metadata and exact asset download URLs are pinned to this repository. Old binary self-update after a repository rename is not guaranteed; manually install the first new build if needed.

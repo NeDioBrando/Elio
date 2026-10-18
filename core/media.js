@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-const synerixcodeMedia = (() => {
+const elioMedia = (() => {
   const types = {jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif',bmp:'image/bmp',svg:'image/svg+xml',avif:'image/avif',heic:'image/heic',heif:'image/heif',tif:'image/tiff',tiff:'image/tiff',mp4:'video/mp4',m4v:'video/mp4',mov:'video/quicktime',webm:'video/webm',mkv:'video/x-matroska',avi:'video/x-msvideo',mpeg:'video/mpeg',mpg:'video/mpeg',ogv:'video/ogg',wmv:'video/x-ms-wmv',flv:'video/x-flv', '3gp':'video/3gpp'};
   const MAX_BYTES = 12 * 1024 * 1024, MAX_FILES = 8;
   function mime(file) { return file.type && file.type !== 'application/octet-stream' ? file.type : types[String(file.name || '').split('.').pop().toLowerCase()] || ''; }
   function fileFrom(payload, index = 0) {
     const type = payload.mimeType || 'image/jpeg', bin = atob(payload.data), bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
     const ext = Object.keys(types).find(key => types[key] === type) || 'bin';
-    return new File([bytes], payload.name || `synerixcode_${Date.now()}_${index}.${ext}`, {type});
+    return new File([bytes], payload.name || `elio_${Date.now()}_${index}.${ext}`, {type});
   }
   async function encode(file) {
     return new Promise((resolve,reject) => { const reader = new FileReader();reader.onload=()=>resolve({name:file.name,mimeType:mime(file),data:String(reader.result).split(',')[1] || ''});reader.onerror=()=>reject(Error('Could not read '+file.name));reader.readAsDataURL(file); });
@@ -70,4 +70,4 @@ const synerixcodeMedia = (() => {
   }
   return {mime,fileFrom,prepare,pixels,encode,validate,MAX_BYTES,MAX_FILES};
 })();
-if(typeof module!=='undefined' && module.exports)module.exports=synerixcodeMedia;
+if(typeof module!=='undefined' && module.exports)module.exports=elioMedia;

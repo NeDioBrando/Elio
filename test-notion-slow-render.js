@@ -13,7 +13,7 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
   if(behavior==='pasteIgnored'&&pastes===8)return;/* Notion drops one paste; editor stays at the previous prefix */
   if(behavior==='pasteLate'&&pastes===8){setTimeout(()=>{model=base+add;render(model);},900);return;}/* applied late */
   model=base+add;render(model);});
- const startup='⟦RS-SYS⟧ ROBLOXSCRIPT\n'+Array.from({length:700},(_,i)=>'cmd_'+i+' ✅ {"a":"'+'x'.repeat(30)+'"} ⚠️ 🔧 ©').join('\n')+'\nEmit list_commands first. Reply with "synerixcode is ready."';
+ const startup='⟦RS-SYS⟧ ROBLOXSCRIPT\n'+Array.from({length:700},(_,i)=>'cmd_'+i+' ✅ {"a":"'+'x'.repeat(30)+'"} ⚠️ 🔧 ©').join('\n')+'\nEmit list_commands first. Reply with "elio is ready."';
  w.document.execCommand=(cmd,_,text)=>{
   if(cmd==='delete'){model='';render('');return true;}
   if(!text){model='';render('');return true;}

@@ -27,7 +27,7 @@ const notionRender=t=>t.split('\n').map(l=>l.replace(/^\s*[-*]\s+/,'').replace(/
   const {w,p,state}=await notionDom();
   w.document.execCommand=(_,__,text)=>{state.model=notionRender(text);state.ed.textContent=state.model;return true;};
   p.setInputLock(true);
-  const startup="Output of 'list_commands':\n"+'read_file {path} — Read a text file.\n'.repeat(120)+'\nThese user preferences apply:\n- Keep **Read_me** enabled\n1. Use exact names\n\nPlease acknowledge with "synerixcode is ready."';
+  const startup="Output of 'list_commands':\n"+'read_file {path} — Read a text file.\n'.repeat(120)+'\nThese user preferences apply:\n- Keep **Read_me** enabled\n1. Use exact names\n\nPlease acknowledge with "elio is ready."';
   assert(startup.length>2500);
   const ok=await p.typeAndSend(startup);
   // 1.24.12: the reformatted startup draft (same words, Markdown turned into
@@ -72,9 +72,9 @@ const notionRender=t=>t.split('\n').map(l=>l.replace(/^\s*[-*]\s+/,'').replace(/
   // ready acknowledgement accepts a short follow-up but not commands
   const s=main.indexOf('      const readyOk = '),e=main.indexOf('      diag("start.readyReply"',s);
   const check=(text,id='notion')=>vm.runInContext(main.slice(s,e)+';readyOk',vm.createContext({readyRes:{kind:'text'},readyText:text,P:{id}}));
-  assert(check('synerixcode is ready.'));assert(check('synerixcode is ready. What would you like to work on in your Roblox Studio project?'));
-  assert(check('synerixcode is ready. Tell me what you\'d like to work on.','chatgpt'));
-  assert(!check('synerixcode is ready. {"command":"list_commands"}'));assert(!check('Sure, here is the command list.'));
+  assert(check('elio is ready.'));assert(check('elio is ready. What would you like to work on in your Roblox Studio project?'));
+  assert(check('elio is ready. Tell me what you\'d like to work on.','chatgpt'));
+  assert(!check('elio is ready. {"command":"list_commands"}'));assert(!check('Sure, here is the command list.'));
   console.log('PASS plan-only auto-continue detection, connected add-on note and ready follow-up acceptance.');
  }
  { // D. checklist detection

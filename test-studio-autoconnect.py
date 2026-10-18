@@ -6,8 +6,8 @@ from pathlib import Path
 import json, os, shutil, subprocess, sys, tempfile, time, urllib.request
 
 root=Path(__file__).resolve().parent
-binary=Path(os.environ.get('SYNERIXCODE_TEST_AGENT',str(root/'agent/target/debug'/('synerixcode.exe' if os.name=='nt' else 'synerixcode'))))
-with tempfile.TemporaryDirectory(prefix='synerixcode-autoconnect-') as temporary:
+binary=Path(os.environ.get('ELIO_TEST_AGENT',str(root/'agent/target/debug'/('elio.exe' if os.name=='nt' else 'elio'))))
+with tempfile.TemporaryDirectory(prefix='elio-autoconnect-') as temporary:
     work=Path(temporary); install=work/'install'; install.mkdir()
     app=install/binary.name;shutil.copy2(binary,app)
     config=work/'config';config.mkdir();available=work/'available';available.write_text('no')
@@ -24,13 +24,13 @@ for line in sys.stdin:
  else:out={'isError':available.read_text()!='yes','content':[{'type':'text','text':'Studio ready' if available.read_text()=='yes' else 'Roblox Studio is not connected'}]}
  print(json.dumps({'jsonrpc':'2.0','id':r['id'],'result':out}),flush=True)
 ''')
-    env={**os.environ,'LOCALAPPDATA':str(config),'XDG_CONFIG_HOME':str(config),'SYNERIXCODE_WORKSPACE_ROOT':str(work/'workspace'),'SYNERIXCODE_MCP_COMMAND':f'{sys.executable} {helper} {available}'}
+    env={**os.environ,'LOCALAPPDATA':str(config),'XDG_CONFIG_HOME':str(config),'ELIO_WORKSPACE_ROOT':str(work/'workspace'),'ELIO_MCP_COMMAND':f'{sys.executable} {helper} {available}'}
     # Use a separate HTTP port; legacy ports still require stopping our dev agent.
     with (work/'stdout.log').open('w') as log:
         process=subprocess.Popen([str(app),'--headless','--roblox-addr','127.0.0.1:3014'],env=env,stdout=log,stderr=log)
         try:
             def state():
-                key=(config/'synerixcode/bridge-key').read_text()
+                key=(config/'elio/bridge-key').read_text()
                 req=urllib.request.Request('http://127.0.0.1:3014/api/desktop/state',headers={'Authorization':'Bearer '+key})
                 with urllib.request.urlopen(req,timeout=2) as response:return json.load(response)
             def wait_for(connected,limit):

@@ -136,7 +136,7 @@ while ($true) {
           elseif ($bare -eq "execute_blender_code" -or $bare -eq "execute_code" -or $bare -eq "blender_execute_code") { $ctype = "execute_code"; $params = @{ code = $args.code } }
           elseif ($bare -eq "get_viewport_screenshot" -or $bare -eq "blender_screenshot") {
             $ctype = "get_viewport_screenshot"
-            $tmp = Join-Path $env:TEMP ("synerixcode_blender_shot_" + [System.Diagnostics.Process]::GetCurrentProcess().Id + ".png")
+            $tmp = Join-Path $env:TEMP ("elio_blender_shot_" + [System.Diagnostics.Process]::GetCurrentProcess().Id + ".png")
             $ms = 1000
             try { $ms = [int]$args.max_size } catch {}
             $params = @{ max_size = $ms; filepath = $tmp; format = "png" }

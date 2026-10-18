@@ -237,10 +237,10 @@ impl UiShared {
 
     pub fn set_browser_tools(&self, tools: &[serde_json::Value]) {
         if let Ok(mut rows) = self.tools.lock() {
-            rows.retain(|row| !row.source.starts_with("synerixcode"));
+            rows.retain(|row| !row.source.starts_with("elio"));
             for tool in tools {
                 let Some(name) = tool.get("name").and_then(|value| value.as_str()) else { continue; };
-                let source = tool.get("source").and_then(|value| value.as_str()).unwrap_or("synerixcode");
+                let source = tool.get("source").and_then(|value| value.as_str()).unwrap_or("elio");
                 rows.push(ToolDisplay {
                     name: name.to_string(),
                     source: source.to_string(),
@@ -269,10 +269,10 @@ enum UiEvent {
 
 #[cfg(any(windows, target_os = "macos"))]
 fn window_icon() -> anyhow::Result<Icon> {
-    let pixels = image::load_from_memory(include_bytes!("../assets/synerixcode.png"))?.into_rgba8();
+    let pixels = image::load_from_memory(include_bytes!("../assets/elio.png"))?.into_rgba8();
     let (width, height) = pixels.dimensions();
     Icon::from_rgba(pixels.into_raw(), width, height)
-        .map_err(|error| anyhow::anyhow!("invalid synerixcode window icon: {error}"))
+        .map_err(|error| anyhow::anyhow!("invalid elio window icon: {error}"))
 }
 
 #[cfg(any(windows, target_os = "macos"))]
@@ -286,12 +286,12 @@ pub fn run_gui(
 ) -> anyhow::Result<()> {
     let desktop_url = format!("http://{addr}/desktop-ui");
     let boot = serde_json::json!({"key":pairing_key,"apiUrl":format!("http://{addr}")});
-    let initialization = format!("if(location.href === {}) window.__SYNERIXCODE_BOOT__ = {};",
+    let initialization = format!("if(location.href === {}) window.__ELIO_BOOT__ = {};",
         serde_json::to_string(&desktop_url)?, boot);
 
     let mut event_loop = EventLoopBuilder::<UiEvent>::with_user_event().build();
     let window = WindowBuilder::new()
-        .with_title(format!("synerixcode {}", env!("CARGO_PKG_VERSION")))
+        .with_title(format!("Elio {}", env!("CARGO_PKG_VERSION")))
         .with_decorations(cfg!(target_os = "macos"))
         .with_visible(false)
         .with_focused(!start_background)
@@ -300,7 +300,7 @@ pub fn run_gui(
         .with_min_inner_size(LogicalSize::new(900.0, 620.0))
         .with_window_icon(Some(window_icon()?))
         .build(&event_loop)
-        .map_err(|error| anyhow::anyhow!("cannot create synerixcode window: {error}"))?;
+        .map_err(|error| anyhow::anyhow!("cannot create elio window: {error}"))?;
 
     let proxy = event_loop.create_proxy();
     let ipc_proxy = proxy.clone();
@@ -319,7 +319,7 @@ pub fn run_gui(
                 "maximize" => Some(UiEvent::Maximize),
                 "drag" => Some(UiEvent::Drag),
                 "ui-ready" => Some(UiEvent::Ready),
-                "open:github" => Some(UiEvent::OpenExternal("https://github.com/stoveez/PlazCode".to_owned())),
+                "open:github" => Some(UiEvent::OpenExternal("https://github.com/stoveez/Elio".to_owned())),
                 "open:blender-guide" => Some(UiEvent::OpenExternal("https://github.com/ahujasid/blender-mcp#installation".to_owned())),
                 _ if body.starts_with("toolkit-store:") => toolkit_store_url(body).map(UiEvent::OpenExternal),
                 _ => donation_url(body).or_else(|| supported_ai_url(body)).map(|url|UiEvent::OpenExternal(url.to_owned())).or_else(|| body.strip_prefix("js-error:").map(|message| UiEvent::JsError(message.to_string()))),
@@ -330,7 +330,7 @@ pub fn run_gui(
         })
         .with_devtools(cfg!(debug_assertions))
         .build(&window)
-        .map_err(|error| anyhow::anyhow!("cannot create synerixcode WebView: {error}"))?;
+        .map_err(|error| anyhow::anyhow!("cannot create elio WebView: {error}"))?;
 
     #[cfg(windows)]
     let mut tray = tray::Tray::new(&window, shared.clone());
@@ -406,13 +406,13 @@ pub fn run_gui(
                 #[cfg(windows)]
                 if tray.ensure_registered() {
                     window.set_visible(false);
-                    shared.log("desktop window hidden — reopen synerixcode from its tray icon");
+                    shared.log("desktop window hidden — reopen elio from its tray icon");
                 } else {
                     window.set_minimized(true);
-                    shared.log("Tray icon unavailable; synerixcode stays accessible in the taskbar.");
+                    shared.log("Tray icon unavailable; elio stays accessible in the taskbar.");
                 }
                 #[cfg(target_os = "macos")]
-                { window.set_minimized(true); shared.log("synerixcode minimized — reopen from the Dock or launch synerixcode again."); }
+                { window.set_minimized(true); shared.log("elio minimized — reopen from the Dock or launch elio again."); }
             }
             Event::MainEventsCleared => {
                 if last_tick.elapsed() >= Duration::from_millis(100) {
@@ -445,7 +445,7 @@ pub fn run_gui(
     start_background: bool,
 ) -> anyhow::Result<()> {
     let _ = (addr, pairing_key, start_background);
-    anyhow::bail!("synerixcode desktop UI currently requires Windows")
+    anyhow::bail!("elio desktop UI currently requires Windows")
 }
 
 #[cfg(test)]
@@ -494,8 +494,8 @@ mod tests {
         );
         shared.set_browser_tools(
             &[
-                serde_json::json!({"name":"web_search","source":"synerixcode"}),
-                serde_json::json!({"name":"animation_create","source":"synerixcode / Motion"}),
+                serde_json::json!({"name":"web_search","source":"elio"}),
+                serde_json::json!({"name":"animation_create","source":"elio / Motion"}),
             ],
         );
 
@@ -504,8 +504,8 @@ mod tests {
         assert!(values.contains(&("execute_luau".to_string(), "Roblox Studio".to_string())));
         assert!(values.contains(&("read_file".to_string(), "AgentScript".to_string())));
         assert!(values.contains(&("memory__search".to_string(), "MCP / memory".to_string())));
-        assert!(values.contains(&("web_search".to_string(), "synerixcode".to_string())));
-        assert!(values.contains(&("animation_create".to_string(), "synerixcode / Motion".to_string())));
+        assert!(values.contains(&("web_search".to_string(), "elio".to_string())));
+        assert!(values.contains(&("animation_create".to_string(), "elio / Motion".to_string())));
     }
 
     #[test]
@@ -527,12 +527,12 @@ mod tests {
     fn browser_tool_refresh_replaces_only_browser_rows() {
         let shared = UiShared::new(Arc::new(AtomicBool::new(false)));
         shared.set_local_tools(&[serde_json::json!({"name":"tree"})], true);
-        shared.set_browser_tools(&[serde_json::json!({"name":"web_search","source":"synerixcode"})]);
-        shared.set_browser_tools(&[serde_json::json!({"name":"web_fetch","source":"synerixcode"})]);
+        shared.set_browser_tools(&[serde_json::json!({"name":"web_search","source":"elio"})]);
+        shared.set_browser_tools(&[serde_json::json!({"name":"web_fetch","source":"elio"})]);
 
         let rows = shared.tools.lock().expect("tool lock").clone();
         assert!(rows.iter().any(|row| row.name == "tree" && row.source == "AgentScript"));
-        assert!(rows.iter().any(|row| row.name == "web_fetch" && row.source == "synerixcode"));
-        assert!(!rows.iter().any(|row| row.name == "web_search" && row.source == "synerixcode"));
+        assert!(rows.iter().any(|row| row.name == "web_fetch" && row.source == "elio"));
+        assert!(!rows.iter().any(|row| row.name == "web_search" && row.source == "elio"));
     }
 }

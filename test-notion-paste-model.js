@@ -1,5 +1,5 @@
 const {runInContext: runProviderFixture} = require('./test-support/provider-dom.cjs');
-const {JSDOM}=require(process.env.SYNERIXCODE_TEST_JSDOM||'jsdom');const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const {JSDOM}=require(process.env.ELIO_TEST_JSDOM||'jsdom');const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
 const source=fs.readFileSync('providers/notion.js','utf8'),dom=new JSDOM('<div contenteditable="true"></div>'),w=dom.window,el=w.document.querySelector('div');let time=0,stopped=false,corrupt=false,pastes=0;
 class Transfer{constructor(){this.data={};}setData(k,v){this.data[k]=v;}getData(k){return this.data[k]||'';}}
 class Paste extends w.Event{constructor(type,opts){super(type,opts);this.clipboardData=opts.clipboardData;}}

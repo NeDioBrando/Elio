@@ -34,7 +34,7 @@ vm.createContext(c);vm.runInContext(sleepSrc+';globalThis.sleep=sleep;globalThis
   for(const t of timers)t.fn();await null;await null;assert(b,'native timers still resolve without wakes');
   let n=0;c.sleep(10).then(()=>n++);clock=2000;c.wake();for(const t of timers)t.fn();await null;await null;assert.equal(n,1,'a sleep never resolves twice');
   assert(main.includes('if (msg && msg.type === "rs-wake") { wakeDueSleepers();'));
-  assert(main.includes('navigator.locks.request("synerixcode-agent-run"'));
+  assert(main.includes('navigator.locks.request("elio-agent-run"'));
   assert(main.includes('rsInterval(syncRunBeat, 5000)'));
   console.log('PASS: running tabs stay undiscarded, get due-only wakes and defer desktop updates; released on stop or silence.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

@@ -1,4 +1,4 @@
-const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict'),{JSDOM}=require(process.env.SYNERIXCODE_TEST_JSDOM||'jsdom');
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict'),{JSDOM}=require(process.env.ELIO_TEST_JSDOM||'jsdom');
 const source=fs.readFileSync('core/main.js','utf8'),start=source.indexOf('    function renderCoworkComposer('),end=source.indexOf('    function inputCover(',start);
 const dom=new JSDOM('<div id="cover"><span id="rs-working-label">Agent is working…</span></div>',{runScripts:'outside-only'}),w=dom.window;
 const queued=[];let context='one',enabled=true;

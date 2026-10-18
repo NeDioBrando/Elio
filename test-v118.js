@@ -1,4 +1,4 @@
-// synerixcode v1.18 regression suite (run: node test-v118.js). Not shipped.
+// elio v1.18 regression suite (run: node test-v118.js). Not shipped.
 // Covers what v1.18 changed and what used to break silently:
 //   * web_fetch / web_search - previously DDG-only; now a multi-backend chain
 //     with per-backend failure notes, timeouts and a reader fallback;
@@ -44,7 +44,7 @@ try {
 
 if (RS) {
   const notes = RS.TOOL_NOTES || {};
-  for (const key of ["synerixcode_screenshot", "attach_feedback", "read_file_base64", "blender_material_create",
+  for (const key of ["elio_screenshot", "attach_feedback", "read_file_base64", "blender_material_create",
                      "blender_material_set", "blender_material_assign", "blender_material_noise",
                      "blender_material_image", "blender_material_pbr", "blender_material_preset",
                      "blender_material_inspect"]) {
@@ -61,7 +61,7 @@ if (RS) {
   ok("prompt points at the per-target reason on empty capture", /captured NOTHING/i.test(prompt));
   ok("tool notes survive into the roster text", typeof RS.compactTools === "function");
   ok("attach_feedback is a screen-category tool", RS.toolCategory("attach_feedback") === "screen");
-  ok("synerixcode_screenshot aliases are screen-category tools", RS.toolCategory("synerixcode_screenshot") === "screen" && RS.toolCategory("screenshot") === "screen");
+  ok("elio_screenshot aliases are screen-category tools", RS.toolCategory("elio_screenshot") === "screen" && RS.toolCategory("screenshot") === "screen");
   ok("read_file_base64 is a read-category tool", RS.toolCategory("read_file_base64") === "read");
 }
 
@@ -76,7 +76,7 @@ ok("material toolkit has presets", (pySrc.match(/^\s{4}"[a-z_]+":\s*\{/gm) || []
 ok("materials survive Blender 4.x renames", pySrc.includes("Specular IOR Level") && pySrc.includes("Transmission Weight") && pySrc.includes("Coat Weight"));
 ok("materials survive Blender <=4.1 blend fields", pySrc.includes("blend_method") && pySrc.includes("shadow_method") && pySrc.includes("surface_render_method"));
 ok("no removed Musgrave node", !pySrc.includes("ShaderNodeTexMusgrave"));
-ok("SYNERIXCODE_ prefixed nodes are cleaned up", pySrc.includes('"SYNERIXCODE_"') || pySrc.includes("SYNERIXCODE_"));
+ok("ELIO_ prefixed nodes are cleaned up", pySrc.includes('"ELIO_"') || pySrc.includes("ELIO_"));
 ok("every advertised preset exists in python (31/31)", (() => {
   const start = pySrc.indexOf("MATERIAL_PRESETS = {");
   const presets = new Set((pySrc.slice(start, pySrc.indexOf("\n}", start)).match(/^\s{4}"([a-z_0-9]+)":/gm) || [])
@@ -136,15 +136,15 @@ ok("capture_tab still exists for tab targets", bgSrc.includes('case "capture_tab
 
 // ── 6. core/main.js: screenshots + attach_feedback ───────────────────────────
 ok("main has one shared capture routine", (mainSrc.match(/async function captureShots\(target,options=\{\}\)/g) || []).length === 1);
-ok("synerixcode_screenshot uses the shared routine", mainSrc.includes('name === "synerixcode_screenshot"') && /captureShots\(target,\s*\{studio_id:\s*args\.studio_id\}\)/.test(mainSrc));
+ok("elio_screenshot uses the shared routine", mainSrc.includes('name === "elio_screenshot"') && /captureShots\(target,\s*\{studio_id:\s*args\.studio_id\}\)/.test(mainSrc));
 ok("captureShots is the only screen_capture caller", (mainSrc.match(/tryMcp\("screen_capture"/g) || []).length === 1);
 ok("recent captures are remembered", mainSrc.includes("function rememberImages(") && mainSrc.includes("A.recentImages.length > 8"));
 ok("image payloads become reusable blobs", mainSrc.includes("function imageToBlob(") && mainSrc.includes("function imageToPngBlob("));
 ok("clipboard write is guarded and reported", mainSrc.includes("function copyImageToClipboard(") && mainSrc.includes("ClipboardItem"));
 ok("attach_feedback is dispatched", mainSrc.includes('name === "attach_feedback"'));
 ok("no public OR-prefixed tools remain", !/\bor_(?:status|debug|agent|screenshot|attach|screen_shot)\b/.test(mainSrc + "\n" + cfgSrc));
-ok("synerixcode attach alias routes", mainSrc.includes('synerixcode_attach: "attach_feedback"') && !cfgSrc.includes("synerixcode_attach"));
-for (const alias of ["attach_image", "attach_file", "attach_screenshot", "attach_last_screenshot", "attach_recent_image", "copy_screenshot", "paste_screenshot", "synerixcode_attach"]) {
+ok("elio attach alias routes", mainSrc.includes('elio_attach: "attach_feedback"') && !cfgSrc.includes("elio_attach"));
+for (const alias of ["attach_image", "attach_file", "attach_screenshot", "attach_last_screenshot", "attach_recent_image", "copy_screenshot", "paste_screenshot", "elio_attach"]) {
   ok("attach alias " + alias + " routed", mainSrc.includes(`${alias}: "attach_feedback"`));
 }
 ok("attach_feedback reads workspace files through the bridge", mainSrc.includes('type: "local_read_base64"'));
@@ -378,9 +378,9 @@ const WIKI_JSON = JSON.stringify({ query: { search: [{ title: "Roblox" }, { titl
     ok("web_fetch refuses non-http schemes", r.ok === false && /http/.test(r.error), r.error);
   }
 
-  // ── 8. read_file_base64 plumbing (what synerixcode_screenshot / attach_feedback use) ─
+  // ── 8. read_file_base64 plumbing (what elio_screenshot / attach_feedback use) ─
   {
-    const payload = { path: "C:/Users/Chris/synerixcodeWorkspace/synerixcode_blender_shot.png", mimeType: "image/png", bytes: 68, data: "iVBORw0KGgoAAAANSUhEUg==" };
+    const payload = { path: "C:/Users/Chris/elioWorkspace/elio_blender_shot.png", mimeType: "image/png", bytes: 68, data: "iVBORw0KGgoAAAANSUhEUg==" };
     let asked = null;
     const { listeners } = makeWorker(async () => ({}), async (obj) => { asked = obj; return { ok: true, text: JSON.stringify(payload) }; });
     const r = await ask(listeners, { type: "local_read_base64", path: payload.path });
@@ -391,8 +391,8 @@ const WIKI_JSON = JSON.stringify({ query: { search: [{ title: "Roblox" }, { titl
       JSON.stringify(asked));
   }
   {
-    const { listeners } = makeWorker(async () => ({}), async () => ({ ok: false, error: "no such file: synerixcode_blender_shot.png" }));
-    const r = await ask(listeners, { type: "local_read_base64", path: "synerixcode_blender_shot.png" });
+    const { listeners } = makeWorker(async () => ({}), async () => ({ ok: false, error: "no such file: elio_blender_shot.png" }));
+    const r = await ask(listeners, { type: "local_read_base64", path: "elio_blender_shot.png" });
     ok("local_read_base64 surfaces bridge errors", r.ok === false && /no such file/.test(r.error), r.error);
   }
   {
@@ -406,7 +406,7 @@ const WIKI_JSON = JSON.stringify({ query: { search: [{ title: "Roblox" }, { titl
     ok("local_read_base64 treats empty data as a failure", r.ok === false, JSON.stringify(r));
   }
 
-  // ── 9. capture_tab (the tab target of synerixcode_screenshot / attach_feedback) ─────
+  // ── 9. capture_tab (the tab target of elio_screenshot / attach_feedback) ─────
   {
     const { listeners } = makeWorker(async () => ({}));
     const r = await ask(listeners, { type: "capture_tab" });
@@ -490,7 +490,7 @@ const WIKI_JSON = JSON.stringify({ query: { search: [{ title: "Roblox" }, { titl
 
   // ── 13. DeepSeek vision detection on the 2026-09 UNIFIED model ─────────────
   // DeepSeek merged Instant/Expert/Vision into one model and deleted the picker.
-  // synerixcode's detector used to fall through to `false` with no radio and no badge, so
+  // elio's detector used to fall through to `false` with no radio and no badge, so
   // every DeepSeek chat refused screenshots ("this assistant cannot see images").
   // These cases execute the real provider with a fake DOM.
   {
@@ -632,7 +632,7 @@ const WIKI_JSON = JSON.stringify({ query: { search: [{ title: "Roblox" }, { titl
 
   // ── 10. No stale code paths left behind ────────────────────────────────────
   ok("old ddgSearch helper is gone", !bgSrc.includes("ddgSearch"));
-  ok("the fetching User-Agent is a real browser UA", /const BROWSER_UA =[\s\S]{0,200}Chrome\/128/.test(bgSrc) && !/"User-Agent":\s*"synerixcode/.test(bgSrc));
+  ok("the fetching User-Agent is a real browser UA", /const BROWSER_UA =[\s\S]{0,200}Chrome\/128/.test(bgSrc) && !/"User-Agent":\s*"elio/.test(bgSrc));
   ok("no leftover HTML-lite-only scraping", !bgSrc.includes("result__snippet"));
   ok("blender bridge shim port still banned", !bgSrc.includes("17617"));
   ok("bg never references launch_blender_mcp.py", !bgSrc.includes("launch_blender_mcp.py"));

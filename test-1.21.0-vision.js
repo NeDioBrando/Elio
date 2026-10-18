@@ -1,7 +1,7 @@
 "use strict";
 const fs=require("fs"),path=require("path"),assert=require("assert");
 let pass=0,fail=0;function t(n,f){try{f();pass++;console.log("ok",n);}catch(e){fail++;console.log("FAIL",n,e.message);}}
-for(const base of ["","synerixcode-Extension"]){
+for(const base of ["","elio-Extension"]){
  const m=fs.readFileSync(path.join(__dirname,base,"core/main.js"),"utf8"),c=fs.readFileSync(path.join(__dirname,base,"core/config.js"),"utf8");
  t(base+" visual check uncapped",()=>{assert(!m.includes("(A.visualChecks||0)>=3"));assert(m.includes("fix it now without asking the user"));});
  t(base+" visual default on",()=>{assert(m.includes("rsVisualCheck:true"));});

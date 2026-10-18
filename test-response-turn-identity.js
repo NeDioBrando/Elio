@@ -3,7 +3,7 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const main=fs.readFileSync('core/main.js','utf8');
 const start=main.indexOf('  async function waitForResponse('),end=main.indexOf('\n  // ═',start);
 const parser=new Function(fs.readFileSync('core/parser.js','utf8')+';return RSParse;')();
-const command='{"command":"synerixcode_status","params":{}}';
+const command='{"command":"elio_status","params":{}}';
 const other='{"command":"list_commands","params":{}}';
 async function watch(id,mode){
  let now=1000,ticks=0;const first={dataset:{}},second={dataset:{}},events=[];
@@ -24,7 +24,7 @@ async function watch(id,mode){
    const {result,now}=await watch(id,mode);
    if(['remount','same','replacement'].includes(mode)){
     assert.equal(result.kind,'tool','Observed fresh command survives only proven same-turn blank reads');
-    assert.equal(result.calls[0].tool,mode==='replacement'?'list_commands':'synerixcode_status');
+    assert.equal(result.calls[0].tool,mode==='replacement'?'list_commands':'elio_status');
     assert.equal(result.text,mode==='replacement'?other:command,'Recovered parsed body is carried for replay protection');
    }else assert.notEqual(result.kind,'tool','No stale/history/other-chat command may be recovered');
    if(mode==='busy')assert.equal(result.kind,'busy_timeout');

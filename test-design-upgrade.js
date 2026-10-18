@@ -4,8 +4,8 @@ const html=fs.readFileSync('agent/src/desktop.html','utf8');
 const dom=new JSDOM(html);const document=dom.window.document;
 const begin=html.indexOf('  var Desktopthemes =');const end=html.indexOf('  function Saveappearance()',begin);
 const c={document,Byid:id=>document.getElementById(id)};vm.createContext(c);vm.runInContext(html.slice(begin,end),c);
-const main=fs.readFileSync('core/main.js','utf8');const b=main.indexOf('  const SYNERIXCODE_PALETTES =');const e=main.indexOf('  let synerixcodeTheme =',b);
-const browser={document,SYNERIXCODE_THEMES:{},synerixcodeTheme:'night'};vm.createContext(browser);vm.runInContext(main.slice(b,e),browser);
+const main=fs.readFileSync('core/main.js','utf8');const b=main.indexOf('  const ELIO_PALETTES =');const e=main.indexOf('  let elioTheme =',b);
+const browser={document,ELIO_THEMES:{},elioTheme:'night'};vm.createContext(browser);vm.runInContext(main.slice(b,e),browser);
 const rust=fs.readFileSync('agent/src/preferences.rs','utf8');
 const themes=['default','amethyst','cyan','rose','emerald','graphite','crimson','ocean','copper','aurora','orchid'];
 for(const theme of themes){
@@ -24,9 +24,9 @@ assert.equal(vm.runInContext('Applyappearance({theme:"solar"}).theme',c),'defaul
 vm.runInContext('applySharedAppearance({theme:"solar"})',browser);assert.equal(document.documentElement.dataset.rsPalette,'default');
 assert(html.includes('animation:none!important;transition:none!important'));
 assert(!html.slice(html.indexOf('/* Workspace refinement')).split('</style>')[0].replace('animation:pc-ultra-shine 3.2s linear infinite','').includes('infinite'),'only the explicitly requested Ultra label shine repeats');
-assert.equal(fs.readFileSync('synerixcode-Extension/core/main.js','utf8'),main);
-if(process.env.SYNERIXCODE_DESIGN_BASELINE){
- const before=fs.readFileSync(process.env.SYNERIXCODE_DESIGN_BASELINE,'utf8');
+assert.equal(fs.readFileSync('elio-Extension/core/main.js','utf8'),main);
+if(process.env.ELIO_DESIGN_BASELINE){
+ const before=fs.readFileSync(process.env.ELIO_DESIGN_BASELINE,'utf8');
  const script=x=>x.replace(/\r\n/g,'\n').match(/<script>([\s\S]*?)<\/script>/)[1].replace(/  var Desktopthemes = \{[\s\S]*?\n  \};/,'THEMES');
  assert.equal(script(html),script(before),'desktop behavior outside theme definitions preserved');
  const ids=x=>[...new JSDOM(x).window.document.querySelectorAll('[id]')].filter(n=>!n.closest('.supported-ai-logo')).map(n=>n.id).sort();

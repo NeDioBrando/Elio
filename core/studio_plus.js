@@ -225,10 +225,10 @@
     if (op === "leaderstats_int") {
       const stat = String(a.stat || a.name || "Coins").replace(/[^A-Za-z0-9_]/g, "") || "Coins";
       const start = num(a.value, 0);
-      return wrap(`local sss=game:GetService("ServerScriptService") local s=sss:FindFirstChild("SYNERIXCODE_Leaderstats") or Instance.new("Script") s.Name="SYNERIXCODE_Leaderstats" s.Source="game:GetService('Players').PlayerAdded:Connect(function(plr) local ls=Instance.new('Folder') ls.Name='leaderstats' ls.Parent=plr local v=Instance.new('IntValue') v.Name='${stat}' v.Value=${start} v.Parent=ls end)" s.Parent=sss return ok({script=s:GetFullName()},"leaderstats script ready")`);
+      return wrap(`local sss=game:GetService("ServerScriptService") local s=sss:FindFirstChild("ELIO_Leaderstats") or Instance.new("Script") s.Name="ELIO_Leaderstats" s.Source="game:GetService('Players').PlayerAdded:Connect(function(plr) local ls=Instance.new('Folder') ls.Name='leaderstats' ls.Parent=plr local v=Instance.new('IntValue') v.Name='${stat}' v.Value=${start} v.Parent=ls end)" s.Parent=sss return ok({script=s:GetFullName()},"leaderstats script ready")`);
     }
     if (op === "remote_event_create") {
-      const name = luaStr(a.name || "SYNERIXCODE_Remote");
+      const name = luaStr(a.name || "ELIO_Remote");
       return wrap(`local rs=game:GetService("ReplicatedStorage") local r=rs:FindFirstChild(${name}) or Instance.new("RemoteEvent") r.Name=${name} r.Parent=rs return ok({path=r:GetFullName()},"remote event ready")`);
     }
     if (op === "sound_volume") {
@@ -255,7 +255,7 @@
       const nm = luaStr(a.name || "Product");
       const desc = luaStr(a.description || a.desc || "");
       const price = num(a.price || a.price_in_robux || a.robux, 10);
-      return wrap(`local hs=game:GetService("HttpService") local universe=tonumber(game.GameId) or 0 if universe<1 then return fail("publish the place first (GameId is 0), or pass universe_id to developer_product_create") end local url="https://apis.roblox.com/developer-products/v1/universes/"..universe.."/developerproducts?name="..hs:UrlEncode(${nm}).."&description="..hs:UrlEncode(${desc}).."&priceInRobux="..tostring(${price}) local okreq,res=pcall(function() return hs:RequestAsync({Url=url,Method="POST",Headers={["Content-Type"]="application/json"}}) end) if not okreq then return fail("Studio HTTP could not create the product: "..tostring(res)..". Sign into roblox.com in this browser and retry — synerixcode creates it via your Roblox session.") end return ok({status=res.StatusCode,body=tostring(res.Body):sub(1,900)},"dev product HTTP "..tostring(res.StatusCode))`);
+      return wrap(`local hs=game:GetService("HttpService") local universe=tonumber(game.GameId) or 0 if universe<1 then return fail("publish the place first (GameId is 0), or pass universe_id to developer_product_create") end local url="https://apis.roblox.com/developer-products/v1/universes/"..universe.."/developerproducts?name="..hs:UrlEncode(${nm}).."&description="..hs:UrlEncode(${desc}).."&priceInRobux="..tostring(${price}) local okreq,res=pcall(function() return hs:RequestAsync({Url=url,Method="POST",Headers={["Content-Type"]="application/json"}}) end) if not okreq then return fail("Studio HTTP could not create the product: "..tostring(res)..". Sign into roblox.com in this browser and retry — elio creates it via your Roblox session.") end return ok({status=res.StatusCode,body=tostring(res.Body):sub(1,900)},"dev product HTTP "..tostring(res.StatusCode))`);
     }
     if (op === "developer_product_list") {
       return wrap(`local hs=game:GetService("HttpService") local universe=tonumber(game.GameId) or 0 if universe<1 then return fail("publish the place first (GameId is 0)") end local url="https://apis.roblox.com/developer-products/v1/universes/"..universe.."/developerproducts?pageNumber=1&pageSize=50" local okreq,res=pcall(function() return hs:GetAsync(url) end) if not okreq then return fail("list failed: "..tostring(res)) end return ok({body=tostring(res):sub(1,4000)},tostring(res):sub(1,4000))`);

@@ -1,5 +1,5 @@
 const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
-const {JSDOM}=require(process.env.SYNERIXCODE_TEST_JSDOM||'jsdom');
+const {JSDOM}=require(process.env.ELIO_TEST_JSDOM||'jsdom');
 const dom=new JSDOM('<main></main>',{url:'https://claude.ai/chat/test',runScripts:'outside-only'});
 try {
  vm.runInContext(fs.readFileSync('providers/claude.js','utf8')+';globalThis.provider=RSProvider;',dom.getInternalVMContext());

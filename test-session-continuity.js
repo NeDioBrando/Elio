@@ -8,8 +8,8 @@ vm.runInContext(source.slice(a,b)+'this.reminder=sessionReminderPrompt;',box);
 for(const engine of ['local','roblox']){
  box.engine=engine;const startup=box.systemPrompt(),reminder=box.reminder();
  assert(startup.includes('Your very first action'));
- assert(!reminder.includes('Your very first action'));assert(!reminder.includes('reply with exactly "synerixcode is ready."'));
- assert(reminder.includes('SESSION STATE: synerixcode is already ready.'));assert(reminder.includes('Preserve my exact project convention.'));
+ assert(!reminder.includes('Your very first action'));assert(!reminder.includes('reply with exactly "elio is ready."'));
+ assert(reminder.includes('SESSION STATE: elio is already ready.'));assert(reminder.includes('Preserve my exact project convention.'));
  assert(reminder.includes(box.rs.RESEND_MARKER));assert(reminder.includes('pending follow-ups'));
 }
 assert(!source.includes('const SYS_FALLBACK_IDLE_MS'));assert(!source.includes('const rider ='));assert(source.includes('Recovery is triggered only by an explicit command-access refusal.'));

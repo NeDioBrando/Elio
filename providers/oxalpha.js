@@ -337,7 +337,7 @@ const RSProvider = (() => {
     if(typeof window.__rsLimitOutgoing==="function")return window.__rsLimitOutgoing(text);
     if (!text || text.length <= SEND_MAX) return text;
     const omitted = text.length - SEND_MAX;
-    const marker = `\n\n[…synerixcode: result truncated to fit Ox Alpha's input limit - ${omitted} of ${text.length} characters omitted…]\n\n`;
+    const marker = `\n\n[…elio: result truncated to fit Ox Alpha's input limit - ${omitted} of ${text.length} characters omitted…]\n\n`;
     const budget = SEND_MAX - marker.length;
     const headLen = Math.floor(budget * 0.85);
     const tailLen = budget - headLen;
@@ -435,7 +435,7 @@ const RSProvider = (() => {
   const isBusyMsg = (text) => RE.busy.test(text);
 
   function fileFromImage(img, i) {
-    if (typeof synerixcodeMedia !== "undefined") return synerixcodeMedia.fileFrom(img, i);
+    if (typeof elioMedia !== "undefined") return elioMedia.fileFrom(img, i);
     const mime = img.mimeType || "image/jpeg";
     const bin = atob(img.data);
     const arr = new Uint8Array(bin.length);

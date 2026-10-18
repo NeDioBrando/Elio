@@ -35,8 +35,8 @@ async function startupCase(replies,expectedReady,expectedSends,expectedDispatche
 }
 const list={kind:'tool',calls:[{tool:'list_commands',arguments:{}}],item:{}};
 (async()=>{
- await startupCase([list,{kind:'text',text:'synerixcode ist bereit.'}],true,2,1);
- await startupCase([{kind:'text',text:'Ich helfe dir gerne.'},{kind:'text',text:'```json\n{"command":"list_commands"}\n```'},{kind:'text',text:'synerixcode is ready.'}],true,3,1);
+ await startupCase([list,{kind:'text',text:'elio ist bereit.'}],true,2,1);
+ await startupCase([{kind:'text',text:'Ich helfe dir gerne.'},{kind:'text',text:'```json\n{"command":"list_commands"}\n```'},{kind:'text',text:'elio is ready.'}],true,3,1);
  await startupCase([{kind:'text',text:'prose'},{kind:'text',text:'still prose'}],false,2,0);
  await startupCase([{kind:'tool',calls:[{tool:'execute_luau',arguments:{}}]}],false,1,0);
  await startupCase([list,{kind:'text',text:'I might be ready now'}],false,2,1,true);

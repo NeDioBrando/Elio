@@ -3,7 +3,7 @@
 // widening, so the enlarged chat box still covered chat text. The bar itself
 // must stay mounted, keep its geometry for the show tab and desktop state, and
 // restore the exact reserved layout when shown again.
-const {JSDOM,VirtualConsole}=require(process.env.SYNERIXCODE_TEST_JSDOM || 'jsdom');const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const {JSDOM,VirtualConsole}=require(process.env.ELIO_TEST_JSDOM || 'jsdom');const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
 const root=__dirname;const manifest=JSON.parse(fs.readFileSync(root+'/manifest.json'));
 const css=fs.readFileSync(root+'/overlay.css','utf8');
 // jsdom cannot parse the whole production stylesheet (modern color syntax), so

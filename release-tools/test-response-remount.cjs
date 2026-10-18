@@ -5,7 +5,7 @@ const root=path.resolve(__dirname,'..');
 const main=fs.readFileSync(path.join(root,'core/main.js'),'utf8');
 const watcher=main.slice(main.indexOf('  async function waitForResponse('),main.indexOf('\n  // ═',main.indexOf('  async function waitForResponse(')));
 (async()=>{
- const browser=await chromium.launch({headless:true,...(process.env.SYNERIXCODE_CHROMIUM?{executablePath:process.env.SYNERIXCODE_CHROMIUM}:fs.existsSync('/usr/local/bin/chromium')?{executablePath:'/usr/local/bin/chromium'}:{})});
+ const browser=await chromium.launch({headless:true,...(process.env.ELIO_CHROMIUM?{executablePath:process.env.ELIO_CHROMIUM}:fs.existsSync('/usr/local/bin/chromium')?{executablePath:'/usr/local/bin/chromium'}:{})});
  try{for(const mode of ['remount','reuse','thinking-only','user-only','missing-id']){
   const page=await browser.newPage();
   await page.route('**/*',r=>r.fulfill({status:200,contentType:'text/html',body:'<main><article data-testid="assistant-message" data-message-id="old"><div class="standard-markdown">Old answer</div></article><div data-testid="user-message">New request</div></main>'}));
@@ -13,7 +13,7 @@ const watcher=main.slice(main.indexOf('  async function waitForResponse('),main.
   await page.addScriptTag({content:fs.readFileSync(path.join(root,'core/parser.js'),'utf8')+';window.parser=RSParse;'});
   await page.addScriptTag({content:fs.readFileSync(path.join(root,'providers/claude.js'),'utf8')+';window.provider=RSProvider;'});
   const result=await page.evaluate(async({mode,watcher})=>{
-   let now=1000,ticks=0;const p=window.provider,sendToken=p.lastAssistantId(),command='{"command":"synerixcode_status","params":{}}';
+   let now=1000,ticks=0;const p=window.provider,sendToken=p.lastAssistantId(),command='{"command":"elio_status","params":{}}';
    const answer=document.createElement('article');answer.dataset.testid='assistant-message';if(mode!=='missing-id')answer.dataset.messageId='new';
    answer.innerHTML=mode==='thinking-only'?'<div data-is-thinking="true"><div class="standard-markdown">'+command+'</div></div>':mode==='user-only'?'':'<div class="standard-markdown">'+command+'</div>';
    document.querySelector('main').append(answer);
@@ -26,7 +26,7 @@ const watcher=main.slice(main.indexOf('  async function waitForResponse('),main.
    const res=await run(A,P,T,window.parser,{now:()=>now},document,false,sleep,()=>{},()=>{});
    return{kind:res.kind,text:res.text,tool:res.calls?.[0]?.tool};
   },{mode,watcher});
-  if(mode==='remount'){assert.equal(result.kind,'tool');assert.equal(result.tool,'synerixcode_status');assert(result.text.includes('synerixcode_status'));}else assert.notEqual(result.kind,'tool',mode+' must not execute borrowed text');
+  if(mode==='remount'){assert.equal(result.kind,'tool');assert.equal(result.tool,'elio_status');assert(result.text.includes('elio_status'));}else assert.notEqual(result.kind,'tool',mode+' must not execute borrowed text');
   console.log('PASS Chromium real Claude adapter',mode,result.kind);await page.close();
  }}finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

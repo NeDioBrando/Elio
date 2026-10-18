@@ -8,12 +8,12 @@ async function test(mode){
  const A={started:true,sessionGen:1,sendToken:'before',toolList:[],imageTools:new Set()};
  const P={conversationKey:()=>chat,lastAssistantId:()=>token,lastAssistant:()=>item,allItems:()=>[item],isUserItem:()=>false,assistantCount:()=>1,isHardGenerating:()=>false,setInputLock:v=>locks.push(v)};
  const text='{"command":"list_commands","params":{}}';
- const box={A,P,Map,Set,Date,Promise,document:{hidden:false},synerixcodeReliability:{createBudget:()=>({})},reliabilitySettings:{},condoLocked:()=>false,
+ const box={A,P,Map,Set,Date,Promise,document:{hidden:false},elioReliability:{createBudget:()=>({})},reliabilitySettings:{},condoLocked:()=>false,
   activity:{active:()=>true,sync(){}},syncActivityItems(){},markActivity(){},diag(){},ui:{showStop(){},inputCover(){},toast(){},setStatus(){},banner:(_,title)=>warnings.push(title),trackCard(){}},
   beginTaskCheckpoint:async()=>{},finishTaskCheckpoint:async()=>{},cowork:{snapshot:()=>({pending:[]})},playSfx(){},SendAbortedError:class extends Error{},
   waitForResponse:async()=>{box.document.hidden=true;return{kind:'tool',calls:[{tool:'list_commands',arguments:{}}],item:first,text,responseOwner:{session:1,sendToken:'before',token:'turn-a',chat:'chat-a',item:first}}},
   waitVisible:async()=>{parked++;await Promise.resolve();box.document.hidden=false;if(mode==='route')chat='chat-b';if(mode==='token')token='turn-b';if(mode==='session')A.sessionGen++;if(mode==='send')A.sendToken='other';if(mode==='missing')item=null;if(mode==='remount')item=second;return true},
-  synerixcodeToolGuard:{repair:v=>v,check:()=>[]},bareToolName:v=>v,RS:{toolCategory:()=> 'info'},decorate:{toolBox(){}},argSummary:()=>'',callBody:()=>'',rememberExecuted:(el,txt)=>records.push({el,txt}),
+  elioToolGuard:{repair:v=>v,check:()=>[]},bareToolName:v=>v,RS:{toolCategory:()=> 'info'},decorate:{toolBox(){}},argSummary:()=>'',callBody:()=>'',rememberExecuted:(el,txt)=>records.push({el,txt}),
   runTool:async()=>{calls++;throw Error('fixture stops immediately after dispatch')},activeEngine:()=> 'local',enhanceCreationBeforeTools:async()=>false
  };
  vm.createContext(box);vm.runInContext(guard+loop+';this.loop=agentLoop;',box);await box.loop(0);

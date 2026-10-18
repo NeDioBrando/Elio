@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// 1.22.0 debug capture: records synerixcode's own errors/warnings/info and the AI
+// 1.22.0 debug capture: records elio's own errors/warnings/info and the AI
 // site's own errors for Settings -> Copy debug report, without changing what
 // the console prints, without touching the page's console/fetch, with capped
 // buffers, redaction, and no extra pressure on the bridge connection pool.
@@ -18,7 +18,7 @@ function isolated(){
   dom.window.setInterval=(fn)=>{intervalFn=fn;return 1;};dom.window.clearInterval=()=>{intervalFn=null;};
   dom.window.chrome={runtime:{id:'x',sendMessage:(m)=>{sent.push(m);return Promise.resolve({ok:true});}}};
   vm.runInContext(capture,ctx);
-  return {dom,w:dom.window,printed,sent,flush:()=>intervalFn&&intervalFn(),api:dom.window.__synerixcodeDebugCapture,fakeConsole,orig};
+  return {dom,w:dom.window,printed,sent,flush:()=>intervalFn&&intervalFn(),api:dom.window.__elioDebugCapture,fakeConsole,orig};
 }
 (async()=>{
   // 1. Console output is unchanged: original runs first with same this/args/return.
@@ -26,17 +26,17 @@ function isolated(){
     const t=isolated();const c=t.w.console;
     assert.notEqual(c.error,t.orig.error,'console.error is wrapped');
     const err=new Error('boom');err.stack='Error: boom\n    at sendPrompt ('+EXT+'core/main.js:1:200)\n    at async run ('+EXT+'core/main.js:1:900)';
-    assert.equal(c.error('[synerixcode] failed',err),'ret-error');
-    assert.deepEqual(t.printed[0][2],['[synerixcode] failed',err],'printed exactly as before');
+    assert.equal(c.error('[elio] failed',err),'ret-error');
+    assert.deepEqual(t.printed[0][2],['[elio] failed',err],'printed exactly as before');
     assert.equal(c.log('site-ish log'),'ret-log');assert.equal(c.log('[rs-diag] x'),'ret-log');
-    c.log('[synerixcode] ready token=abcdef123456');c.warn('Bearer abcdefghijklmnopqrstu key '+'f'.repeat(64)+' C:\\Users\\Alice\\a.txt bob@example.com');
+    c.log('[elio] ready token=abcdef123456');c.warn('Bearer abcdefghijklmnopqrstu key '+'f'.repeat(64)+' C:\\Users\\Alice\\a.txt bob@example.com');
     for(let i=0;i<5;i++)c.warn('same warning');
     t.flush();
     assert.equal(t.sent.length,1);const m=t.sent[0];assert.equal(m.type,'rs-debug-log');assert.equal(m.page.host,'chatgpt.com');
     const texts=m.entries.map(e=>e.text).join('\n');
     assert(m.entries[0].where.includes('core/main.js › sendPrompt'),'file › function from the stack');
-    assert(!/site-ish|rs-diag/.test(texts),'only synerixcode console.log lines are kept');
-    assert(m.entries.some(e=>e.level==='info'&&/\[synerixcode\] ready/.test(e.text)));
+    assert(!/site-ish|rs-diag/.test(texts),'only elio console.log lines are kept');
+    assert(m.entries.some(e=>e.level==='info'&&/\[elio\] ready/.test(e.text)));
     for(const secret of ['abcdef123456','abcdefghijklmnopqrstu','f'.repeat(64),'Alice','bob@example.com'])assert(!texts.includes(secret),secret+' leaked');
     assert.equal(m.entries.find(e=>e.text==='same warning').repeats,5,'repeats are folded');
     // Queue is capped.
@@ -68,13 +68,13 @@ function isolated(){
     vm.runInContext(helper,ctx);
     assert.equal(w.console,before.console);assert.equal(w.console.error,before.error);assert.equal(w.fetch,before.fetch);
     assert.equal(w.XMLHttpRequest,before.xhr);assert.equal(w.XMLHttpRequest.prototype.open,before.open);
-    const got=[];w.document.addEventListener('synerixcode:site-log',e=>got.push(JSON.parse(e.detail)));
+    const got=[];w.document.addEventListener('elio:site-log',e=>got.push(JSON.parse(e.detail)));
     w.dispatchEvent(new w.ErrorEvent('error',{message:'TypeError: site broke',filename:'https://www.notion.so/app.js?v=9',lineno:3,colno:4}));
     w.dispatchEvent(new w.ErrorEvent('error',{message:'ext error',filename:EXT+'core/main.js'}));
     w.dispatchEvent(new w.ErrorEvent('error',{message:'ResizeObserver loop completed with undelivered notifications.'}));
     observerCb({getEntries:()=>[{initiatorType:'fetch',responseStatus:429,name:'https://www.notion.so/api/v3/runInference?token=abc'},{initiatorType:'fetch',responseStatus:200,name:'https://www.notion.so/ok'},{initiatorType:'img',responseStatus:404,name:'https://x/y.png'}]});
     assert.equal(got.length,0,'held until the isolated capture is ready');
-    w.document.dispatchEvent(new w.CustomEvent('synerixcode:site-log-ready'));
+    w.document.dispatchEvent(new w.CustomEvent('elio:site-log-ready'));
     assert.equal(got.length,2,JSON.stringify(got));
     assert.equal(got[0].text,'TypeError: site broke');assert.equal(got[0].file,'https://www.notion.so/app.js:3:4');
     assert.equal(got[1].status,429);assert(!got[1].text.includes('token'));
@@ -88,19 +88,19 @@ function isolated(){
     t.w.dispatchEvent(new t.w.ErrorEvent('error',{message:'site',filename:'https://chatgpt.com/a.js'}));
     const e=new t.w.Error('mine');e.stack='Error: mine\n    at parseReply ('+EXT+'providers/chatgpt.js:1:5)';
     t.w.dispatchEvent(new t.w.ErrorEvent('error',{message:'Uncaught Error: mine',filename:EXT+'providers/chatgpt.js',error:e}));
-    t.w.document.dispatchEvent(new t.w.CustomEvent('synerixcode:site-log',{detail:JSON.stringify({level:'error',kind:'http',status:500,text:'HTTP 500 https://chatgpt.com/backend-api'})}));
+    t.w.document.dispatchEvent(new t.w.CustomEvent('elio:site-log',{detail:JSON.stringify({level:'error',kind:'http',status:500,text:'HTTP 500 https://chatgpt.com/backend-api'})}));
     t.flush();const list=t.sent[0].entries;
     assert.equal(list.length,2);assert.equal(list[0].where[0],'providers/chatgpt.js › parseReply');assert.equal(list[1].source,'site');assert.equal(list[1].status,500);
     t.dom.window.close();
   }
   // 6. Every isolated content-script group loads the capture first; the MAIN helper covers every site.
-  for(const path of ['manifest.json','synerixcode-Extension/manifest.json']){
+  for(const path of ['manifest.json','elio-Extension/manifest.json']){
     const m=JSON.parse(fs.readFileSync(path,'utf8'));
     const iso=m.content_scripts.filter(c=>c.world!=='MAIN'),main=m.content_scripts.find(c=>(c.js||[]).includes('core/debug-capture-main.js'));
     assert(main&&main.world==='MAIN'&&main.run_at==='document_start');
     for(const c of iso){assert.equal(c.js[0],'core/debug-capture.js',path);for(const x of c.matches)assert(main.matches.includes(x),x);}
   }
-  for(const f of ['core/debug-capture.js','core/debug-capture-main.js','background.js'])assert.equal(fs.readFileSync(f,'utf8'),fs.readFileSync('synerixcode-Extension/'+f,'utf8'),f+' copies match');
+  for(const f of ['core/debug-capture.js','core/debug-capture-main.js','background.js'])assert.equal(fs.readFileSync(f,'utf8'),fs.readFileSync('elio-Extension/'+f,'utf8'),f+' copies match');
   // 7. Overhead stays small: 20k wrapped console.warn calls.
   {
     const t=isolated();const start=process.hrtime.bigint();for(let i=0;i<20000;i++)t.w.console.warn('w',i);

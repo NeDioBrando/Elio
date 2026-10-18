@@ -1,6 +1,6 @@
 // Hide bar is visual only: hiding and showing must not change agent state,
 // controls, mounting, desktop Start/Stop availability or bar placement.
-const {JSDOM,VirtualConsole}=require(process.env.SYNERIXCODE_TEST_JSDOM || 'jsdom');const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const {JSDOM,VirtualConsole}=require(process.env.ELIO_TEST_JSDOM || 'jsdom');const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
 const root=__dirname;const manifest=JSON.parse(fs.readFileSync(root+'/manifest.json'));
 const urls={chatgpt:'https://chatgpt.com/',deepseek:'https://chat.deepseek.com/',claude:'https://claude.ai/new',notion:'https://www.notion.so/ai'};
 const css=fs.readFileSync(root+'/overlay.css','utf8');
@@ -31,7 +31,7 @@ async function run(provider){
   assert(before&&before.barVisible!==undefined,provider+': desktop state replies');
   hide.click();
   assert.equal(html.getAttribute('data-rs-bar-collapsed'),'1',provider+': collapse flag set');
-  assert.equal(w.sessionStorage.getItem('synerixcode.barCollapsed'),'1',provider+': collapse remembered for this tab');
+  assert.equal(w.sessionStorage.getItem('elio.barCollapsed'),'1',provider+': collapse remembered for this tab');
   assert.equal(bar.parentElement,parent,provider+': bar stays mounted in place');
   assert.notEqual(bar.style.display,'none',provider+': bar is not display:none');
   assert.deepEqual([...bar.querySelectorAll('button')].map(b=>b.id+':'+b.hidden+':'+b.disabled+':'+b.textContent.trim()),controls,provider+': every control is unchanged while hidden');
@@ -41,7 +41,7 @@ async function run(provider){
   for(const k of ['canStart','canStop','canEnhance','engine','chat']) assert.deepEqual(hiddenState[k],before[k],provider+': '+k+' unchanged while hidden');
   tab.click();
   assert(!html.hasAttribute('data-rs-bar-collapsed'),provider+': show restores bar');
-  assert.equal(w.sessionStorage.getItem('synerixcode.barCollapsed'),null,provider+': restore clears tab memory');
+  assert.equal(w.sessionStorage.getItem('elio.barCollapsed'),null,provider+': restore clears tab memory');
   assert(tab.hidden,provider+': show tab hides again');
   assert.deepEqual([...bar.querySelectorAll('button')].map(b=>b.id+':'+b.hidden+':'+b.disabled+':'+b.textContent.trim()),controls,provider+': controls restored exactly');
   const after=await state();

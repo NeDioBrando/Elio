@@ -11,7 +11,7 @@ const read = (rel) => fs.readFileSync(path.join(root, rel), "utf8");
 let passed = 0;
 function check(name, fn) { fn(); passed++; console.log("ok - " + name); }
 
-for (const base of ["", "synerixcode-Extension/"]) {
+for (const base of ["", "elio-Extension/"]) {
   for (const rel of ["core/main.js", "providers/notion.js"]) {
     const p = base + rel;
     if (!fs.existsSync(path.join(root, p))) continue;

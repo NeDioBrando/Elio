@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html data-elio-popup>
 <head>
   <meta charset="utf-8" />
   <style>
-    /* synerixcode popup. IDs are load-bearing. */
+    /* elio popup. IDs are load-bearing. */
     :root{
       --bg:#090807; --ink:#141210; --surface:rgba(255,244,230,.06); --surface-2:rgba(255,244,230,.11);
       --line:rgba(255,232,204,.14); --line-strong:rgba(255,232,204,.28);
@@ -278,16 +278,33 @@
 @media(forced-colors:active){.pc-ultra-label{animation:none!important;background:none!important;color:Highlight!important;-webkit-text-fill-color:currentColor!important}}
 
 #reasoning-level,.pc-effort-trigger{color:var(--text)!important}
+
+/* Elio extension popup — a small control sheet, not a promotional dashboard. */
+html,html[data-theme],html[data-palette]{color-scheme:light;--bg:var(--elio-canvas)!important;--ink:var(--elio-text)!important;--surface:var(--elio-surface)!important;--surface-2:var(--elio-raised)!important;--line:var(--elio-line)!important;--line-strong:var(--elio-muted)!important;--text:var(--elio-text)!important;--text-dim:var(--elio-muted)!important;--text-faint:var(--elio-muted)!important;--accent:var(--elio-muted)!important;--glow:transparent!important;--ok:var(--elio-green-text)!important;--warn:var(--elio-warn-text)!important}body{width:400px!important;background:var(--elio-canvas)!important;color:var(--elio-text)!important;font:14px/1.55 "Segoe UI",system-ui,sans-serif!important}body::before,.hero::before,.hero::after{display:none!important}.hero{height:auto!important;min-height:0!important;padding:24px 22px 18px!important;background:var(--elio-raised)!important;border:0!important;border-bottom:1px solid var(--elio-line)!important;box-shadow:none!important}.head{position:static!important;padding:0!important;gap:12px!important}.crest{height:44px!important;width:44px!important;filter:none!important;border:0!important;box-shadow:none!important}.logo{font:400 30px/1 Georgia,serif!important;letter-spacing:-1px!important;text-shadow:none!important;color:var(--elio-text)!important}.ver{color:var(--elio-muted)!important;font-size:12px!important}.tag{font-size:12px!important;color:var(--elio-muted)!important;border:1px solid var(--elio-line)!important;background:var(--elio-raised)!important}.wrap{padding:18px!important;gap:16px!important}.card{padding:18px!important;background:var(--elio-surface)!important;border:1px solid var(--elio-line)!important;border-radius:9px!important;box-shadow:none!important;margin-bottom:16px!important}.engrow{font-size:15px!important;color:var(--elio-text)!important}.row,.hint{font-size:13px!important;color:var(--elio-muted)!important;line-height:1.6!important}.sec-label{font-size:12px!important;letter-spacing:.06em!important;font-weight:600!important;color:var(--elio-muted)!important;margin:16px 0 10px!important}.seg{padding:4px!important;background:var(--elio-line)!important;border:1px solid var(--elio-line)!important;border-radius:8px!important}.seg button{font-size:14px!important;color:var(--elio-muted)!important;background:none!important;box-shadow:none!important;min-height:42px}.seg button.on{background:var(--elio-surface)!important;color:var(--elio-text)!important;border:1px solid var(--elio-line)!important;box-shadow:none!important}.work{gap:8px!important}.work-card{padding:12px 10px!important;background:var(--elio-canvas)!important;border:1px solid var(--elio-line)!important;color:var(--elio-text)!important;border-radius:7px!important;box-shadow:none!important;transform:none!important}.work-card.on{background:var(--elio-selected)!important;border-color:var(--elio-muted)!important;box-shadow:none!important}.work-name{font-size:14px!important;font-weight:550!important;color:var(--elio-text)!important}.work-sub{font-size:12px!important;color:var(--elio-muted)!important;line-height:1.5!important}.theme-art,#theme-row,.theme-settings{display:none!important}.card>button{min-height:42px}button,input,select{font-family:inherit!important}button{box-shadow:none!important;transform:none!important;text-shadow:none!important}select,input,.pc-effort-trigger,.pc-effort-options{background:var(--elio-surface)!important;color:var(--elio-text)!important;border:1px solid var(--elio-line)!important;border-radius:7px!important;font-size:14px!important;box-shadow:none!important}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--elio-muted)!important;outline-offset:3px}.pc-ultra-label{animation:none!important;background:none!important;-webkit-text-fill-color:currentColor!important;color:var(--elio-muted)!important}.btn,.main-btn,#settings{background:var(--elio-accent)!important;color:var(--elio-on-accent)!important;border:1px solid var(--elio-accent)!important;border-radius:7px!important;min-height:44px}.sc-version-notice{margin:12px!important}.language-settings{border-bottom:1px solid var(--elio-line);padding-bottom:16px}.pc-language-picker small{font-size:13px!important}.pc-language-picker input,.pc-language-picker select{font-size:14px!important;min-height:40px!important}
+
+
+#or-logo.logo{text-transform:none!important;letter-spacing:-.5px!important}
+html[data-palette] body::after{display:none!important}html[data-palette] body .tag{box-shadow:none!important}
+html[data-palette] body .work-card.on{background:var(--elio-selected)!important;border-color:var(--elio-muted)!important}html[data-palette] body :is(.work-name,.work-card.on .work-name){color:var(--elio-text)!important}html[data-palette] body :is(.work-sub,.work-card.on .work-sub){color:var(--elio-muted)!important;font-size:14px!important;line-height:1.5!important}
+html[data-palette] body .act{background:var(--elio-surface)!important;color:var(--elio-text)!important;border:1px solid var(--elio-line)!important;min-height:44px!important;font-size:14px!important;box-shadow:none!important;border-radius:7px!important}html[data-palette] body #settings{background:var(--elio-accent)!important;color:var(--elio-on-accent)!important}
+html[data-palette] body :is(.tgl-name,.tgl-sub,.row,.hint,.pc-language-picker small){font-size:14px!important;color:var(--elio-muted)!important;line-height:1.55!important}html[data-palette] body .tgl-name{color:var(--elio-text)!important}
+html[data-palette] body .sw{background:var(--elio-line)!important;border-color:var(--elio-muted)!important;box-shadow:none!important}html[data-palette] body .sw::after{background:var(--elio-surface)!important;box-shadow:none!important}html[data-palette] body .tgl.on .sw{background:var(--elio-muted)!important}
+
+html[data-palette] body .seg button.on{background:var(--elio-selected)!important;color:var(--elio-text)!important;border-color:var(--elio-muted)!important}html[data-palette] .elio-fold>summary{cursor:pointer;font-size:16px;min-height:24px;list-style-position:inside}html[data-palette] .elio-fold[open]>summary{padding-bottom:16px;border-bottom:1px solid var(--elio-line)}
+html[data-theme][data-palette] body .seg{box-shadow:none!important;background:var(--elio-raised)!important}html[data-theme][data-palette] body .seg button.on{background:var(--elio-selected)!important;color:var(--elio-text)!important;border-color:var(--elio-muted)!important}html[data-theme][data-palette] body #discord{color:var(--elio-text)!important}html[data-theme][data-palette] body .work{grid-template-columns:minmax(0,1fr)!important}html[data-theme][data-palette] body .work-card{min-width:0!important;display:flex!important;flex-direction:column;align-items:flex-start;text-align:left;gap:4px;overflow-wrap:anywhere}html[data-theme][data-palette] body .work-sub{font-weight:400!important}
+html[data-theme][data-palette] body #engine-roblox.on,html[data-theme][data-palette] body #engine-local.on{background:var(--elio-selected)!important;color:var(--elio-text)!important;box-shadow:none!important}
 </style>
+<link rel="stylesheet" href="core/theme.css" />
 </head>
 <body>
   <div class="hero">
     <div class="head">
       <img class="crest" src="icon.png" alt="" aria-hidden="true" style="background:transparent;object-fit:contain" />
       <div class="head-txt">
-        <span class="logo" id="or-logo">synerixcode</span>
+        <span class="logo" id="or-logo">Elio</span>
         <span id="ver" class="ver"></span>
       </div>
+      <button id="elio-theme-popup" type="button"></button>
       <span class="tag" id="site-tag">DeepSeek</span>
     </div>
   </div>
@@ -307,7 +324,7 @@
       <div class="row" id="servers"></div>
     </div>
 
-    <div class="card" id="settings-card">
+    <details class="card elio-fold" id="settings-card"><summary>Settings</summary>
       <section class="language-settings" style="margin-bottom:20px">
         <div class="sec-label">Language</div><div id="popup-language-picker"></div>
       </section>
@@ -382,18 +399,18 @@
           <span class="sw"></span>
         </div>
       </div>
-    </div>
+    </details>
 
 
-    <div class="row">Agent pairing is automatic. Start the matching synerixcode agent to connect.</div>
-    <div class="card" id="legacy-pairings">
+    <div class="row">Agent pairing is automatic. Start the matching elio agent to connect.</div>
+    <details class="card elio-fold" id="legacy-pairings"><summary>Pairings</summary>
       <div class="sec-label">Pairings</div>
-      <div class="row">Optional synerixcode pairing targets retained for existing Figma and Meshy workflows.</div>
+      <div class="row">Optional elio pairing targets retained for existing Figma and Meshy workflows.</div>
       <div class="acts">
         <button class="act" data-ic="F" id="figma-legacy">Figma pairing</button>
         <button class="act" data-ic="M" id="meshy-legacy">Meshy pairing</button>
       </div>
-    </div>
+    </details>
     <div class="acts">
       <button class="act span" data-ic="🦙" id="ollama">Open Ollama chat</button>
       <button class="act" data-ic="💬" id="discord">Upstream Discord</button>
@@ -404,12 +421,13 @@
     </div>
 
     <div class="row" id="hint-row">
-      Double-click <code id="run-hint">synerixcode.exe</code>, open <b id="hint-engine">Roblox Studio</b>, then open any chat.
+      Double-click <code id="run-hint">elio.exe</code>, open <b id="hint-engine">Roblox Studio</b>, then open any chat.
     </div>
   </div>
   <script src="core/version.js"></script>
   <script src="core/i18n-catalog.js"></script>
   <script src="core/i18n.js"></script>
+  <script src="core/theme.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

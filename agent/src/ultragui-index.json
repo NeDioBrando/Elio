@@ -6,7 +6,7 @@
     "domain": "ui",
     "scope": "",
     "steps": [
-      "Read synerixcode_skills with action read and id bundled-ultragui-check-ui-rules. Follow next_offset for the complete reference.",
+      "Read elio_skills with action read and id bundled-ultragui-check-ui-rules. Follow next_offset for the complete reference.",
       "Adapt this method to the current project and current user request."
     ],
     "pitfalls": [
@@ -27,7 +27,7 @@
     "domain": "ui",
     "scope": "",
     "steps": [
-      "Read synerixcode_skills with action read and id bundled-ultragui-expert-gui. Follow next_offset for the complete reference.",
+      "Read elio_skills with action read and id bundled-ultragui-expert-gui. Follow next_offset for the complete reference.",
       "Adapt this method to the current project and current user request."
     ],
     "pitfalls": [
@@ -48,7 +48,7 @@
     "domain": "ui",
     "scope": "",
     "steps": [
-      "Read synerixcode_skills with action read and id bundled-ultragui-check-cycle. Follow next_offset for the complete reference.",
+      "Read elio_skills with action read and id bundled-ultragui-check-cycle. Follow next_offset for the complete reference.",
       "Adapt this method to the current project and current user request."
     ],
     "pitfalls": [
@@ -69,7 +69,7 @@
     "domain": "ui",
     "scope": "",
     "steps": [
-      "Read synerixcode_skills with action read and id bundled-ultragui-check-ui-standard. Follow next_offset for the complete reference.",
+      "Read elio_skills with action read and id bundled-ultragui-check-ui-standard. Follow next_offset for the complete reference.",
       "Adapt this method to the current project and current user request."
     ],
     "pitfalls": [
@@ -90,7 +90,7 @@
     "domain": "ui",
     "scope": "",
     "steps": [
-      "Read synerixcode_skills with action read and id bundled-ultragui-gui-syntax. Follow next_offset for the complete reference.",
+      "Read elio_skills with action read and id bundled-ultragui-gui-syntax. Follow next_offset for the complete reference.",
       "Adapt this method to the current project and current user request."
     ],
     "pitfalls": [
@@ -111,7 +111,7 @@
     "domain": "ui",
     "scope": "",
     "steps": [
-      "Read synerixcode_skills with action read and id bundled-ultragui-gui-verify. Follow next_offset for the complete reference.",
+      "Read elio_skills with action read and id bundled-ultragui-gui-verify. Follow next_offset for the complete reference.",
       "Adapt this method to the current project and current user request."
     ],
     "pitfalls": [
@@ -132,7 +132,7 @@
     "domain": "ui",
     "scope": "",
     "steps": [
-      "Read synerixcode_skills with action read and id bundled-ultragui-toolbox. Follow next_offset for the complete reference.",
+      "Read elio_skills with action read and id bundled-ultragui-toolbox. Follow next_offset for the complete reference.",
       "Adapt this method to the current project and current user request."
     ],
     "pitfalls": [
@@ -153,7 +153,7 @@
     "domain": "ui",
     "scope": "",
     "steps": [
-      "Read synerixcode_skills with action read and id bundled-ultragui-report-what-you-verified. Follow next_offset for the complete reference.",
+      "Read elio_skills with action read and id bundled-ultragui-report-what-you-verified. Follow next_offset for the complete reference.",
       "Adapt this method to the current project and current user request."
     ],
     "pitfalls": [

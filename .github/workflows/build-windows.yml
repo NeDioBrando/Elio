@@ -1,4 +1,4 @@
-name: Build and release SynerixCode (Windows x64)
+name: Build and release Elio (Windows x64)
 on:
   workflow_dispatch:
   push:
@@ -34,8 +34,8 @@ jobs:
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
-          name: synerixcode-Windows-x64
-          path: dist/synerixcode-v*-Windows-x64.zip
+          name: Elio-Windows-x64
+          path: dist/elio-v*-Windows-x64.zip
           if-no-files-found: error
       - name: Publish complete stable GitHub Release
         if: github.ref_type == 'tag'
@@ -43,11 +43,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $Zip = @(Get-ChildItem dist/synerixcode-v*-Windows-x64.zip)
+          $Zip = @(Get-ChildItem dist/elio-v*-Windows-x64.zip)
           if ($Zip.Count -ne 1) { throw 'Expected exactly one Windows ZIP.' }
           $Tag = '${{ github.ref_name }}'
           # A new immutable version is required. Never overwrite published assets.
-          $Title = if ($Tag -eq 'v1.0.0') { 'SynerixCode v1' } else { "SynerixCode $Tag" }
+          $Title = "Elio $Tag"
           gh release create $Tag $Zip[0].FullName --verify-tag --draft --title $Title --generate-notes
           if ($LASTEXITCODE -ne 0) { throw 'Could not create draft release. Do not reuse an existing tag.' }
           gh release edit $Tag --draft=false --latest

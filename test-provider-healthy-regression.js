@@ -47,7 +47,7 @@ function inspect(f){const p=f.p,r=p.readAssistant();return {editor:!!p.getEditor
    for(const f of [old,current]){
     f.advance(60000);f.setText('user draft');assert.equal(f.p.editorText(),'user draft',name+' native draft read');f.p.setInputLock(true);f.p.setInputLock(false);assert.equal(f.p.editorText(),'user draft',name+' locking preserves draft');
     // Native send counts must be identical, and no duplicate submission is allowed.
-    await f.p.typeAndSend('synerixcode regression prompt');assert.equal(f.p.editorText().trim(),'',name+' draft consumed');assert.equal(f.counts().clicks+f.counts().enters,1,name+' one submission');
+    await f.p.typeAndSend('elio regression prompt');assert.equal(f.p.editorText().trim(),'',name+' draft consumed');assert.equal(f.counts().clicks+f.counts().enters,1,name+' one submission');
    }
    assert.deepEqual(current.counts(),old.counts(),name+' native event behavior unchanged');checks+=3;
    // Virtualized editor replacement after a successful send.

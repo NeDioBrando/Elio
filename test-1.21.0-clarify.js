@@ -1,4 +1,4 @@
-// 1.21.0 regression: synerixcode_clarify rejected near-miss field names
+// 1.21.0 regression: elio_clarify rejected near-miss field names
 // (recommend/reason) forever, so the agent hit "Repeated tool failures".
 const assert = require('assert');
 const C = require('./core/clarification.js');

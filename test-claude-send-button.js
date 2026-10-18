@@ -1,6 +1,6 @@
 // 1.24.13: Claude startup "wouldn't take the message after 2 tries" (run: node test-claude-send-button.js).
 // Behavioural check in jsdom: a disabled or localized Send control must never make
-// synerixcode click the neighbouring voice/model button, and a draft that provably did
+// elio click the neighbouring voice/model button, and a draft that provably did
 // not submit gets exactly one Enter.
 const assert = require("node:assert/strict"), fs = require("fs"), { JSDOM } = require("jsdom");
 const src = fs.readFileSync(__dirname + "/providers/claude.js", "utf8");
@@ -22,7 +22,7 @@ async function scenario({ label = "Send message", enableAfterMs = 0, sendWorks =
   w.eval(src + "\nwindow.__P = RSProvider;");
   const P = w.__P;
   P.init({ diag: () => {} });
-  await P.typeAndSend("Output of 'list_commands':\n" + "x".repeat(3000) + "\nReply with exactly synerixcode is ready.", null);
+  await P.typeAndSend("Output of 'list_commands':\n" + "x".repeat(3000) + "\nReply with exactly elio is ready.", null);
   w.close();
   return { log, submitted };
 }

@@ -3,9 +3,9 @@ const fs=require('fs'),path=require('path'),vm=require('vm');
 const root=__dirname;let pass=0,fail=0;
 function ok(name,cond){if(cond){pass++;console.log('PASS '+name);}else{fail++;console.log('FAIL '+name);}}
 const main=fs.readFileSync(path.join(root,'core','main.js'),'utf8');
-const mainExt=fs.readFileSync(path.join(root,'synerixcode-Extension','core','main.js'),'utf8');
+const mainExt=fs.readFileSync(path.join(root,'elio-Extension','core','main.js'),'utf8');
 const bg=fs.readFileSync(path.join(root,'background.js'),'utf8');
-const bgExt=fs.readFileSync(path.join(root,'synerixcode-Extension','background.js'),'utf8');
+const bgExt=fs.readFileSync(path.join(root,'elio-Extension','background.js'),'utf8');
 ok('main.js copies match',main===mainExt);
 ok('background.js copies match',bg===bgExt);
 for(const [n,s] of [['main.js',main],['background.js',bg]]){let c=true;try{new vm.Script(s);}catch(e){c=false;console.log(e.message);}ok(n+' compiles',c);}

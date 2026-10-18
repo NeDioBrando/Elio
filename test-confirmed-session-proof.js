@@ -1,6 +1,6 @@
 const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
 const source=fs.readFileSync('core/main.js','utf8');
-const code=source.slice(source.indexOf('        // A confirmed internal result'),source.indexOf('        if(typeof synerixcodeUltracode',source.indexOf('        // A confirmed internal result')));
+const code=source.slice(source.indexOf('        // A confirmed internal result'),source.indexOf('        if(typeof elioUltracode',source.indexOf('        // A confirmed internal result')));
 function run(overrides={}){
  const remembered=[],states=[],box={A:{sessionGen:2,enhancing:false,started:false},userPrompt:false,generation:2,chat:'thread-one',payload:"Output of 'script_read':\nexact result",P:{conversationKey:()=> 'thread-one'},RS:{SYS_MARKER:'⟦RS-SYS⟧'},RSParse:{isInjectedFeedback:t=>/^Output of '/.test(t)},rememberSession:k=>remembered.push(k),ui:{setStarted:x=>states.push(x)},...overrides};
  vm.createContext(box);vm.runInContext(code,box);return {box,remembered,states};

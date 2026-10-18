@@ -2,17 +2,17 @@
 from pathlib import Path
 import json,os,shutil,tempfile,subprocess,time,urllib.request,urllib.error
 root=Path(__file__).resolve().parent
-binary=root/'agent/target/debug'/('synerixcode.exe' if os.name=='nt' else 'synerixcode')
-with tempfile.TemporaryDirectory(prefix='synerixcode-skills-native-') as temporary:
- install=Path(temporary)/'install';install.mkdir();shutil.copy2(binary,install/binary.name);shutil.copytree(root/'synerixcode-Extension',install/'synerixcode-Extension');binary=install/binary.name
- config=Path(temporary)/'config';config.mkdir();env={**os.environ,'LOCALAPPDATA':str(config),'XDG_CONFIG_HOME':str(config),'SYNERIXCODE_WORKSPACE_ROOT':str(Path(temporary)/'workspace')}
- env.pop('SYNERIXCODE_GITHUB_TOKEN',None)
+binary=root/'agent/target/debug'/('elio.exe' if os.name=='nt' else 'elio')
+with tempfile.TemporaryDirectory(prefix='elio-skills-native-') as temporary:
+ install=Path(temporary)/'install';install.mkdir();shutil.copy2(binary,install/binary.name);shutil.copytree(root/'elio-Extension',install/'elio-Extension');binary=install/binary.name
+ config=Path(temporary)/'config';config.mkdir();env={**os.environ,'LOCALAPPDATA':str(config),'XDG_CONFIG_HOME':str(config),'ELIO_WORKSPACE_ROOT':str(Path(temporary)/'workspace')}
+ env.pop('ELIO_GITHUB_TOKEN',None)
  with (Path(temporary)/'agent.log').open('w') as log:
   process=subprocess.Popen([str(binary),'--headless'],env=env,stdout=log,stderr=log)
   try:
    key=''
    for _ in range(100):
-    path=config/'synerixcode/bridge-key'
+    path=config/'elio/bridge-key'
     if path.exists():
      key=path.read_text()
      try:urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:3000/api/status',headers={'Authorization':'Bearer '+key}),timeout=1).close();break
@@ -30,9 +30,9 @@ with tempfile.TemporaryDirectory(prefix='synerixcode-skills-native-') as tempora
      return error.code,body
    request=urllib.request.Request('http://127.0.0.1:3000/desktop',headers={'Authorization':'Bearer '+key})
    with urllib.request.urlopen(request,timeout=8) as response: desktop=response.read().decode()
-   for removed in ['Model Builder','UI Creator','modelWorkspace','uiWorkspace','synerixcodeCreatorUI','Mountbuilder']:
+   for removed in ['Model Builder','UI Creator','modelWorkspace','uiWorkspace','elioCreatorUI','Mountbuilder']:
     assert removed not in desktop,removed
-   assert 'synerixcodeToolkitUI' in desktop and '__SYNERIXCODE_TOOLKIT_UI__' not in desktop
+   assert 'elioToolkitUI' in desktop and '__ELIO_TOOLKIT_UI__' not in desktop
    assert call('/api/skills',{'action':'list'},False)[0]==401
    starters=call('/api/skills',{'action':'list'})[1]['skills'];assert len([x for x in starters if x['id'].startswith('starter-syphodev-')])==11
    assert len([x for x in starters if x['id'].startswith('bundled-ultragui-')])==8

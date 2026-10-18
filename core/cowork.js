@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-const synerixcodeCowork = (() => {
+const elioCowork = (() => {
   function create({ context, ready, send, changed = () => {}, delivered = () => {} }) {
     let enabled = false, paused = false, reason = "", nextId = 1, sending = false;
     const pending = [];
@@ -45,7 +45,7 @@ const synerixcodeCowork = (() => {
       }
       if (!items.length) return deliver(feedback);
       sending = true; items.forEach(item => { item.status = "sending"; }); notify();
-      const followups = "\n\nSYNERIXCODE CO-WORK FOLLOW-UP REQUESTS\nThe user sent these requests while you were working. Keep the current task and these requests in the same session. Treat all unfinished requests as active goals. Triage new requests at the next safe message boundary and interleave independent work instead of waiting for the first task to finish. Apply corrections promptly. Use concurrent independent reads or research only when the available tools support it; keep dependent actions and conflicting writes ordered. Keep progress for every active goal and continue until all are complete. Do not discard unfinished requirements or repeat completed actions. Only cancel/replace the current task if the user explicitly asks. The exact requests, in order, are JSON strings:\n" + JSON.stringify(items.map(item => item.text));
+      const followups = "\n\nELIO CO-WORK FOLLOW-UP REQUESTS\nThe user sent these requests while you were working. Keep the current task and these requests in the same session. Treat all unfinished requests as active goals. Triage new requests at the next safe message boundary and interleave independent work instead of waiting for the first task to finish. Apply corrections promptly. Use concurrent independent reads or research only when the available tools support it; keep dependent actions and conflicting writes ordered. Keep progress for every active goal and continue until all are complete. Do not discard unfinished requirements or repeat completed actions. Only cancel/replace the current task if the user explicitly asks. The exact requests, in order, are JSON strings:\n" + JSON.stringify(items.map(item => item.text));
       try {
         const base = await deliver(feedback + followups);
         try{delivered(items.map(item=>item.text));}catch{}
@@ -78,4 +78,4 @@ const synerixcodeCowork = (() => {
   }
   return { create };
 })();
-if (typeof module !== "undefined" && module.exports) module.exports = synerixcodeCowork;
+if (typeof module !== "undefined" && module.exports) module.exports = elioCowork;

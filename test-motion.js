@@ -48,7 +48,7 @@ const copy = interchange.api.compileCopy({
 ok("exact bundle copy compiles", copy.ok, copy.error);
 ok("copy verifies source and clone fingerprints", copy.code.includes("manifestHash") && copy.code.includes("sourceSignature") && copy.code.includes("cloneSignature") && copy.code.includes("verified_fidelity"));
 ok("copy rejects scripted VFX", copy.code.includes("VFX export contains a script; exact copy refused"));
-ok("copy remains replay-safe", copy.code.includes("synerixcodeMotionLedger") && copy.code.includes("ActionId"));
+ok("copy remains replay-safe", copy.code.includes("elioMotionLedger") && copy.code.includes("ActionId"));
 
 const integrate = interchange.api.compileIntegration({
   action_id: "integrate-fire-1", build_id: "motion-v1", profile: "skill",

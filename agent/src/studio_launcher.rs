@@ -36,7 +36,7 @@ mod tests {
     use super::*;
     #[test]
     fn native_windows_discovery_handles_missing_batch_and_running_installs() {
-        let root=std::env::temp_dir().join(format!("synerixcode-launcher-{}",std::process::id()));
+        let root=std::env::temp_dir().join(format!("elio-launcher-{}",std::process::id()));
         let _=std::fs::remove_dir_all(&root);
         let local=root.join("User Profile/Local");
         let program=root.join("Program Files");

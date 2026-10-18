@@ -19,17 +19,17 @@ assert(bg.includes('alive:localReady,tools:localReady ? localTools().length : 0'
 assert(!bg.includes('alive:localReady,tools:0}'));
 // Startup handshake: every provider gets the single correction and extra calls do not fail it.
 const main=read('core/main.js');
-assert(main.includes('synerixcode startup check: reply with exactly one fenced json code block'));
+assert(main.includes('elio startup check: reply with exactly one fenced json code block'));
 assert(!main.includes('if (P.id === "notion" && listRes.kind === "text" && !isProviderPolicyRefusal'));
 assert(main.includes('listRes.calls.find((c) => c && (c.tool === "list_commands"'));
 // Studio access reminder for paste-a-script replies.
 assert(main.includes('STUDIO_ACCESS_REMINDER')&&main.includes('looksLikePasteScript'));
 assert(main.includes('send.retryStuckDraft'));
-assert(main.includes('synerixcode connection: ${cur === "local"'));
+assert(main.includes('elio connection: ${cur === "local"'));
 // The system prompt asks for short imperative labels.
 assert(read('core/config.js').includes('at most 8 words')&&read('core/config.js').includes('Goal: <what you will do'));
 // Both extension copies stay in sync.
-for(const file of ['core/main.js','core/activity.js','core/config.js','background.js'])assert.equal(read(file),read('synerixcode-Extension/'+file),file+' copies are in sync');
+for(const file of ['core/main.js','core/activity.js','core/config.js','background.js'])assert.equal(read(file),read('elio-Extension/'+file),file+' copies are in sync');
 // Native agent: reactor panics relaunch, add-ons start concurrently and never block Studio.
 const rust=read('agent/src/main.rs'),addons=read('agent/src/mcp_addons.rs');
 assert(rust.includes('fn is_reactor_resource_panic')&&rust.includes('fn relaunch_after_crash'));

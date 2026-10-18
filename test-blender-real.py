@@ -4,12 +4,12 @@ import json, os, shutil, subprocess, sys, tempfile
 
 root=Path(__file__).resolve().parent
 for name in ['blender_ops.py','blender_once.py','blender_once.ps1']:
-    assert (root/name).read_bytes()==(root/'synerixcode-Extension'/name).read_bytes(), name
-binary=os.environ.get('SYNERIXCODE_BLENDER') or shutil.which('blender')
+    assert (root/name).read_bytes()==(root/'elio-Extension'/name).read_bytes(), name
+binary=os.environ.get('ELIO_BLENDER') or shutil.which('blender')
 if not binary:
     if '--require' in sys.argv: raise SystemExit('A real Blender executable is required')
     raise SystemExit('SKIP: real Blender is unavailable on this host')
-with tempfile.TemporaryDirectory(prefix='synerixcode-blender-test-') as temporary:
+with tempfile.TemporaryDirectory(prefix='elio-blender-test-') as temporary:
     directory=Path(temporary)
     fixture=r'''
 import bpy, json, math, pathlib
@@ -17,7 +17,7 @@ root=pathlib.Path(__ROOT__)
 directory=pathlib.Path(__TEMP__)
 template=(root/'blender_ops.py').read_text()
 def operation(command, arguments):
-    source=template.replace('__SYNERIXCODE_CMD__',command).replace('__SYNERIXCODE_ARGS__',json.dumps(arguments)).replace('__SYNERIXCODE_OUT__',repr(str(directory/'receipt.json'))).replace('__SYNERIXCODE_MESH__',repr(str(directory/'meshes.json')))
+    source=template.replace('__ELIO_CMD__',command).replace('__ELIO_ARGS__',json.dumps(arguments)).replace('__ELIO_OUT__',repr(str(directory/'receipt.json'))).replace('__ELIO_MESH__',repr(str(directory/'meshes.json')))
     scope={};exec(compile(source,'packaged-blender-ops.py','exec'),scope)
     return scope['result'], scope
 for obj in list(bpy.data.objects):bpy.data.objects.remove(obj,do_unlink=True)
@@ -54,7 +54,7 @@ except RuntimeError:pass
 else:raise AssertionError('Operator error was hidden')
 assert len(calls)==1,calls
 (directory/'passed.json').write_text(json.dumps({'objects':27,'detailed_vertices':max(len(m['verts']) for m in json.loads((directory/'meshes.json').read_text())['meshes']) if (directory/'meshes.json').exists() else 'verified','version':bpy.app.version_string}))
-print('SYNERIXCODE_REAL_BLENDER_TEST_PASS',bpy.app.version_string)
+print('ELIO_REAL_BLENDER_TEST_PASS',bpy.app.version_string)
 '''
     # The dispatch writes its mesh export separately; inspect the successful
     # receipt before later error cases replace it.

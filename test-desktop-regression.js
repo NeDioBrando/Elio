@@ -59,9 +59,9 @@ function gitBlobSha(path) {
 }
 
 for (const [path, expected] of Object.entries(baseline)) {
-  if (!fs.existsSync(path)) throw new Error("Protected synerixcode file missing: " + path);
+  if (!fs.existsSync(path)) throw new Error("Protected elio file missing: " + path);
   const actual = gitBlobSha(path);
-  if (actual !== expected) throw new Error("Protected synerixcode file changed: " + path + "\nexpected " + expected + "\nactual   " + actual);
+  if (actual !== expected) throw new Error("Protected elio file changed: " + path + "\nexpected " + expected + "\nactual   " + actual);
 }
 
 for (const path of requiredProviders) {
@@ -107,10 +107,10 @@ for (const forbidden of [
 ]) {
   if (desktopHtml.includes(forbidden)) throw new Error("Removed desktop UI content returned: " + forbidden);
 }
-for (const removed of ['Model Builder','UI Creator','modelWorkspace','uiWorkspace','synerixcodeCreatorUI','Mountbuilder','__SYNERIXCODE_CREATOR','__SYNERIXCODE_HEADLESS']) if (desktopHtml.includes(removed)) throw Error('Removed desktop creator leaked: '+removed);
+for (const removed of ['Model Builder','UI Creator','modelWorkspace','uiWorkspace','elioCreatorUI','Mountbuilder','__ELIO_CREATOR','__ELIO_HEADLESS']) if (desktopHtml.includes(removed)) throw Error('Removed desktop creator leaked: '+removed);
 // Approved localization guards/hooks; behavioral Toolkit/Notifications fixtures remain.
 const toolkit=fs.readFileSync('core/toolkit-ui.js','utf8');if(crypto.createHash('sha256').update(toolkit.replace(/\r\n/g,'\n')).digest('hex')!=='75e54f096a1682f5fc545c6b69e3e52bfbb60fc7aabd4a966c3e04e7744f1320')throw Error('Toolkit localization baseline changed');
-const desktopScript = desktopHtml.match(/<script>([\s\S]*?)<\/script>/)?.[1]?.replace("__SYNERIXCODE_I18N_CATALOG__", "").replace("__SYNERIXCODE_I18N__", "").replace("__SYNERIXCODE_SKILLS_UI__", fs.readFileSync("core/skills-ui.js", "utf8")).replace("__SYNERIXCODE_EXPLORER_UI__", fs.readFileSync("core/explorer-ui.js", "utf8")).replace("__SYNERIXCODE_TOOLKIT_UI__", fs.readFileSync("core/toolkit-ui.js", "utf8")).replace("__SYNERIXCODE_TEMPLATE_UI__", fs.readFileSync("core/templates.js", "utf8")).replace("__SYNERIXCODE_TASK_UI__", fs.readFileSync("core/task-center.js", "utf8")).replace("__SYNERIXCODE_MEDIA_UI__", fs.readFileSync("core/media.js", "utf8")).replace("__SYNERIXCODE_MEMORY_UI__", fs.readFileSync("core/memory.js", "utf8")).replace("__SYNERIXCODE_VERSION_UI__", fs.readFileSync("core/version.js", "utf8")).replace(/__SYNERIXCODE_VERSION__/g, "1.19.33");
+const desktopScript = desktopHtml.match(/<script>([\s\S]*?)<\/script>/)?.[1]?.replace("__ELIO_I18N_CATALOG__", "").replace("__ELIO_I18N__", "").replace("__ELIO_SKILLS_UI__", fs.readFileSync("core/skills-ui.js", "utf8")).replace("__ELIO_EXPLORER_UI__", fs.readFileSync("core/explorer-ui.js", "utf8")).replace("__ELIO_TOOLKIT_UI__", fs.readFileSync("core/toolkit-ui.js", "utf8")).replace("__ELIO_TEMPLATE_UI__", fs.readFileSync("core/templates.js", "utf8")).replace("__ELIO_TASK_UI__", fs.readFileSync("core/task-center.js", "utf8")).replace("__ELIO_MEDIA_UI__", fs.readFileSync("core/media.js", "utf8")).replace("__ELIO_MEMORY_UI__", fs.readFileSync("core/memory.js", "utf8")).replace("__ELIO_VERSION_UI__", fs.readFileSync("core/version.js", "utf8")).replace(/__ELIO_VERSION__/g, "1.19.33");
 if (!desktopScript) throw new Error("Desktop WebView script block missing");
 new Function(desktopScript);
 
@@ -248,7 +248,7 @@ async function runDesktopInteractionRegression() {
     mcp_alive: true,
     roblox_connected: true,
     workspace_ready: true,
-    workspace_root: "C:\\synerixcodeWorkspace",
+    workspace_root: "C:\\elioWorkspace",
     tools: [],
     servers: [],
     logs: [],
@@ -296,15 +296,15 @@ async function runDesktopInteractionRegression() {
     clearInterval: () => {}
   }, { timeout: 2000 });
 
-  if (!window.synerixcodeDesktop || typeof window.synerixcodeDesktop.go !== "function") {
-    throw new Error("Desktop UI bootstrap did not expose synerixcodeDesktop.go");
+  if (!window.elioDesktop || typeof window.elioDesktop.go !== "function") {
+    throw new Error("Desktop UI bootstrap did not expose elioDesktop.go");
   }
   if (!ipcMessages.includes("ui-ready")) {
     throw new Error("Desktop UI did not emit ui-ready");
   }
 
   for (const pageName of ["home", "tools", "mcp", "terminal", "settings", "updates"]) {
-    window.synerixcodeDesktop.go(pageName);
+    window.elioDesktop.go(pageName);
     const page = elementsById.get("page-" + pageName);
     if (!page || !page.classList.contains("active")) {
       throw new Error("Desktop navigation failed for page: " + pageName);
@@ -321,7 +321,7 @@ async function runDesktopInteractionRegression() {
   }
 
   await new Promise(resolve => setTimeout(resolve, 0));
-  await window.synerixcodeDesktop.refresh();
+  await window.elioDesktop.refresh();
   if (elementsById.get("coworkPrompt").placeholder !== "Follow up") throw new Error("Active Co-work placeholder missing");
   if (elementsById.get("homeCowork").getAttribute("aria-pressed") !== "true") throw new Error("Co-work toggle did not sync from browser");
   if (elementsById.get("coworkDialog").hidden) throw new Error("Co-work mode must show the inline chat");
@@ -329,48 +329,48 @@ async function runDesktopInteractionRegression() {
   if (elementsById.get("sideStudioStatus").textContent !== "Studio connected") throw new Error("Connected Studio indicator missing");
   if (elementsById.get("studioVal").textContent !== "Connected") throw new Error("Connected Studio card missing");
   // 1.24.17: Studio open with a running helper but an OFFLINE editor link is not "Connected".
-  fakeState.roblox_connected = false; await window.synerixcodeDesktop.refresh();
+  fakeState.roblox_connected = false; await window.elioDesktop.refresh();
   if (elementsById.get("sideStudioStatus").textContent !== "Studio open · not linked") throw new Error("Studio + helper without the editor link must not say connected");
   if (elementsById.get("studioVal").textContent !== "Open") throw new Error("Unlinked Studio card must say Open");
-  fakeState.mcp_alive = false; await window.synerixcodeDesktop.refresh();
+  fakeState.mcp_alive = false; await window.elioDesktop.refresh();
   if (elementsById.get("sideStudioStatus").textContent !== "Studio open · not linked") throw new Error("Unlinked Studio indicator missing");
-  fakeState.studio_running = false; await window.synerixcodeDesktop.refresh();
+  fakeState.studio_running = false; await window.elioDesktop.refresh();
   if (elementsById.get("sideStudioStatus").textContent !== "Studio closed") throw new Error("Closed Studio indicator missing");
   if (elementsById.get("studioVal").textContent !== "Offline") throw new Error("Closed Studio card must say Offline");
   fakeState.browser_agent.canStop = false;
   fakeState.browser_agent.cowork.enabled = false;
   fakeState.browser_agent.canQueue = false;
-  await window.synerixcodeDesktop.refresh();
+  await window.elioDesktop.refresh();
   if (!elementsById.get("coworkDialog").hidden) throw new Error("Co-work off must hide its inline chat");
   if (!elementsById.get("queueCowork").disabled) throw new Error("Co-work off must block queue submission");
   if (elementsById.get("coworkPrompt").placeholder !== "Message") throw new Error("Idle placeholder missing");
-  fakeState.browser_agent.activity=[{id:'manual-fold-test',label:'Working',done:false}];await window.synerixcodeDesktop.refresh();
+  fakeState.browser_agent.activity=[{id:'manual-fold-test',label:'Working',done:false}];await window.elioDesktop.refresh();
   elementsById.get("homeActivity").open=true;
-  fakeState.browser_agent.activity[0].done=true;fakeState.browser_agent.activity[0].label='Worked';await window.synerixcodeDesktop.refresh();
+  fakeState.browser_agent.activity[0].done=true;fakeState.browser_agent.activity[0].label='Worked';await window.elioDesktop.refresh();
   if(!elementsById.get("homeActivity").open)throw new Error("Completion must retain the expanded desktop work panel");
-  elementsById.get("homeActivity").open=false;await window.synerixcodeDesktop.refresh();
+  elementsById.get("homeActivity").open=false;await window.elioDesktop.refresh();
   if(elementsById.get("homeActivity").open)throw new Error("Polling must retain a manually folded work panel");
 
-  window.synerixcodeDesktop.go("updates"); await new Promise(resolve => setTimeout(resolve, 0));
+  window.elioDesktop.go("updates"); await new Promise(resolve => setTimeout(resolve, 0));
   if (elementsById.get("installUpdate").disabled) throw new Error("Available update must be installable");
   if (!elementsById.get("sidebarVersion").textContent.includes("(Up to date)")) throw new Error("Current version indicator missing");
-  fakeUpdate.latest="1.19.34";window.synerixcodeDesktop.go("updates");await new Promise(resolve=>setTimeout(resolve,0));
+  fakeUpdate.latest="1.19.34";window.elioDesktop.go("updates");await new Promise(resolve=>setTimeout(resolve,0));
   if (!elementsById.get("sidebarVersion").textContent.includes("- Outdated") || elementsById.get("updateInstalled").style.color!=="#ff696c") throw new Error("Outdated version indicator missing");
-  fakeUpdate.check_error="Offline";window.synerixcodeDesktop.go("updates");await new Promise(resolve=>setTimeout(resolve,0));
+  fakeUpdate.check_error="Offline";window.elioDesktop.go("updates");await new Promise(resolve=>setTimeout(resolve,0));
   if (!elementsById.get("titleVersion").textContent.includes("(Check unavailable)")) throw new Error("Unavailable version check must not claim current");
   fakeUpdate.check_error=null;fakeUpdate.latest="1.19.33";fakeUpdate.busy=true;fakeUpdate.background=true;
-  window.synerixcodeDesktop.go("updates");await new Promise(resolve=>setTimeout(resolve,0));
+  window.elioDesktop.go("updates");await new Promise(resolve=>setTimeout(resolve,0));
   if (!elementsById.get("updateOverlay").hidden) throw new Error("Automatic check must not open update overlay");
   if(elementsById.get("checkUpdates").disabled || elementsById.get("installUpdate").disabled)throw new Error("Automatic checks must keep manual update controls available");
-  fakeUpdate.busy=false;fakeUpdate.background=false;window.synerixcodeDesktop.go("updates");await new Promise(resolve=>setTimeout(resolve,0));
+  fakeUpdate.busy=false;fakeUpdate.background=false;window.elioDesktop.go("updates");await new Promise(resolve=>setTimeout(resolve,0));
   const notes=elementsById.get("updateReleaseNotes").children;
-  if (notes.length !== 1 || notes[0].children[0].textContent !== "synerixcode v1.19.33: Release notes" || notes[0].children[1].textContent !== "Exact <text> stays literal") throw new Error("Release note rendering failed");
-  const firstNote=notes[0];window.synerixcodeDesktop.go("updates");await new Promise(resolve=>setTimeout(resolve,0));
+  if (notes.length !== 1 || notes[0].children[0].textContent !== "elio v1.19.33: Release notes" || notes[0].children[1].textContent !== "Exact <text> stays literal") throw new Error("Release note rendering failed");
+  const firstNote=notes[0];window.elioDesktop.go("updates");await new Promise(resolve=>setTimeout(resolve,0));
   if(elementsById.get("updateReleaseNotes").children[0] !== firstNote)throw new Error("Polling reset release expansion");
   elementsById.get("installUpdate").onclick(); await new Promise(resolve => setTimeout(resolve, 0));
   if (elementsById.get("updateOverlay").hidden || !elementsById.get("installUpdate").disabled) throw new Error("Update progress/double-click guard missing");
   fakeUpdate.busy=false; fakeUpdate.error="Download failed";
-  window.synerixcodeDesktop.go("updates"); await new Promise(resolve => setTimeout(resolve, 0));
+  window.elioDesktop.go("updates"); await new Promise(resolve => setTimeout(resolve, 0));
   if (elementsById.get("updateError").textContent !== "Download failed" || elementsById.get("closeUpdateError").hidden) throw new Error("Update error feedback missing");
   elementsById.get("closeUpdateError").onclick();
   if (!elementsById.get("updateOverlay").hidden) throw new Error("Update error overlay did not close");
@@ -383,7 +383,7 @@ async function runDesktopInteractionRegression() {
   if(document.documentElement.dataset.desktopTheme !== "cyan" || document.documentElement.style["--orange"] !== "#27c1e7")throw new Error("Theme palette did not apply");
   elementsById.get("desktopGlow").value="off";elementsById.get("desktopGlow").onchange();
   elementsById.get("desktopGradients").value="off";elementsById.get("desktopGradients").onchange();
-  if(JSON.parse(window.localStorage.getItem("synerixcodeDesktopAppearance")).gradients !== "off" || document.documentElement.style["--theme-glow"] !== "0")throw new Error("Appearance selection did not persist");
+  if(JSON.parse(window.localStorage.getItem("elioDesktopAppearance")).gradients !== "off" || document.documentElement.style["--theme-glow"] !== "0")throw new Error("Appearance selection did not persist");
   elementsById.get("resetAppearance").onclick();if(document.documentElement.dataset.desktopTheme !== "default")throw new Error("Default theme restore failed");
   const minimize = ipcButtons.find((button) => button.getAttribute("data-ipc") === "minimize");
   if (!minimize || typeof minimize.onclick !== "function") {
@@ -435,7 +435,7 @@ const background = fs.readFileSync("background.js", "utf8");
 for (const token of [
   "DESKTOP_PREF_KEYS",
   "/api/preferences",
-  "_synerixcodePersisted",
+  "_elioPersisted",
   "initialDesktopPreferencesSync",
   "pullDesktopPreferences",
   "pushDesktopPreferences",

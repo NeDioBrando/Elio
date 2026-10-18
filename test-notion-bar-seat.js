@@ -1,6 +1,6 @@
 // Before the composer is confirmed, Notion's temporary bar anchor must sit on
 // the visible chat box (not the viewport centre), and never on a response block.
-const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict'),{JSDOM}=require(process.env.SYNERIXCODE_TEST_JSDOM||'jsdom');
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict'),{JSDOM}=require(process.env.ELIO_TEST_JSDOM||'jsdom');
 const source=fs.readFileSync(__dirname+'/providers/notion.js','utf8');
 function boot(body){
  const dom=new JSDOM('<main>'+body+'</main>',{url:'https://app.notion.com/ai',runScripts:'outside-only',pretendToBeVisual:true});

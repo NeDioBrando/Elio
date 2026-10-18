@@ -1,6 +1,6 @@
 const fs=require('node:fs'),assert=require('node:assert/strict'),{JSDOM}=require('jsdom');
 (async()=>{
- const dom=new JSDOM('<div id="host"></div>',{runScripts:'outside-only',url:'http://localhost',pretendToBeVisual:true}),w=dom.window;w.TextEncoder=TextEncoder;w.eval(fs.readFileSync('core/skills-ui.js','utf8')+';window.Skills=synerixcodeSkillsUI;');
+ const dom=new JSDOM('<div id="host"></div>',{runScripts:'outside-only',url:'http://localhost',pretendToBeVisual:true}),w=dom.window;w.TextEncoder=TextEncoder;w.eval(fs.readFileSync('core/skills-ui.js','utf8')+';window.Skills=elioSkillsUI;');
  let records=[],saves=0,sent=0,poll;w.setInterval=fn=>{poll=fn;return 1;};
  const api=async r=>{if(r.action==='list')return{ok:true,skills:structuredClone(records)};if(r.action==='export')return{ok:true,skill:{...records.find(s=>s.id===r.id),scope:''}};if(r.action==='save'){saves++;const old=records.find(s=>s.id===r.skill.id);assert.equal(r.revision,old?.revision||0);const skill={...r.skill,revision:r.revision+1};records=records.filter(s=>s.id!==skill.id).concat(skill);return{ok:true,skill};}throw Error(r.action);};
  const host=w.document.getElementById('host');host.getClientRects=()=>[{}];const ui=w.Skills.mount(host,api,async()=>{sent++;},()=>({}),async()=>{},async()=>({tasks:[]})),field=n=>host.querySelector('[data-sk='+n+']'),flush=()=>new Promise(r=>setTimeout(r,20));await ui.refresh();

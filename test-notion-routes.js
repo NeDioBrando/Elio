@@ -43,6 +43,6 @@ const cases=[
   // Localized/ARIA new-chat control is used before any hard navigation.
   {const {w,p}=boot('https://app.notion.com/p/Welcome','<div role="button" aria-label="Neuer Chat">+</div>');let clicked=0;w.document.querySelector('[role=button]').addEventListener('click',()=>clicked++);
    const r=await p.prepareSessionStart('startup');assert.equal(r.navigating,true);assert.equal(clicked,1);w.close();}
-  assert.deepEqual(fs.readFileSync('providers/notion.js'),fs.readFileSync('synerixcode-Extension/providers/notion.js'),'extension copy in sync');
+  assert.deepEqual(fs.readFileSync('providers/notion.js'),fs.readFileSync('elio-Extension/providers/notion.js'),'extension copy in sync');
   console.log('Notion routes: /ai and /chat landings, ?t= threads with distinct keys, payload vs benign params, native new-chat controls.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

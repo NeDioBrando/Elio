@@ -3,7 +3,7 @@ const fs = require('fs'), path = require('path'), vm = require('vm'), assert = r
 const root = __dirname; let passed = 0, failed = 0;
 function t(name, fn) { try { fn(); passed++; console.log('ok', name); } catch (e) { failed++; console.log('FAIL', name, e.message); } }
 const src = fs.readFileSync(path.join(root, 'core/memory.js'), 'utf8');
-const ext = fs.readFileSync(path.join(root, 'synerixcode-Extension/core/memory.js'), 'utf8');
+const ext = fs.readFileSync(path.join(root, 'elio-Extension/core/memory.js'), 'utf8');
 const ctx = { module: { exports: {} } }; vm.createContext(ctx); vm.runInContext(src, ctx);
 const M = ctx.module.exports;
 t('copies in sync', () => assert.strictEqual(src, ext));

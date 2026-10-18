@@ -47,6 +47,6 @@ async function check(browser,name){
  }
 }
 (async()=>{for(const [name,engine] of [['chromium',chromium],['firefox',firefox]]){
- if(process.env.SYNERIXCODE_TEST_BROWSER&&process.env.SYNERIXCODE_TEST_BROWSER!==name)continue;
- const browser=await engine.launch({headless:true,...(name==='chromium'&&process.env.SYNERIXCODE_CHROMIUM?{executablePath:process.env.SYNERIXCODE_CHROMIUM}:{}),args:name==='chromium'?['--no-sandbox']:[]});try{await check(browser,name);}finally{await browser.close();}
+ if(process.env.ELIO_TEST_BROWSER&&process.env.ELIO_TEST_BROWSER!==name)continue;
+ const browser=await engine.launch({headless:true,...(name==='chromium'&&process.env.ELIO_CHROMIUM?{executablePath:process.env.ELIO_CHROMIUM}:{}),args:name==='chromium'?['--no-sandbox']:[]});try{await check(browser,name);}finally{await browser.close();}
 }})().catch(e=>{console.error(e);process.exitCode=1});

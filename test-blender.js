@@ -23,20 +23,20 @@ ok("bg routes blender tools only when connected", bg.includes("blenderAddon && i
 ok("bg sendLocalEngine for one-shot", bg.includes("sendLocalEngine") && bg.includes("blender_once."));
 ok("main connect uses blender_connect", main.includes('type: "blender_connect"') && !main.includes("uvx blender-mcp"));
 ok("main does not intercept blender tools when disconnected",
-  main.includes("A.bridge && A.bridge.blender") && !main.includes("Blender is not connected. Click Connect Blender in the synerixcode menu"));
+  main.includes("A.bridge && A.bridge.blender") && !main.includes("Blender is not connected. Click Connect Blender in the elio menu"));
 ok("cards do not claim blender is already connected", !main.includes("Blender MCP is connected"));
 ok("prompt no uvx requirement", !cfg.includes("uvx blender-mcp") && cfg.includes("Start MCP Server"));
 ok("prompt does not mention hop", !cfg.includes("local hop"));
 ok("glass tokens untouched", fs.readFileSync(path.join(root, "overlay.css"), "utf8").includes("rgba(16, 17, 25, 0.82)"));
 const ops = fs.readFileSync(path.join(root, "blender_ops.py"), "utf8");
 ok("ops script has export and import", ops.includes("try_export_fbx") && ops.includes("try_import_fbx"));
-ok("ops script writes status file", ops.includes("SYNERIXCODE_MESH_JSON") && ops.includes("def emit"));
+ok("ops script writes status file", ops.includes("ELIO_MESH_JSON") && ops.includes("def emit"));
 ok("ops can group objects", ops.includes("def cmd_group") && ops.includes("def cmd_join") && ops.includes("def cmd_parent"));
 ok("ops has 24+ commands", (ops.match(/\n    \"[a-z_]+\": /g) || []).length >= 24);
 ok("bg ships blender_ops.py", bg.includes("blender_ops.py") && bg.includes("blender_group") && bg.includes("blender_send_to_studio"));
-ok("bg replaces every ARGS token", bg.includes('split("__SYNERIXCODE_ARGS__")') && bg.includes("JSON.stringify(args"));
+ok("bg replaces every ARGS token", bg.includes('split("__ELIO_ARGS__")') && bg.includes("JSON.stringify(args"));
 ok("execute_code maps EEVEE_NEXT", bg.includes("wrapBlenderUserCode") && bg.includes("BLENDER_EEVEE_NEXT") && bg.includes("wrapBlenderUserCode(a.code"));
-ok("ops loads ARGS as JSON", (ops.match(/__SYNERIXCODE_ARGS__/g) || []).length === 1 && ops.includes("json.loads"));
+ok("ops loads ARGS as JSON", (ops.match(/__ELIO_ARGS__/g) || []).length === 1 && ops.includes("json.loads"));
 ok("ops has daily commands", ops.includes("def cmd_origin_to_bottom") && ops.includes("def cmd_drop_to_ground") && ops.includes("def cmd_array"));
 ok("bg export filepath is optional", bg.includes("blenderOpsCode") && !bg.includes("return {'filepath': fp}"));
 ok("main intercepts asset_bridge_import", main.includes("runAssetBridgeImport") && main.includes("blender_mesh_dump"));
@@ -44,7 +44,7 @@ ok("main auto-imports export to Studio", main.includes("blender_send_to_studio")
 ok("disconnect blender button", main.includes("rs-mcp-blender-off") && main.includes("blender_disconnect") && bg.includes('case "blender_disconnect"'));
 ok("connect verifies actual scene with native transport", bg.includes('blenderRequest({type:"get_scene_info"') && bg.includes("8000"));
 ok("dump falls back to all meshes", ops.includes("if not objs:") && ops.includes('"meshes": meshes'));
-ok("blenderCall returns meshes", bg.includes("meshes: meshes || undefined") && bg.includes('const mesh = "synerixcode_mesh.json"'));
+ok("blenderCall returns meshes", bg.includes("meshes: meshes || undefined") && bg.includes('const mesh = "elio_mesh.json"'));
 ok("blender flag survives SW restart", bg.includes("rs-blender-on") && bg.includes("probeBlenderTcp"));
 ok("asset_bridge is not a queue stub in the intercept", main.includes("studioMeshLuau"));
 
@@ -91,11 +91,11 @@ mock.stdout.once("data", () => {
   const env = { ...process.env, BLENDER_PORT: String(port), BLENDER_HOST: "127.0.0.1" };
   const up = spawnSync("python3", [path.join(root, "blender_once.py"), "--probe"], { encoding: "utf8", timeout: 8000, env });
   ok("probe sees mock addon", /BLENDER_UP/.test(String(up.stdout || "")));
-  const inFile = path.join(root, "_synerixcode_blender_in.json");
-  const outFile = path.join(root, "_synerixcode_blender_out.json");
+  const inFile = path.join(root, "_elio_blender_in.json");
+  const outFile = path.join(root, "_elio_blender_out.json");
   fs.writeFileSync(inFile, JSON.stringify({ type: "get_scene_info", params: {} }));
   const sent = spawnSync("python3", [path.join(root, "blender_once.py"), inFile, outFile], { encoding: "utf8", timeout: 8000, env });
-  ok("once send prints SYNERIXCODE_BLENDER_OK", /SYNERIXCODE_BLENDER_OK/.test(String(sent.stdout || "")));
+  ok("once send prints ELIO_BLENDER_OK", /ELIO_BLENDER_OK/.test(String(sent.stdout || "")));
   let parsed = {};
   try { parsed = JSON.parse(fs.readFileSync(outFile, "utf8")); } catch {}
   ok("once round-trip result", parsed && parsed.status === "ok" && parsed.result && parsed.result.objects[0] === "Cube");

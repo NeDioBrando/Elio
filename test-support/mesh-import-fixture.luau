@@ -28,7 +28,7 @@ end
 local Instance={new=node}
 local workspace=node('Workspace')
 local storage=node('ServerStorage')
-local existing=node('Model');existing.Name='SYNERIXCODE_Imported';existing.Parent=workspace
+local existing=node('Model');existing.Name='ELIO_Imported';existing.Parent=workspace
 local meshes={};local failCreate=false
 local service={}
 function service:CreateEditableMesh()
@@ -49,10 +49,10 @@ local game={GetService=function(_,name)if name=='AssetService'then return servic
 __PRODUCTION__
 assert(string.find(first(),'Staged mesh 1/2',1,true))
 assert(#workspace:GetChildren()==1 and workspace:GetChildren()[1]==existing,'Partial model must not be published')
-local stage=storage:FindFirstChild('_synerixcodeMesh_success');assert(stage and stage:GetAttribute('NextMesh')==2)
+local stage=storage:FindFirstChild('_elioMesh_success');assert(stage and stage:GetAttribute('NextMesh')==2)
 local before=#meshes;assert(not pcall(first),'A completed command cannot run twice');assert(#meshes==before and stage:GetAttribute('NextMesh')==2)
 assert(string.find(second(),'Imported 2 real mesh',1,true));assert(#storage:GetChildren()==0)
-local published=workspace:GetChildren()[2];assert(published.Name=='SYNERIXCODE_Imported' and #published:GetChildren()==2)
+local published=workspace:GetChildren()[2];assert(published.Name=='ELIO_Imported' and #published:GetChildren()==2)
 local part=published:GetChildren()[1];assert(part.CFrame.X==22 and part.CFrame.Y==42 and part.CFrame.Z==60)
 assert(part.Size.X==4 and part.Size.Y==4 and part.Size.Z==0.001,'Flat meshes have a valid thickness without altering vertex positions')
 local mesh=part.mesh;assert(mesh.faces[1][1]==0 and mesh.faces[1][2]==1 and mesh.faces[1][3]==2)
@@ -61,7 +61,7 @@ assert(#mesh.colors==1 and #mesh.uvs==3 and #mesh.faceColors[1]==3 and #mesh.fac
 assert(existing.Parent==workspace and not existing.destroyed,'Existing imported models are preserved')
 assert(string.find(failingFirst(),'Staged mesh',1,true));failCreate=true
 assert(not pcall(failingSecond),'Failed Studio import must return an error')
-assert(not storage:FindFirstChild('_synerixcodeMesh_failure'),'Failed transfer removes its own staging model')
+assert(not storage:FindFirstChild('_elioMesh_failure'),'Failed transfer removes its own staging model')
 assert(meshes[#meshes].destroyed,'Failed unowned editable mesh is released')
 assert(#workspace:GetChildren()==2 and existing.Parent==workspace,'Failure cannot damage existing published models')
 print('PASS actual generated Luau mesh transactions: exact geometry/zero-based IDs, UVs/colors, staged publication, no replay and failure cleanup')

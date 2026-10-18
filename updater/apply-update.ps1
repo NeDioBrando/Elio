@@ -28,15 +28,15 @@ function Assert-NoReparse([string]$Path){
 }
 function Is-PackageFile([string]$Relative){
  # Never replace user data, config.json, MCP config, history, logs or workspace.
- if($Relative -match '^synerixcode-Extension[\\/]'){return $true}
- return @('synerixcode.exe','WebView2Loader.dll','bridge-pairing.cjs','Setup-Mcp-Runtime.ps1','Start-synerixcode-Agent.cmd','launch_studio_mcp.py','launch_blender_mcp.py','blender_bridge.ps1','blender_once.ps1','blender_once.py','blender_ops.py','blender_fbx.py','README-RU.md','README.md','SOURCE.txt','UPSTREAM-SOURCE.txt','FORK-CHANGES.md','LICENSE','BRANDING-NOTICE.txt','THIRD-PARTY-NOTICES.txt','THIRD_PARTY_TEMPLATE_LICENSES.txt','TEST-REPORT.md','DESKTOP-CHAT-RU.md','DESKTOP-CHAT-TEST-REPORT.md','UPDATES-RU.md','UPDATES-TEST-REPORT.md','WINDOWS-RUNTIME-NOTICE.txt','SHA256SUMS.txt') -contains $Relative
+ if($Relative -match '^elio-Extension[\\/]'){return $true}
+ return @('elio.exe','WebView2Loader.dll','bridge-pairing.cjs','Setup-Mcp-Runtime.ps1','Start-elio-Agent.cmd','launch_studio_mcp.py','launch_blender_mcp.py','blender_bridge.ps1','blender_once.ps1','blender_once.py','blender_ops.py','blender_fbx.py','README-RU.md','README.md','SOURCE.txt','UPSTREAM-SOURCE.txt','FORK-CHANGES.md','LICENSE','BRANDING-NOTICE.txt','THIRD-PARTY-NOTICES.txt','THIRD_PARTY_TEMPLATE_LICENSES.txt','TEST-REPORT.md','DESKTOP-CHAT-RU.md','DESKTOP-CHAT-TEST-REPORT.md','UPDATES-RU.md','UPDATES-TEST-REPORT.md','ELIO-RU.md','ELIO-TEST-REPORT.md','WINDOWS-RUNTIME-NOTICE.txt','SHA256SUMS.txt') -contains $Relative
 }
 try {
  Note "Validating release $ExpectedVersion"
  Assert-NoReparse $InstallDir
  if((Get-FileHash -LiteralPath $ZipPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $ExpectedSha256){throw 'ZIP digest changed. No installed files were changed.'}
  $install=[IO.Path]::GetFullPath($InstallDir).TrimEnd('\')
- if(!(Test-Path -LiteralPath (Join-Path $install 'synerixcode.exe'))){throw 'Installation EXE not found'}
+ if(!(Test-Path -LiteralPath (Join-Path $install 'elio.exe'))){throw 'Installation EXE not found'}
  New-Item -ItemType Directory -Path $payload -Force | Out-Null
  New-Item -ItemType Directory -Path $backup -Force | Out-Null
  $archive=[IO.Compression.ZipFile]::OpenRead($ZipPath)
@@ -46,8 +46,8 @@ try {
  try {
   foreach($entry in $archive.Entries){
    $name=$entry.FullName.Replace('\','/')
-   if(!$name.StartsWith('synerixcode/',[StringComparison]::Ordinal)){throw 'Unexpected ZIP root'}
-   $relative=$name.Substring('synerixcode/'.Length)
+   if(!$name.StartsWith('elio/',[StringComparison]::Ordinal)){throw 'Unexpected ZIP root'}
+   $relative=$name.Substring('elio/'.Length)
    if(!$relative){continue}
    $segments=$relative.Split('/')
    if($relative.Contains(':') -or $relative.StartsWith('/') -or ($segments | Where-Object {$_ -eq '..' -or $_ -eq '.' -or $_ -match '[\. ]$' -or $_ -match '^(?i:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)'})){throw "Unsafe ZIP path: $name"}
@@ -62,12 +62,12 @@ try {
    [IO.Compression.ZipFileExtensions]::ExtractToFile($entry,$target,$false)
   }
  }finally{$archive.Dispose()}
- $exe=Join-Path $payload 'synerixcode.exe'
- $manifest=Join-Path $payload 'synerixcode-Extension\manifest.json'
+ $exe=Join-Path $payload 'elio.exe'
+ $manifest=Join-Path $payload 'elio-Extension\manifest.json'
  if(!(Test-Path -LiteralPath $exe) -or !(Test-Path -LiteralPath $manifest) -or !(Test-Path -LiteralPath (Join-Path $payload 'WebView2Loader.dll'))){throw 'Incomplete application package'}
  if((Get-Content -LiteralPath $manifest -Raw | ConvertFrom-Json).version -ne $ExpectedVersion){throw 'Extension version mismatch'}
  $versionOutput=& $exe --version
- if($LASTEXITCODE -ne 0 -or $versionOutput -notmatch ('^synerixcode-agent '+[regex]::Escape($ExpectedVersion)+'$')){throw 'Native version mismatch'}
+ if($LASTEXITCODE -ne 0 -or $versionOutput -notmatch ('^elio-agent '+[regex]::Escape($ExpectedVersion)+'$')){throw 'Native version mismatch'}
  $files=@(Get-ChildItem -LiteralPath $payload -Recurse -File | Where-Object {Is-PackageFile $_.FullName.Substring($payload.Length+1)})
  # Prepare backup and write probe before asking an app to exit. Neither Studio
  # nor Blender is ever killed. Config is intentionally excluded from updates.
@@ -94,7 +94,7 @@ try {
  # Receipt path is random, lives under the per-user staging root, and is
  # acknowledged by the new executable only after all bridge ports are bound.
  $quotedReceipt='"'+$Receipt.Replace('"','')+'"'
- $newProcess=Start-Process -FilePath (Join-Path $install 'synerixcode.exe') -ArgumentList @('--update-receipt',$quotedReceipt) -WorkingDirectory $install -PassThru
+ $newProcess=Start-Process -FilePath (Join-Path $install 'elio.exe') -ArgumentList @('--update-receipt',$quotedReceipt) -WorkingDirectory $install -PassThru
  $ready=$false
  for($try=0;$try -lt 90;$try++){
   Start-Sleep -Milliseconds 500
@@ -114,9 +114,9 @@ try {
   $item=$changed[$index];$target=Join-Path $InstallDir $item.Relative
   try{if($item.Existed){Copy-Item -LiteralPath (Join-Path $backup $item.Relative) -Destination $target -Force}else{Remove-Item -LiteralPath $target -Force -ErrorAction SilentlyContinue}}catch{Note ('ROLLBACK FAILED: '+$item.Relative)}
  }
- if($stopped){Start-Process -FilePath (Join-Path $InstallDir 'synerixcode.exe') -WorkingDirectory $InstallDir -ErrorAction SilentlyContinue|Out-Null}
+ if($stopped){Start-Process -FilePath (Join-Path $InstallDir 'elio.exe') -WorkingDirectory $InstallDir -ErrorAction SilentlyContinue|Out-Null}
  [IO.File]::WriteAllText((Join-Path $stage 'result.txt'),'failed '+$failure)
  # The helper is hidden, so surface failure with the OS message dialog.
- if(!$NoDialog){try{Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show("Update failed. Previous files were restored where possible. Log: $log`n$failure",'SynerixCode update')|Out-Null}catch{}}
+ if(!$NoDialog){try{Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show("Update failed. Previous files were restored where possible. Log: $log`n$failure",'Elio update')|Out-Null}catch{}}
  exit 1
 }

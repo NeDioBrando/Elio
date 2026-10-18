@@ -4,11 +4,9 @@ const THEMES = [];
 const POPUP_PALETTES={default:['#5e9fe8','#b8d7ff','#0c1423','94 159 232'],amethyst:['#a571ff','#d7b8ff','#0c0918','165 113 255'],cyan:['#27c1e7','#a5eaff','#041017','39 193 231'],rose:['#f17097','#ffbdd1','#160912','241 112 151'],emerald:['#29c894','#a6f3d1','#05130f','41 200 148'],graphite:['#9caac0','#e0e7f2','#0a0d13','156 170 192'],crimson:['#ef5569','#ffb0bb','#16080c','239 85 105'],ocean:['#4692f6','#a5ceff','#091323','70 146 246'],copper:['#db9066','#f4c4a3','#17110f','219 144 102'],aurora:['#66d3b8','#b4f6e7','#0c151b','102 211 184'],orchid:['#cd89eb','#edc6ff','#150e1c','205 137 235']};
 let popupAppearance={theme:'default',glow:'subtle',gradients:'on'};
 function applyPopupAppearance(value){
- if(value?.theme==="solar")value={...value,theme:"default"};
- popupAppearance=value&&POPUP_PALETTES[value.theme]?value:{theme:'default',glow:'subtle',gradients:'on'};
- const [accent,light,bg,rgb]=POPUP_PALETTES[popupAppearance.theme],root=document.documentElement;
- root.dataset.palette=popupAppearance.theme;root.dataset.glow=popupAppearance.glow||'subtle';root.dataset.gradients=popupAppearance.gradients||'on';
- const vars={'--bg':bg,'--accent':accent,'--accent-light':light,'--text':'#eef4ff','--text-dim':light,'--text-faint':'#96a0b0','--surface':`color-mix(in srgb, ${bg} 89%, ${accent})`,'--surface-2':`color-mix(in srgb, ${bg} 78%, ${accent})`,'--line':`rgb(${rgb} / .24)`,'--glow':popupAppearance.glow==='off'?'transparent':`rgb(${rgb} / ${popupAppearance.glow==='strong'?'.5':'.22'})`};
+ popupAppearance={theme:'default',glow:'off',gradients:'off'};
+ const root=document.documentElement;root.dataset.palette='default';root.dataset.glow='off';root.dataset.gradients='off';
+ const vars={'--bg':'#faf8f3','--accent':'#765c3c','--accent-light':'#4c3e2e','--text':'#302d28','--text-dim':'#71685b','--text-faint':'#756a5a','--surface':'#fffdf8','--surface-2':'#eee6d9','--line':'#d7cbbb','--glow':'transparent'};
  for(const [key,value]of Object.entries(vars))root.style.setProperty(key,value);
 }
 const SUPPORTED_HOSTS = [
@@ -60,7 +58,7 @@ function renderEngine(v) {
   if (rob) rob.classList.toggle("on", !isLocal);
   if (loc) loc.classList.toggle("on",  isLocal);
   if (label) label.textContent = isLocal ? "AgentScript" : "Roblox";
-  if (restart) restart.textContent = isLocal ? "⟳ Restart AgentScript server" : "⟳ Restart Roblox server";
+  if (restart) restart.textContent = isLocal ? "Restart AgentScript server" : "Restart Roblox server";
   if (hintRow) {
     const engEl = document.getElementById("hint-engine");
     if (engEl) engEl.textContent = isLocal ? "your project folder" : "Roblox Studio";
@@ -86,7 +84,7 @@ function renderSettings() {
   const logo = document.getElementById("or-logo");
   if (logo) {
     const names = { night: "Night", "blood-moon": "Blood Moon", sakura: "Sakura", starglaze: "Starglaze", autumn: "Autumn" };
-    logo.textContent = "synerixcode";
+    logo.textContent = "Elio";
   }
   const reasoning = document.getElementById("reasoning-level");
   if (reasoning) reasoning.value = settings.thinking;
@@ -111,7 +109,7 @@ async function loadSettings() {
     const r = await chrome.storage.local.get([
       "rsLanguage", "rsWorkMode", "rsPermMode", "rsTheme", "rsAppearance", "rsSounds", "rsExtraThinking", "rsShowApproach", "rsPlanMode", "rsThinkingLevel", "rsForgeMode", "rsAutoFix", "rsBgMode",
     ]);
-    globalThis.synerixcodeI18n?.setLanguage(r.rsLanguage || 'en');
+    globalThis.elioI18n?.setLanguage(r.rsLanguage || 'en');
     if (THINKING_LEVELS.includes(r.rsThinkingLevel)) settings.thinking = r.rsThinkingLevel;
     if (WORK_MODES.includes(r.rsWorkMode)) settings.workMode = r.rsWorkMode;
     if (PERM_MODES.includes(r.rsPermMode)) settings.permMode = r.rsPermMode;
@@ -166,18 +164,18 @@ async function setFlag(key, field, v) {
 }
 
 function renderPopupVersion(value) {
-  synerixcodeVersion.render(document.getElementById("ver"), chrome.runtime.getManifest().version, value);
+  elioVersion.render(document.getElementById("ver"), chrome.runtime.getManifest().version, value);
 }
 renderPopupVersion(null);
 const popupUpdateHost=document.createElement('div');popupUpdateHost.id='popupUpdateNotice';
 document.body.prepend(popupUpdateHost);
-synerixcodeVersion.mount(popupUpdateHost,{current:chrome.runtime.getManifest().version,
- getStatus:async()=>{const value=await chrome.runtime.sendMessage({type:'rs-update-status'});if(!value?.ok)throw Error(value?.error||'Нет связи с приложением.');renderPopupVersion(value.update);return value.update;},
- invoke:async action=>{const value=await chrome.runtime.sendMessage({type:'rs-update-action',action});if(!value?.ok)throw Error(value?.error||'Не удалось запустить обновление.');return value;}
+elioVersion.mount(popupUpdateHost,{current:chrome.runtime.getManifest().version,
+ getStatus:async()=>{const value=await chrome.runtime.sendMessage({type:'rs-update-status'});if(!value?.ok)throw Error(value?.error||globalThis.elioI18n.t('Start Elio to check and install updates.'));renderPopupVersion(value.update);return value.update;},
+ invoke:async action=>{const value=await chrome.runtime.sendMessage({type:'rs-update-action',action});if(!value?.ok)throw Error(value?.error||globalThis.elioI18n.t('Could not check for updates'));return value;}
 });
 const runHint = document.getElementById("run-hint");
 if (runHint) {
-  runHint.textContent = "synerixcode.exe";
+  runHint.textContent = "elio.exe";
 }
 (async () => {
   try {
@@ -202,7 +200,9 @@ if (runHint) {
   } catch {}
 })();
 
+let elioLastStatus = null;
 function render(s) {
+  elioLastStatus = s;
   const dot = document.getElementById("dot");
   const state = document.getElementById("state");
   const tools = document.getElementById("tools");
@@ -222,12 +222,12 @@ function render(s) {
   const ok = mcpOk && editorOk;
   dot.className = "dot " + (s.connected ? (ok ? "on" : "warn") : "");
   state.classList.toggle("ok", ok);
-  state.textContent = s.connected
+  state.textContent = globalThis.elioI18n.t(s.connected
     ? (ok ? (isLocal ? "Connected — AgentScript is ready" : "Connected — Studio is ready")
         : studioOff ? "Studio MCP is off — enable it in Assistant settings"
         : (isLocal ? "Bridge is up — AgentScript ready" : "Bridge is up — open Studio"))
-    : "Bridge is offline — run synerixcode.exe";
-  tools.textContent = s.connected ? `${s.tools || 0} tools ready` : "Run synerixcode.exe";
+    : "Bridge is offline — run elio.exe");
+  tools.textContent = s.connected ? globalThis.elioI18n.t("{count} tools ready",{count:s.tools||0}) : globalThis.elioI18n.t("Run elio.exe");
   servers.textContent = s.connected
     ? list.map((x) => `${x.alive ? "●" : "○"} ${x.id} (${x.alive ? x.tools + " tools" : "down"})`).join("\n")
     : "";
@@ -265,7 +265,7 @@ document.getElementById("ollama")?.addEventListener("click", async (e) => {
   btn.textContent = "🦙 Ollama";
   btn.disabled = false;
   if (r && !r.ok && /bridge offline/i.test(r.error || "")) {
-    btn.title = "Bridge is offline — run synerixcode.exe first, then this button.";
+    btn.title = "Bridge is offline — run elio.exe first, then this button.";
   }
   chrome.tabs.create({ url: chrome.runtime.getURL("ollama.html") });
   setTimeout(() => { btn.textContent = old; }, 1200);
@@ -331,7 +331,7 @@ bindToggle("tgl-sounds", "rsSounds", "sounds");
 try {
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local" || !changes) return;
-    if(changes.rsLanguage)globalThis.synerixcodeI18n?.setLanguage(changes.rsLanguage.newValue || 'en');
+    if(changes.rsLanguage)globalThis.elioI18n?.setLanguage(changes.rsLanguage.newValue || 'en');
     if(changes.rsAppearance)applyPopupAppearance(changes.rsAppearance.newValue);
     if (changes.rsWorkMode && WORK_MODES.includes(changes.rsWorkMode.newValue)) settings.workMode = changes.rsWorkMode.newValue;
     if (changes.rsPermMode && PERM_MODES.includes(changes.rsPermMode.newValue)) settings.permMode = changes.rsPermMode.newValue;
@@ -350,10 +350,10 @@ try {
 
 getEngine().then(renderEngine);
 try {
-  const locale=globalThis.synerixcodeI18n;
+  const locale=globalThis.elioI18n;
   locale?.mountStatic(document.body);
   locale?.mountPicker(document.getElementById('popup-language-picker'),{value:'en',onChange:async value=>{await chrome.storage.local.set({rsLanguage:value});}});
-  locale?.onChange(value=>{document.documentElement.lang=value;document.documentElement.dir=locale.languages.find(x=>x.code===value).dir;});
+  locale?.onChange(value=>{document.documentElement.lang=value;document.documentElement.dir=locale.languages.find(x=>x.code===value).dir;if(elioLastStatus)render(elioLastStatus);});
 } catch {}
 loadSettings();
 
@@ -362,7 +362,7 @@ chrome.runtime.onMessage.addListener((msg) => {
   if (msg && msg.type === "rs-engine" && msg.engine) renderEngine(msg.engine);
 });
 // Styled, keyboard-accessible effort menu. The original select remains the state/event contract.
-function synerixcodeMountEffortPicker(select){
+function elioMountEffortPicker(select){
  if(!select||select.tagName!=='SELECT')return null;if(select._ultraPicker)return select._ultraPicker;
  const wrap=document.createElement('div');wrap.className='pc-effort-picker';select.before(wrap);wrap.append(select);select.hidden=true;
  const trigger=document.createElement('button');trigger.type='button';trigger.className='pc-effort-trigger';trigger.setAttribute('aria-haspopup','listbox');trigger.setAttribute('aria-expanded','false');
@@ -381,8 +381,10 @@ function synerixcodeMountEffortPicker(select){
  return select._ultraPicker={refresh,close};
 }
 
-synerixcodeMountEffortPicker(document.getElementById("reasoning-level"));
+elioMountEffortPicker(document.getElementById("reasoning-level"));
 
 refresh();
 setInterval(refresh, 2000);
 
+
+globalThis.elioTheme?.mountBrowser(document.getElementById("elio-theme-popup"));

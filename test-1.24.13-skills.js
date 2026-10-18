@@ -4,7 +4,7 @@
 const fs=require('fs'),assert=require('node:assert/strict'),{JSDOM}=require('jsdom');
 (async()=>{
  const dom=new JSDOM('<div id="host"></div>',{runScripts:'outside-only',url:'http://localhost',pretendToBeVisual:true}),w=dom.window;w.TextEncoder=TextEncoder;
- w.eval(fs.readFileSync('core/skills-ui.js','utf8')+';window.Skills=synerixcodeSkillsUI;');
+ w.eval(fs.readFileSync('core/skills-ui.js','utf8')+';window.Skills=elioSkillsUI;');
  const starters=JSON.parse(fs.readFileSync('agent/src/starter-skills-index.json','utf8'));
  const candidate=(id,title)=>({id,title,description:'Candidate from observable tool steps.',domain:'roblox',scope:'',steps:['execute_luau'],pitfalls:[],verification:[],confirmed:false,enabled:false,revision:1,community:false});
  let records=[...starters,candidate('task-1','Back up the full current map, terrain and lighting'),candidate('task-2','Planning project work'),{...candidate('skill-style','Use tabs for indentation'),enabled:true},{id:'global-workflow-x',title:'Shared lesson',description:'auto',domain:'local',scope:'',steps:['x'],pitfalls:[],verification:['y'],confirmed:true,enabled:false,revision:1,community:true}];
@@ -52,7 +52,7 @@ const fs=require('fs'),assert=require('node:assert/strict'),{JSDOM}=require('jsd
  const main=fs.readFileSync('core/main.js','utf8'),config=fs.readFileSync('core/config.js','utf8'),rust=fs.readFileSync('agent/src/skills.rs','utf8');
  assert.match(main,/call action suggest once/);assert.match(main,/user_approved:\{type:'boolean'/);assert.match(main,/enabled:args\.user_approved===true\|\|!!previous\?\.enabled/);
  assert.match(main,/already exists \(id "\+twin\.id/);assert.match(main,/simulator and a battlegrounds game need different structure/);
- assert.match(config,/offer it once with synerixcode_skills action suggest/);
+ assert.match(config,/offer it once with elio_skills action suggest/);
  assert.match(rust,/automatic task candidates are off/);assert.match(rust,/"delete_all"=>/);assert.match(rust,/"favorite"=>/);
  console.log('1.24.13 skills: favourites, delete, delete all and candidate limits pass');
 })().catch(error=>{console.error(error);process.exit(1);});

@@ -176,7 +176,7 @@ const RSProvider = (() => {
   const assistantItems = () => [...safeQueryAll(document, S.assistantItem)];
   const assistantCount = () => assistantItems().length;
   const userCount = () => safeQueryAll(document, S.userItem).length;
-  // Scope to the SITE's composer only: skip synerixcode's own injected UI (the
+  // Scope to the SITE's composer only: skip elio's own injected UI (the
   // settings textarea #rs-set-text in #rs-root). On login/OAuth pages with no
   // site editor this returns null, keeping the "not on a chat page" guard in
   // the send hooks intact (otherwise our own textarea would defeat it and the
@@ -188,7 +188,7 @@ const RSProvider = (() => {
     // Prefer the bottom composer over the inline message-EDIT box. Editing a turn
     // mounts a second .chat-input-editor up in the message list; it precedes the
     // composer in DOM order, so the old "first editor" pick returned it - and
-    // barAnchor() then hugged the fixed synerixcode bar over the editor. The real
+    // barAnchor() then hugged the fixed elio bar over the editor. The real
     // composer lives inside the `.chat-editor` card; the edit box does not.
     return site.find((e) => safeClosest(e, ".chat-editor")) || site[0] || null;
   };
@@ -479,22 +479,22 @@ const RSProvider = (() => {
   }
 
   // Kimi's own agentic mode (see S.currentModelName above) makes the model favor
-  // its built-in tools over the synerixcode command protocol. On K3 the only
+  // its built-in tools over the elio command protocol. On K3 the only
   // remaining signal is the model-selector label.
   function nativeAgentModeOn() {
     const m = safeQuery(document, S.currentModelName);
     // "K3 Swarm" (current) or "…Agent" (older builds). Both make Kimi reach for
-    // its own tooling instead of emitting synerixcode command blocks.
+    // its own tooling instead of emitting elio command blocks.
     return !!(m && /swarm|agent/i.test(safeRead(() => m.textContent, "") || ""));
   }
-  // Visible mode guard for the synerixcode bar (core renderBar reads this every
+  // Visible mode guard for the elio bar (core renderBar reads this every
   // sweep, same mechanism as arena.js's modeWarning). Returns a warning string
   // while Kimi's native Agent mode is on, "" otherwise. The core turns this
   // into a red warning state and disables Start until the user switches it off.
   function modeWarning() {
     if (nativeAgentModeOn())
       return `Switch the model picker off <b>K3 Swarm</b> (pick <b>K3</b> or <b>Instantané</b>) - ` +
-        `Kimi's own agentic mode replaces the synerixcode commands with its native tools and breaks the agent loop.`;
+        `Kimi's own agentic mode replaces the elio commands with its native tools and breaks the agent loop.`;
     return "";
   }
 
@@ -523,8 +523,8 @@ const RSProvider = (() => {
   }
 
   // ── Default the model on a fresh chat ─────────────────────────────────────
-  // Pick a model that actually speaks the synerixcode command protocol, ONCE,
-  // whenever we arrive on an empty chat (page load synerixcode "New Chat"). Not enforced
+  // Pick a model that actually speaks the elio command protocol, ONCE,
+  // whenever we arrive on an empty chat (page load elio "New Chat"). Not enforced
   // every sweep: if the user deliberately switches afterwards on that same empty
   // chat, we leave it - we only re-arm on a transition INTO a new empty chat.
   //
@@ -616,7 +616,7 @@ const RSProvider = (() => {
 
   // ── Image attachment (best effort: paste onto the composer) ──────────────
   function fileFromImage(img, i) {
-    if (typeof synerixcodeMedia !== "undefined") return synerixcodeMedia.fileFrom(img, i);
+    if (typeof elioMedia !== "undefined") return elioMedia.fileFrom(img, i);
     const mime = img.mimeType || "image/jpeg";
     const bin = atob(img.data);
     const arr = new Uint8Array(bin.length);
@@ -798,7 +798,7 @@ const RSProvider = (() => {
     // Confirmed live: Kimi (K2.6) reads attached images - it correctly described
     // a test screenshot's content. So screen_capture is exposed here (see main.js
     // BLOCKED_TOOLS gate); attachImages uploads via the toolkit file input, and
-    // the capture is shown in the core's left-hand synerixcode popup (ui.showImages).
+    // the capture is shown in the core's left-hand elio popup (ui.showImages).
     supportsVision: true,
     timings,
     // Reasoning-area selector, exported so the CORE's raw-command-visible probes
@@ -822,13 +822,13 @@ const RSProvider = (() => {
     // Turns accumulate and are not virtualized for normal lengths, so
     // assistantCount() reliably increases for every reply.
     reliableCounts: true,
-    // Shown as a permanent, non-intrusive notice in the synerixcode panel.
+    // Shown as a permanent, non-intrusive notice in the elio panel.
     // Kimi sometimes reaches for its OWN built-in/native tools (web search, code
-    // runner, etc.) instead of emitting the synerixcode command blocks that drive
+    // runner, etc.) instead of emitting the elio command blocks that drive
     // Roblox Studio - model behavior, not something the prompt fully prevents.
     unstableWarning:
       "Kimi sometimes uses its own native tools instead of the Roblox commands (model behavior, not the extension). " +
-      "If it stops acting in Roblox Studio and answers in plain text or runs its own tools, remind it to use the synerixcode commands - or start a new session.",
+      "If it stops acting in Roblox Studio and answers in plain text or runs its own tools, remind it to use the elio commands - or start a new session.",
     init({ diag: d } = {}) { if (d) diag = d; },
     // turns
     allItems, isUserItem, isAssistantItem, itemText, classifyText,

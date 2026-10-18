@@ -14,7 +14,7 @@ function ast(source) {
   });
 }
 const report = [];
-for (const base of [root,path.join(root,'synerixcode-Extension')]) {
+for (const base of [root,path.join(root,'elio-Extension')]) {
   const paths = ['background.js','popup.js','ollama-page.js'];
   for (const folder of ['core','providers']) for (const name of fs.readdirSync(path.join(base,folder))) if (name.endsWith('.js')) paths.push(folder+'/'+name);
   for (const name of paths) {

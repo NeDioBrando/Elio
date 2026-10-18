@@ -26,14 +26,14 @@ pub async fn command_at(host: &str, port: u16, kind: &str, params: Value, limit:
                 Err(error) => return Err(error.into()),
             }
         }
-    }).await.map_err(|_| anyhow::anyhow!("Blender did not answer {kind} within {} seconds. Run Blender normally with its visible GUI (not headless / -b), keep it responsive, close blocking dialogs, then stop and start the MCP server in Blender (N → Blender MCP → Start MCP Server). If a fresh scene check still fails, update the official Blender MCP addon: older addons can accept sockets without scheduling commands reliably on Blender's main thread. A running MCP process or tool list alone does not confirm Blender is connected. A timed-out edit may still execute later; inspect the scene before retrying. synerixcode did not replay the command.", limit.as_secs()))?
+    }).await.map_err(|_| anyhow::anyhow!("Blender did not answer {kind} within {} seconds. Run Blender normally with its visible GUI (not headless / -b), keep it responsive, close blocking dialogs, then stop and start the MCP server in Blender (N → Blender MCP → Start MCP Server). If a fresh scene check still fails, update the official Blender MCP addon: older addons can accept sockets without scheduling commands reliably on Blender's main thread. A running MCP process or tool list alone does not confirm Blender is connected. A timed-out edit may still execute later; inspect the scene before retrying. elio did not replay the command.", limit.as_secs()))?
 }
 
 pub async fn command(kind: &str, params: Value, limit: Duration) -> anyhow::Result<Value> {
     static COMMAND_LOCK: once_cell::sync::Lazy<tokio::sync::Mutex<()>> = once_cell::sync::Lazy::new(||tokio::sync::Mutex::new(()));
     // Several chats/browsers can share one Blender. Wait briefly for the active
     // command instead of failing immediately; commands are never repeated.
-    let _guard=tokio::time::timeout(Duration::from_secs(45),COMMAND_LOCK.lock()).await.map_err(|_|anyhow::anyhow!("Blender is processing another synerixcode command. Wait for it to finish before running a scene check."))?;
+    let _guard=tokio::time::timeout(Duration::from_secs(45),COMMAND_LOCK.lock()).await.map_err(|_|anyhow::anyhow!("Blender is processing another elio command. Wait for it to finish before running a scene check."))?;
     let config=crate::mcp_addons::read_config();
     let spec=config.servers.get("blender");
     let host = spec.and_then(|s|s.env.get("BLENDER_HOST")).cloned().or_else(||std::env::var("BLENDER_HOST").ok()).unwrap_or_else(|| "127.0.0.1".into());
@@ -51,7 +51,7 @@ pub async fn post(Json(request): Json<Value>) -> Json<Value> {
     let seconds = if kind == "get_scene_info" {8} else {request["timeout_seconds"].as_u64().unwrap_or(120).clamp(1,180)};
     match command(kind, request.get("params").cloned().unwrap_or_else(||json!({})), Duration::from_secs(seconds)).await {
         Ok(value) => Json(json!({"ok":true,"blender":true,"data":value})),
-        Err(error) => Json(json!({"ok":false,"blender":false,"error":format!("{error}. Check that the Blender MCP addon is enabled and its server is started on the same host and port as synerixcode (default 127.0.0.1:9876).")})),
+        Err(error) => Json(json!({"ok":false,"blender":false,"error":format!("{error}. Check that the Blender MCP addon is enabled and its server is started on the same host and port as elio (default 127.0.0.1:9876).")})),
     }
 }
 

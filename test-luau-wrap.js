@@ -19,7 +19,7 @@ ok("long-string delimiter avoids payload closer", lit.startsWith("[=") && lit.in
 ok("payload is not JSON-quoted", !lit.includes(JSON.stringify(code)));
 
 const first = wrapLuauChunk(code, 0, 3);
-ok("first chunk stores into _synerixcodeLuau Buf", first.includes("_synerixcodeLuau") && first.includes("m.Value=") && first.includes("chunk 1/3"));
+ok("first chunk stores into _elioLuau Buf", first.includes("_elioLuau") && first.includes("m.Value=") && first.includes("chunk 1/3"));
 ok("first chunk has no JSONDecode", !first.includes("JSONDecode"));
 
 const mid = wrapLuauChunk("more", 1, 3);

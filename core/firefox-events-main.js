@@ -1,13 +1,13 @@
-// synerixcode Firefox page-world transfer helper (Firefox package only).
+// elio Firefox page-world transfer helper (Firefox package only).
 // Firefox hides DataTransfer text/files created by an extension content script
 // from page handlers. The isolated shim forwards exactly the event it was about
 // to dispatch; this helper rebuilds it in the page world and dispatches it on the
 // same target. It adds no capability: pages can already dispatch these events.
 (() => {
   "use strict";
-  if (window.__synerixcodeFirefoxEvents) return;
-  try { Object.defineProperty(window, "__synerixcodeFirefoxEvents", { value: true }); } catch { return; }
-  const KEY = "synerixcode-firefox-dispatch", RESULT = "data-synerixcode-firefox-result";
+  if (window.__elioFirefoxEvents) return;
+  try { Object.defineProperty(window, "__elioFirefoxEvents", { value: true }); } catch { return; }
+  const KEY = "elio-firefox-dispatch", RESULT = "data-elio-firefox-result";
   const transfers = new Map();
   const transferFor = (detail) => {
     let dt = transfers.get(detail.id);

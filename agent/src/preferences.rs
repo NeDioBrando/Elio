@@ -5,9 +5,11 @@ use std::sync::RwLock;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct DesktopPreferences {
-    /// synerixcode interface language only; never used to rewrite AI prompts or tool arguments.
+    /// elio interface language only; never used to rewrite AI prompts or tool arguments.
     #[serde(rename = "rsLanguage", deserialize_with = "deserialize_language")]
     pub language: String,
+    #[serde(rename = "rsColorMode")]
+    pub color_mode: String,
     #[serde(rename = "rs-engine")]
     pub engine: String,
     #[serde(rename = "rsWorkMode")]
@@ -77,6 +79,7 @@ impl Default for DesktopPreferences {
     fn default() -> Self {
         Self {
             language: "en".to_string(),
+            color_mode: "light".to_string(),
             engine: "roblox".to_string(),
             work_mode: "balanced".to_string(),
             perm_mode: "sandbox".to_string(),
@@ -120,6 +123,7 @@ impl DesktopPreferences {
         self.tool_budget=self.tool_budget.min(1000);self.task_minutes=self.task_minutes.min(240);
         self.command_cooldown=if self.command_cooldown.is_finite(){(self.command_cooldown.clamp(0.0,120.0)*10.0).round()/10.0}else{0.0};
         if !matches!(self.stop_mode.as_str(),"safe"|"immediate") {self.stop_mode="immediate".into();}
+        if !matches!(self.color_mode.as_str(), "light" | "dark") {self.color_mode="light".into();}
         if let Some(value) = &mut self.appearance {
             if value.theme=="solar" {value.theme="default".into();}
             if !matches!(value.theme.as_str(), "default" | "amethyst" | "cyan" | "rose" | "emerald" | "graphite" | "crimson" | "ocean" | "copper" | "aurora" | "orchid") { value.theme = "default".into(); }
@@ -221,12 +225,12 @@ impl PreferencesStore {
 
 fn settings_path() -> PathBuf {
     #[cfg(target_os = "macos")]
-    { return crate::platform::configuration_root().join("synerixcode-settings.json"); }
+    { return crate::platform::configuration_root().join("elio-settings.json"); }
     #[cfg(not(target_os = "macos"))]
     std::env::current_exe()
         .ok()
-        .and_then(|p| p.parent().map(|d| d.join("synerixcode-settings.json")))
-        .unwrap_or_else(|| PathBuf::from("synerixcode-settings.json"))
+        .and_then(|p| p.parent().map(|d| d.join("elio-settings.json")))
+        .unwrap_or_else(|| PathBuf::from("elio-settings.json"))
 }
 
 
@@ -244,7 +248,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap_or_default()
             .as_nanos();
-        std::env::temp_dir().join(format!("synerixcode-settings-{}-{nonce}-{sequence}.json", std::process::id()))
+        std::env::temp_dir().join(format!("elio-settings-{}-{nonce}-{sequence}.json", std::process::id()))
     }
 
     #[test]
@@ -432,4 +436,19 @@ mod tests {
 
         let _ = std::fs::remove_file(path);
     }
+    #[test]
+    fn elio_color_mode_persists_and_rejects_unknown() {
+        let root=temp_settings_path();
+        let store=PreferencesStore::load_from(root.clone());
+        assert_eq!(store.snapshot().color_mode,"light");
+        store.patch(serde_json::json!({"rsColorMode":"dark"})).unwrap();
+        assert_eq!(store.snapshot().color_mode,"dark");
+        drop(store);
+        let reopened=PreferencesStore::load_from(root.clone());
+        assert_eq!(reopened.snapshot().color_mode,"dark");
+        reopened.patch(serde_json::json!({"rsColorMode":"invalid"})).unwrap();
+        assert_eq!(reopened.snapshot().color_mode,"light");
+        let _=std::fs::remove_file(root);
+    }
+
 }

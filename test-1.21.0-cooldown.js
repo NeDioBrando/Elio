@@ -8,10 +8,10 @@ const read = p => fs.readFileSync(path.join(root, p), 'utf8');
 
 (async () => {
   const main = read('core/main.js');
-  assert(main === read('synerixcode-Extension/core/main.js'), 'root and extension main.js match');
+  assert(main === read('elio-Extension/core/main.js'), 'root and extension main.js match');
   try { new vm.Script(main, { filename: 'main.js' }); assert(true, 'main.js compiles'); } catch (e) { assert(false, 'main.js compiles: ' + e.message); }
   const bg = read('background.js');
-  assert(bg === read('synerixcode-Extension/background.js'), 'root and extension background.js match');
+  assert(bg === read('elio-Extension/background.js'), 'root and extension background.js match');
   try { new vm.Script(bg, { filename: 'background.js' }); assert(true, 'background.js compiles'); } catch (e) { assert(false, 'background.js compiles: ' + e.message); }
   assert(/"rsContinuationOffer",\s*"rsCommandCooldown",/.test(bg), 'cooldown syncs with the desktop app');
   assert(/"rsVisualCheck",\s*"rsContinuationOffer",/.test(bg), 'existing sync order kept');

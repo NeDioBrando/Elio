@@ -40,7 +40,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
 server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), Handler)
 threading.Thread(target=server.serve_forever, daemon=True).start()
 try:
-    with tempfile.TemporaryDirectory(prefix='synerixcode-runtime-') as temp:
+    with tempfile.TemporaryDirectory(prefix='elio-runtime-') as temp:
         import os
         root = Path(temp)
         env = os.environ.copy()
@@ -61,7 +61,7 @@ try:
             return result
         for runtime, name, key in [('npx', 'node-22.22.0', '/node.zip'), ('uvx', 'uv-0.12.21', '/uv.zip')]:
             run(runtime)
-            dest = Path(env['LOCALAPPDATA']) / 'synerixcode' / 'runtimes' / name
+            dest = Path(env['LOCALAPPDATA']) / 'elio' / 'runtimes' / name
             assert (dest / '.complete').is_file()
             assert counts[key] == 1
             run(runtime)
@@ -72,7 +72,7 @@ try:
         script.write_text(bad_hash)
         result = run('uvx', 1)
         assert 'checksum mismatch' in result.stderr
-        cache = Path(env['LOCALAPPDATA']) / 'synerixcode' / 'runtimes'
+        cache = Path(env['LOCALAPPDATA']) / 'elio' / 'runtimes'
         assert not (cache / 'uv-0.12.21').exists()
         assert not list(cache.glob('.setup-*'))
         script.write_text(prepared)

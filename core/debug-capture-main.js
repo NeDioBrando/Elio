@@ -16,11 +16,11 @@
     let detail;
     try { detail = JSON.stringify(entry); } catch { return; }
     if (!ready) { pending.push(detail); if (pending.length > 60) pending.shift(); return; }
-    try { document.dispatchEvent(new CustomEvent("synerixcode:site-log", { detail })); } catch {}
+    try { document.dispatchEvent(new CustomEvent("elio:site-log", { detail })); } catch {}
   }
-  document.addEventListener("synerixcode:site-log-ready", () => {
+  document.addEventListener("elio:site-log-ready", () => {
     ready = true;
-    for (const detail of pending.splice(0)) { try { document.dispatchEvent(new CustomEvent("synerixcode:site-log", { detail })); } catch {} }
+    for (const detail of pending.splice(0)) { try { document.dispatchEvent(new CustomEvent("elio:site-log", { detail })); } catch {} }
   });
   window.addEventListener("error", (event) => {
     try {
@@ -32,7 +32,7 @@
         return;
       }
       const file = String(event.filename || ""), stack = String(event.error && event.error.stack || "");
-      if (EXT_RE.test(file) || EXT_RE.test(stack)) return; // synerixcode's own: isolated capture
+      if (EXT_RE.test(file) || EXT_RE.test(stack)) return; // elio's own: isolated capture
       if (/ResizeObserver loop/i.test(String(event.message || ""))) return; // benign browser notice
       emit({ level: "error", kind: "error", text: String(event.message || "Script error") + (stack ? "\n" + stack.split("\n").slice(1, 4).join("\n") : ""),
         file: file ? clean(file) + ":" + (event.lineno || 0) + ":" + (event.colno || 0) : "" });

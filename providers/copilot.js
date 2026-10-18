@@ -671,7 +671,7 @@ const RSProvider = (() => {
     if (!text || text.length <= SEND_MAX) return text;
     const omitted = text.length - SEND_MAX;
     const marker =
-      `\n\n[…synerixcode: result truncated to fit Copilot's input limit - ` +
+      `\n\n[…elio: result truncated to fit Copilot's input limit - ` +
       `${omitted} of ${text.length} characters omitted…]\n\n`;
     const budget = SEND_MAX - marker.length;
     const headLen = Math.floor(budget * 0.85);

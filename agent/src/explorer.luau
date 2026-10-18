@@ -1,9 +1,9 @@
--- synerixcode Explorer: stable object handles, no attributes added to the place.
+-- elio Explorer: stable object handles, no attributes added to the place.
 local Http = game:GetService('HttpService')
 local Run = game:GetService('RunService')
 if Run:IsRunning() then error('Stop Play mode before using Explorer.') end
 local request = Http:JSONDecode(__REQUEST__)
-local key = '__synerixcodeExplorerV1'
+local key = '__elioExplorerV1'
 local state = rawget(_G, key)
 if not state or state.game ~= game or state.place ~= game.PlaceId then
     state = {game=game, place=game.PlaceId, session=Http:GenerateGUID(false), next=0,
@@ -82,7 +82,7 @@ elseif request.action == 'read' or request.action == 'write' then
         if request.action == 'write' then
             local conflict=false
             local history=game:GetService('ChangeHistoryService')
-            local recording=history:TryBeginRecording('synerixcodeExplorer', 'Edit '..object.Name)
+            local recording=history:TryBeginRecording('elioExplorer', 'Edit '..object.Name)
             if not recording then error('Studio cannot record this edit. Finish the current operation first.') end
             local ok, message=pcall(function()
                 editor:UpdateSourceAsync(object, function(current)
@@ -110,7 +110,7 @@ elseif request.action == 'read' or request.action == 'write' then
             end
             for name in pairs(request.properties) do if current[name]==nil then error('Unsupported property '..name..'.') end end
             local history=game:GetService('ChangeHistoryService')
-            local recording=history:TryBeginRecording('synerixcodeExplorerProperties','Edit '..object.Name)
+            local recording=history:TryBeginRecording('elioExplorerProperties','Edit '..object.Name)
             if not recording then error('Studio cannot record this edit.') end
             local ok,message=pcall(function() for _,change in ipairs(changes) do object[change.name]=change.after end end)
             if not ok then for index=#changes,1,-1 do local change=changes[index];pcall(function() object[change.name]=change.before end) end end
@@ -120,4 +120,4 @@ elseif request.action == 'read' or request.action == 'write' then
         output.properties=properties(object);output.name=object.Name;output.path=object:GetFullName()
     end
 else error('Unknown Explorer action.') end
-return 'SYNERIXCODE_EXPLORER:'..Http:JSONEncode(output)
+return 'ELIO_EXPLORER:'..Http:JSONEncode(output)

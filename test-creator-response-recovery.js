@@ -11,7 +11,7 @@ const begin=main.slice(main.indexOf('  let latestRequestCache=null;'),main.index
 (async()=>{
  let label='Enhanced cow brief',engine='roblox';
  const A={sessionGen:1,creatorPreEnhanced:{text:label,raw:'low poly cow',context:JSON.stringify(['chat','roblox',1])}};
- const context=vm.createContext({synerixcodeActivity:require('./core/activity'),synerixcodeChecklist:require('./core/checklist'),activity:require('./core/activity').create(),A,P:{allItems:()=>[{text:label,cloneNode(){return {text:this.text,querySelectorAll:()=>[]};}}],isUserItem:()=>true,itemText:i=>i.text,conversationKey:()=> 'chat',id:'fixture'},RS:{SYS_MARKER:'system-marker'},RSParse:{isInjectedFeedback:()=>false},activeEngine:()=>engine,refreshPersonalMemory:async()=>{},recallEngram:()=>{},engramScope:()=> 'chat:fixture',synerixcodeChatCreators:C,synerixcodeTemplates:{reference:()=>''},bg:async()=>({ok:true,id:'checkpoint'}),ui:{toast:()=>{}}});
+ const context=vm.createContext({elioActivity:require('./core/activity'),elioChecklist:require('./core/checklist'),activity:require('./core/activity').create(),A,P:{allItems:()=>[{text:label,cloneNode(){return {text:this.text,querySelectorAll:()=>[]};}}],isUserItem:()=>true,itemText:i=>i.text,conversationKey:()=> 'chat',id:'fixture'},RS:{SYS_MARKER:'system-marker'},RSParse:{isInjectedFeedback:()=>false},activeEngine:()=>engine,refreshPersonalMemory:async()=>{},recallEngram:()=>{},engramScope:()=> 'chat:fixture',elioChatCreators:C,elioTemplates:{reference:()=>''},bg:async()=>({ok:true,id:'checkpoint'}),ui:{toast:()=>{}}});
  vm.runInContext(begin+';this.begin=beginTaskCheckpoint',context);
  await context.begin();
  assert.equal(A.creatorPreEnhanced,null);assert.equal(A.creatorTask,true);assert.equal(A.taskRequest,'low poly cow');

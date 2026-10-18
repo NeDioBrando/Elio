@@ -7,19 +7,19 @@ pub fn installation_root_at(executable:&Path)->PathBuf {
     }
     executable.parent().unwrap_or_else(||Path::new(".")).to_owned()
 }
-pub fn is_installation_root(root:&Path)->bool {root.join("manifest.json").is_file()||root.join("synerixcode-Extension/manifest.json").is_file()}
+pub fn is_installation_root(root:&Path)->bool {root.join("manifest.json").is_file()||root.join("elio-Extension/manifest.json").is_file()}
 /// macOS Gatekeeper "App Translocation" runs a quarantined app from a random
-/// read-only copy (/private/var/folders/.../AppTranslocation/<id>/d/synerixcode.app)
-/// that contains only the .app, so its parent has no synerixcode files. The same
-/// happens when only synerixcode.app is dragged to /Applications.
+/// read-only copy (/private/var/folders/.../AppTranslocation/<id>/d/elio.app)
+/// that contains only the .app, so its parent has no elio files. The same
+/// happens when only elio.app is dragged to /Applications.
 pub fn is_translocated(executable:&Path)->bool {executable.components().any(|part|part.as_os_str()=="AppTranslocation")}
-/// Prefer the folder around the running app; when that is not a synerixcode
+/// Prefer the folder around the running app; when that is not a elio
 /// installation, fall back to the folder recorded by the launch scripts or an
 /// earlier normal launch, provided it still contains a complete installation.
 pub fn resolve_installation_root(executable:&Path,recorded:Option<PathBuf>)->PathBuf {
     let direct=installation_root_at(executable);
     if is_installation_root(&direct) { return direct; }
-    match recorded { Some(root) if root.is_absolute()&&is_installation_root(&root)&&root.join("synerixcode.app").is_dir() => root, _ => direct }
+    match recorded { Some(root) if root.is_absolute()&&is_installation_root(&root)&&root.join("elio.app").is_dir() => root, _ => direct }
 }
 #[cfg(target_os="macos")]
 fn root_record()->PathBuf {configuration_root().join("install-root")}
@@ -48,8 +48,8 @@ pub fn remember_installation_root() {
         .stdin(std::process::Stdio::null()).stdout(std::process::Stdio::null()).stderr(std::process::Stdio::null()).spawn();
 }
 #[cfg(target_os="macos")]
-pub fn configuration_root()->PathBuf {PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join("Library/Application Support/synerixcode")}
-#[cfg(test)]mod tests{use super::*;#[test]fn bundle_root_is_outside_signed_app(){assert_eq!(installation_root_at(Path::new("/Applications/synerixcode/synerixcode.app/Contents/MacOS/synerixcode")),Path::new("/Applications/synerixcode"));assert_eq!(installation_root_at(Path::new("/opt/synerixcode/synerixcode")),Path::new("/opt/synerixcode"));}}
+pub fn configuration_root()->PathBuf {PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join("Library/Application Support/elio")}
+#[cfg(test)]mod tests{use super::*;#[test]fn bundle_root_is_outside_signed_app(){assert_eq!(installation_root_at(Path::new("/Applications/elio/elio.app/Contents/MacOS/elio")),Path::new("/Applications/elio"));assert_eq!(installation_root_at(Path::new("/opt/elio/elio")),Path::new("/opt/elio"));}}
 
 #[cfg(target_os="macos")]
 pub fn prepare_application_path() {
@@ -62,31 +62,31 @@ pub fn prepare_application_path() {
 
 #[cfg(test)] mod translocation_tests {
     use super::*;
-    fn install(root:&Path){std::fs::create_dir_all(root.join("synerixcode.app/Contents/MacOS")).unwrap();std::fs::write(root.join("manifest.json"),"{}").unwrap();}
+    fn install(root:&Path){std::fs::create_dir_all(root.join("elio.app/Contents/MacOS")).unwrap();std::fs::write(root.join("manifest.json"),"{}").unwrap();}
     #[test] fn translocated_launch_uses_recorded_installation() {
-        let base=std::env::temp_dir().join(format!("synerixcode-transloc-{}",std::process::id()));let _=std::fs::remove_dir_all(&base);
-        let real=base.join("Downloads/synerixcode");install(&real);
-        let exe=base.join("private/var/folders/x/T/AppTranslocation/ABC/d/synerixcode.app/Contents/MacOS/synerixcode");std::fs::create_dir_all(exe.parent().unwrap()).unwrap();
+        let base=std::env::temp_dir().join(format!("elio-transloc-{}",std::process::id()));let _=std::fs::remove_dir_all(&base);
+        let real=base.join("Downloads/elio");install(&real);
+        let exe=base.join("private/var/folders/x/T/AppTranslocation/ABC/d/elio.app/Contents/MacOS/elio");std::fs::create_dir_all(exe.parent().unwrap()).unwrap();
         assert!(is_translocated(&exe));
         assert_eq!(resolve_installation_root(&exe,Some(real.clone())),real);
         // Without a usable record the original location is reported unchanged.
         assert_eq!(resolve_installation_root(&exe,None),base.join("private/var/folders/x/T/AppTranslocation/ABC/d"));
         assert_eq!(resolve_installation_root(&exe,Some(base.join("missing"))),base.join("private/var/folders/x/T/AppTranslocation/ABC/d"));
-        assert_eq!(resolve_installation_root(&exe,Some(PathBuf::from("relative/synerixcode"))),base.join("private/var/folders/x/T/AppTranslocation/ABC/d"));
+        assert_eq!(resolve_installation_root(&exe,Some(PathBuf::from("relative/elio"))),base.join("private/var/folders/x/T/AppTranslocation/ABC/d"));
         std::fs::remove_dir_all(base).unwrap();
     }
     #[test] fn normal_launch_ignores_record() {
-        let base=std::env::temp_dir().join(format!("synerixcode-normal-{}",std::process::id()));let _=std::fs::remove_dir_all(&base);
+        let base=std::env::temp_dir().join(format!("elio-normal-{}",std::process::id()));let _=std::fs::remove_dir_all(&base);
         let a=base.join("A");let b=base.join("B");install(&a);install(&b);
-        let exe=a.join("synerixcode.app/Contents/MacOS/synerixcode");
+        let exe=a.join("elio.app/Contents/MacOS/elio");
         assert!(!is_translocated(&exe));
         assert_eq!(resolve_installation_root(&exe,Some(b)),a);
         std::fs::remove_dir_all(base).unwrap();
     }
     #[test] fn app_moved_to_applications_uses_record() {
-        let base=std::env::temp_dir().join(format!("synerixcode-moved-{}",std::process::id()));let _=std::fs::remove_dir_all(&base);
-        let real=base.join("synerixcode");install(&real);
-        let exe=base.join("Applications/synerixcode.app/Contents/MacOS/synerixcode");std::fs::create_dir_all(exe.parent().unwrap()).unwrap();
+        let base=std::env::temp_dir().join(format!("elio-moved-{}",std::process::id()));let _=std::fs::remove_dir_all(&base);
+        let real=base.join("elio");install(&real);
+        let exe=base.join("Applications/elio.app/Contents/MacOS/elio");std::fs::create_dir_all(exe.parent().unwrap()).unwrap();
         assert_eq!(resolve_installation_root(&exe,Some(real.clone())),real);
         std::fs::remove_dir_all(base).unwrap();
     }

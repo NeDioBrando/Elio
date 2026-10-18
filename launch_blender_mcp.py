@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """HTTP shim: Chrome (127.0.0.1:17617) -> blender-mcp addon TCP 9876.
 
-synerixcode.exe cannot spawn custom MCP servers (add_server is stubbed). The
+elio.exe cannot spawn custom MCP servers (add_server is stubbed). The
 blender-mcp addon already opens a JSON socket inside Blender; a Chrome
 extension cannot speak raw TCP. This stdlib-only process is the hop.
 
@@ -23,8 +23,8 @@ from typing import Any
 from urllib.error import URLError
 from urllib.request import urlopen
 
-HTTP_HOST = os.environ.get("SYNERIXCODE_BLENDER_HTTP_HOST", "127.0.0.1")
-HTTP_PORT = int(os.environ.get("SYNERIXCODE_BLENDER_HTTP_PORT", "17617"))
+HTTP_HOST = os.environ.get("ELIO_BLENDER_HTTP_HOST", "127.0.0.1")
+HTTP_PORT = int(os.environ.get("ELIO_BLENDER_HTTP_PORT", "17617"))
 BLEND_HOST = os.environ.get("BLENDER_HOST", "127.0.0.1")
 BLEND_PORT = int(os.environ.get("BLENDER_PORT", "9876"))
 HEALTH_URL = f"http://{HTTP_HOST}:{HTTP_PORT}/health"
@@ -112,7 +112,7 @@ def blender_command(command_type: str, params: dict[str, Any] | None = None, tim
         )
 
 
-_SHOT_CODE = "import bpy, json, os, hashlib, time\nFP = {fp!r}\nMAX = {mx}\nres = {{'filepath': FP}}\nwin = area = reg = None\nfor w in bpy.context.window_manager.windows:\n    for a in w.screen.areas:\n        if a.type == 'VIEW_3D' and area is None:\n            for r in a.regions:\n                if r.type == 'WINDOW': win, area, reg = w, a, r\nif area is None: raise RuntimeError('No 3D Viewport is open in Blender, so there is nothing to capture.')\nspace = area.spaces.active; rv3d = space.region_3d\nif os.path.exists(FP): os.remove(FP)\nW, H = reg.width, reg.height\ns = min(1.0, MAX / float(max(W, H)))\nW2, H2 = max(64, int(W * s)), max(64, int(H * s))\ntry:\n    import gpu\n    off = gpu.types.GPUOffScreen(W2, H2)\n    try:\n        try: off.draw_view3d(bpy.context.scene, bpy.context.view_layer, space, reg, rv3d.view_matrix, rv3d.window_matrix, do_color_management=True)\n        except TypeError: off.draw_view3d(bpy.context.scene, bpy.context.view_layer, space, reg, rv3d.view_matrix, rv3d.window_matrix)\n        with off.bind():\n            buf = gpu.state.active_framebuffer_get().read_color(0, 0, W2, H2, 4, 0, 'UBYTE')\n    finally:\n        off.free()\n    buf.dimensions = W2 * H2 * 4\n    try:\n        import numpy as np\n        px = (np.array(buf, dtype=np.float32) / 255.0)\n        px[3::4] = 1.0\n        flat = px\n    except Exception:\n        flat = [v / 255.0 for v in buf]\n        for i in range(3, len(flat), 4): flat[i] = 1.0\n    img = bpy.data.images.new('_synerixcode_shot', W2, H2, alpha=True)\n    try:\n        img.pixels.foreach_set(flat)\n        img.filepath_raw = FP; img.file_format = 'PNG'; img.save()\n    finally:\n        bpy.data.images.remove(img)\n    res['method'] = 'offscreen'\nexcept Exception as e:\n    res['offscreen_error'] = str(e)[:200]\n    with bpy.context.temp_override(window=win, area=area, region=reg):\n        try: bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)\n        except Exception: pass\n        bpy.ops.screen.screenshot_area(filepath=FP)\n    res['method'] = 'screenshot_area'\nif not os.path.isfile(FP): raise RuntimeError('Blender did not write the capture file ' + FP)\nraw = open(FP, 'rb').read()\nres['bytes'] = len(raw); res['sha1'] = hashlib.sha1(raw).hexdigest()[:12]; res['size'] = [W2, H2]\nres['taken'] = time.strftime('%H:%M:%S')\nprint('SYNERIXCODE_SHOT_JSON:' + json.dumps(res))"
+_SHOT_CODE = "import bpy, json, os, hashlib, time\nFP = {fp!r}\nMAX = {mx}\nres = {{'filepath': FP}}\nwin = area = reg = None\nfor w in bpy.context.window_manager.windows:\n    for a in w.screen.areas:\n        if a.type == 'VIEW_3D' and area is None:\n            for r in a.regions:\n                if r.type == 'WINDOW': win, area, reg = w, a, r\nif area is None: raise RuntimeError('No 3D Viewport is open in Blender, so there is nothing to capture.')\nspace = area.spaces.active; rv3d = space.region_3d\nif os.path.exists(FP): os.remove(FP)\nW, H = reg.width, reg.height\ns = min(1.0, MAX / float(max(W, H)))\nW2, H2 = max(64, int(W * s)), max(64, int(H * s))\ntry:\n    import gpu\n    off = gpu.types.GPUOffScreen(W2, H2)\n    try:\n        try: off.draw_view3d(bpy.context.scene, bpy.context.view_layer, space, reg, rv3d.view_matrix, rv3d.window_matrix, do_color_management=True)\n        except TypeError: off.draw_view3d(bpy.context.scene, bpy.context.view_layer, space, reg, rv3d.view_matrix, rv3d.window_matrix)\n        with off.bind():\n            buf = gpu.state.active_framebuffer_get().read_color(0, 0, W2, H2, 4, 0, 'UBYTE')\n    finally:\n        off.free()\n    buf.dimensions = W2 * H2 * 4\n    try:\n        import numpy as np\n        px = (np.array(buf, dtype=np.float32) / 255.0)\n        px[3::4] = 1.0\n        flat = px\n    except Exception:\n        flat = [v / 255.0 for v in buf]\n        for i in range(3, len(flat), 4): flat[i] = 1.0\n    img = bpy.data.images.new('_elio_shot', W2, H2, alpha=True)\n    try:\n        img.pixels.foreach_set(flat)\n        img.filepath_raw = FP; img.file_format = 'PNG'; img.save()\n    finally:\n        bpy.data.images.remove(img)\n    res['method'] = 'offscreen'\nexcept Exception as e:\n    res['offscreen_error'] = str(e)[:200]\n    with bpy.context.temp_override(window=win, area=area, region=reg):\n        try: bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)\n        except Exception: pass\n        bpy.ops.screen.screenshot_area(filepath=FP)\n    res['method'] = 'screenshot_area'\nif not os.path.isfile(FP): raise RuntimeError('Blender did not write the capture file ' + FP)\nraw = open(FP, 'rb').read()\nres['bytes'] = len(raw); res['sha1'] = hashlib.sha1(raw).hexdigest()[:12]; res['size'] = [W2, H2]\nres['taken'] = time.strftime('%H:%M:%S')\nprint('ELIO_SHOT_JSON:' + json.dumps(res))"
 
 
 def _maybe_screenshot(result: Any) -> dict[str, Any] | None:
@@ -148,7 +148,7 @@ def dispatch_tool(name: str, arguments: dict[str, Any] | None) -> dict[str, Any]
         # 1.24.14: the addon's own screenshot copies the last drawn framebuffer,
         # which is stale while Blender's window is in the background. Render the
         # 3D View off-screen from the live scene into a unique file instead.
-        tmp = os.path.join(tempfile.gettempdir(), f"synerixcode_blender_shot_{os.getpid()}_{time.time_ns()}.png")
+        tmp = os.path.join(tempfile.gettempdir(), f"elio_blender_shot_{os.getpid()}_{time.time_ns()}.png")
         mx = max(64, min(4096, int(args.get("max_size") or 1000)))
         data = blender_command("execute_code", {"code": _SHOT_CODE.format(fp=tmp.replace("\\", "/"), mx=mx)})
         shot = _maybe_screenshot({"filepath": tmp})

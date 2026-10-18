@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
-const read=f=>fs.readFileSync(path.join(__dirname,f),'utf8');
+// Git checkout may use CRLF on Windows; source-pattern checks are EOL-independent.
+const read=f=>fs.readFileSync(path.join(__dirname,f),'utf8').replace(/\r\n/g,'\n');
 const cargo=read('agent/Cargo.toml'),lock=read('agent/Cargo.lock');
 assert.match(cargo,/name = "elio-agent"\nversion = "1\.0\.1"/);assert.match(cargo,/\[\[bin\]\]\nname = "elio"/);assert.match(lock,/name = "elio-agent"\nversion = "1\.0\.1"/);
 for(const f of ['manifest.json','elio-Extension/manifest.json']){const m=JSON.parse(read(f));assert.equal(m.name,'Elio');assert.equal(m.version,'1.0.1');assert.equal(m.version_name,'1.0.1');}

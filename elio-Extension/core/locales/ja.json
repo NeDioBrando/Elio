@@ -942,5 +942,10 @@
   "Studio MCP is off — enable it in Assistant settings": "Studio MCP は無効です — Assistant 設定で有効にしてください",
   "Switch to dark theme": "ダークテーマに切り替える",
   "Switch to light theme": "ライトテーマに切り替える",
-  "Could not save theme": "テーマを保存できませんでした"
+  "Could not save theme": "テーマを保存できませんでした",
+  "Elio is thinking…": "Elio が考えています…",
+  "Elio is connecting…": "Elio が接続しています…",
+  "Elio is running {tool}…": "Elio が {tool} を実行しています…",
+  "Elio is working…": "Elio が作業しています…",
+  "Elio is stopping…": "Elio が停止しています…"
 }

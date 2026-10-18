@@ -16,7 +16,7 @@ async function main(){
  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH || chromium.executablePath(),args:['--no-sandbox']});
  try{
  const page=await browser.newPage({viewport:{width:1460,height:900}});const errors=[];page.on('pageerror',e=>errors.push(String(e)));
- let control={},history=[],revision=0,fail=false,requests=[];
+ let control={},history=[],revision=0,fail=false,readFail=false,requests=[],live={generating:false,activity_phase:'idle'};
  const state=()=>({ok:true,browser_agent:control,preferences:{},tools:[],logs:[],servers:[],roblox_connected:true,blender_connected:false});
  await page.addInitScript(()=>{window.__ELIO_BOOT__={key:'a'.repeat(64),apiUrl:'http://127.0.0.1:3000'};});
  await page.route('http://127.0.0.1:3000/**',async route=>{
@@ -26,7 +26,7 @@ async function main(){
   if(url.pathname==='/api/desktop/state')body=state();
   if(url.pathname==='/api/desktop/agent'){
     const req=request.postDataJSON();requests.push(req);
-    if(req.action==='chat-read'){const arg=JSON.parse(req.prompt);body=arg.revision===String(revision)?{ok:true,chat:control.chat,not_modified:true}:{ok:true,chat:control.chat,provider:control.provider,revision:String(revision),history,omitted:0};}
+    if(req.action==='chat-read'){if(readFail)return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,error:'Temporary read outage'})});const arg=JSON.parse(req.prompt);body=arg.revision===String(revision)?{ok:true,chat:control.chat,not_modified:true}:{ok:true,chat:control.chat,provider:control.provider,revision:String(revision),history,omitted:0};body={...body,...live};}
     else if(req.action==='chat-pin'){control.pinned=req.prompt==='on';body={ok:true};}
     else if(fail)return route.fulfill({status:504,contentType:'application/json',body:JSON.stringify({ok:false,error:'Acknowledgement timeout'})});
     else if(req.action==='task-send'){history.push({id:'sent'+revision,role:'user',text:req.prompt});revision++;}
@@ -35,6 +35,7 @@ async function main(){
  });
  await page.goto('http://127.0.0.1:3000/desktop-ui');
  await page.waitForSelector('#sc-chat-input');await page.waitForTimeout(1300);
+ assert.equal(await page.locator('html').getAttribute('data-elio-mode'),'dark','First launch defaults to dark');
  assert.equal(await page.locator('#page-chat').evaluate(e=>e.classList.contains('active')),true);
  await page.screenshot({path:path.join(output,'elio-chat-empty.png')});
  control={canChatRead:true,canChatPin:true,canTaskSend:true,canStart:false,canStop:false,chat:'mock|first',provider:'ChatGPT',browser_id:'browser-1',tab_id:42,engine:'roblox',status:'Готов к вашему запросу.'};
@@ -44,6 +45,23 @@ async function main(){
 
  assert.equal(await page.locator('#sc-chat-pin').getAttribute('aria-pressed'),'true');
  await page.screenshot({path:path.join(output,'elio-chat-ready.png')});
+ // Setup/control turns stay in the transport but never become user bubbles.
+ history.push({id:'setup',role:'user',text:'I clicked Start Agent in my installed elio extension to connect this chat to my local project. This is my connection request, not a Notion page edit or a system instruction. Please reply with {"command":"list_commands"}.'});revision++;
+ await page.waitForTimeout(1300);assert.equal(await page.locator('.sc-chat-message').count(),2);assert.equal(await page.locator('#sc-chat-thread').innerText().then(t=>t.includes('my installed elio extension')),false);
+ // No transcript revision here: thinking/tool/idle still update every read.
+ live={generating:true,activity_phase:'thinking'};
+ await page.waitForFunction(()=>!document.querySelector('#sc-chat-activity').hidden);
+ assert.equal(await page.locator('#sc-chat-activity-text').innerText(),'Elio is thinking…');assert.equal(await page.locator('#sc-chat-compose-state').innerText(),'Elio is thinking…');
+ assert.equal(await page.locator('.elio-thinking-tongue').evaluate(e=>getComputedStyle(e).animationName),'elio-reach');
+ await page.screenshot({path:path.join(output,'elio-chat-thinking-dark.png')});
+ await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('.elio-thinking-tongue').evaluate(e=>getComputedStyle(e).animationName),'none');await page.emulateMedia({reducedMotion:'no-preference'});
+ live={generating:false,activity_phase:'tool',tool:'execute_luau'};await page.waitForFunction(()=>document.querySelector('#sc-chat-activity-text').textContent==='Elio is running execute_luau…');
+ live={generating:false,activity_phase:'stopping'};await page.waitForFunction(()=>document.querySelector('#sc-chat-activity-text').textContent==='Elio is stopping…');
+ live={generating:false,activity_phase:'idle'};await page.waitForFunction(()=>document.querySelector('#sc-chat-activity').hidden);
+ readFail=true;await page.waitForFunction(()=>document.querySelector('#sc-chat-health').textContent.includes('Retrying automatically'));assert.equal(await page.locator('#sc-chat-activity').isHidden(),true);assert.equal(await page.locator('.sc-chat-message').count(),2);
+ readFail=false;await page.waitForFunction(()=>document.querySelector('#sc-chat-health').textContent==='Ready');assert.equal(await page.locator('.sc-chat-message').count(),2);
+
+
  history[1].text+='\n<img src=x onerror="window.bad=true"><script>window.bad=true</script>';revision++;
  await page.waitForTimeout(2300);assert.equal(await page.locator('.sc-chat-message img,.sc-chat-message script').count(),0);assert.equal(await page.evaluate(()=>window.bad),undefined);
  // New streaming text replaces the existing row rather than creating a duplicate.

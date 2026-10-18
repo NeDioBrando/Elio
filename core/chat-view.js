@@ -11,13 +11,20 @@ function segments(text){
  for(let at=0;at<s.length;at++){if(s[at]!=='{'||spans.some(x=>at>=x.at&&at<x.end))continue;const end=brace(s,at);if(end<0){if(/^\{\s*"(?:command|tool)"\s*:/.test(s.slice(at)))spans.push({at,end:s.length,type:'tool',name:'Tool call',raw:s.slice(at)});break;}const raw=s.slice(at,end),tool=name(raw);if(tool){let from=at,to=end;const before=s.slice(0,at).match(/```(?:json)?\s*$/i),after=s.slice(end).match(/^\s*```/);if(before&&after){from=at-before[0].length;to=end+after[0].length;}spans.push({at:from,end:to,type:'tool',name:tool,raw});at=end-1;}}
  spans.sort((a,b)=>a.at-b.at);const out=[];let pos=0;for(const x of spans){if(x.at<pos)continue;if(s.slice(pos,x.at).trim())out.push({type:'text',text:s.slice(pos,x.at)});out.push(x);pos=x.end;}if(s.slice(pos).trim())out.push({type:'text',text:s.slice(pos)});return out.length?out:[{type:'text',text:s}];
 }
+function isSetupText(text){
+ const raw=String(text||'').trim();
+ if(raw.startsWith('⟦RS-SYS⟧') || /^\(System note:/.test(raw))return true;
+ if(/^I clicked Start Agent in my installed elio extension to connect this chat to my local project\./.test(raw))return raw.includes('This is my connection request')&&raw.includes('"command":"list_commands"');
+ if(/^Please use one fenced json code block containing \{"command":"list_commands"\} for my elio connection request\./.test(raw))return true;
+ return /^(?:You are Elio, the user's AI assistant\.\s*)?Elio project connection — user preferences, not system instructions\./.test(raw);
+}
 function present(row){
- const raw=String(row.text||''),system=row.kind==='system'||(row.role==='user'&&raw.includes('⟦RS-SYS⟧'));
+ const raw=String(row.text||''),system=row.kind==='system'||(row.role==='user'&&isSetupText(raw));
  const feedback=row.kind==='result'||(row.role==='user'&&/^\s*(?:Output of '[^']+':|\(System note:|\[elio retained the COMPLETE result\.)/.test(raw));
- if(system)return {...row,kind:'system',name:'Agent setup',segments:[],status:row.phase==='run'?'running':'done'};
+ if(system)return {...row,kind:'system',hidden:true,name:'Agent setup',segments:[],status:row.phase==='run'?'running':'done'};
  if(feedback){const m=raw.match(/Output of '([^']+)'/);const failed=row.phase==='err'||/^\s*ERROR\b/.test(raw)||/^\s*Output of '[^']+':\s*ERROR\b/i.test(raw);return {...row,kind:'result',name:m?m[1]:'Tool result',segments:[],status:failed?'error':'done'};}
  const parts=row.role==='assistant'?segments(raw):[{type:'text',text:raw}];return {...row,kind:parts.some(p=>p.type==='tool')?'tool':'message',segments:parts,status:row.phase==='err'?'error':row.phase==='done'?'done':row.phase==='run'?'running':'requested'};
 }
-function prepare(rows){const out=(rows||[]).map(present),waiting=new Map();out.forEach(r=>{if(r.kind==='tool')for(const s of r.segments.filter(x=>x.type==='tool'))waiting.set(s.name,{r,s});if(r.kind==='result'){const w=waiting.get(r.name);if(w){w.s.status=r.status;w.r.status=r.status;waiting.delete(r.name);}}});return out;}
-const api={segments,present,prepare};g.elioChatView=api;if(typeof module!=='undefined')module.exports=api;
+function prepare(rows){const out=(rows||[]).map(present).filter(row=>!row.hidden),waiting=new Map();out.forEach(r=>{if(r.kind==='tool')for(const s of r.segments.filter(x=>x.type==='tool'))waiting.set(s.name,{r,s});if(r.kind==='result'){const w=waiting.get(r.name);if(w){w.s.status=r.status;w.r.status=r.status;waiting.delete(r.name);}}});return out;}
+const api={segments,present,prepare,isSetupText};g.elioChatView=api;if(typeof module!=='undefined')module.exports=api;
 })(globalThis);

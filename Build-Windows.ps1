@@ -12,6 +12,8 @@ node .\test-elio-rename.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Elio rename contracts failed.' }
 node .\test-elio-audit.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Fork audit failed.' }
+node .\test-elio-chat-live.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Live chat tests failed.' }
 node .\test-desktop-chat.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Desktop chat tests failed.' }
 node .\test-elio.cjs

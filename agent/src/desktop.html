@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" dir="ltr" data-elio>
+<html lang="en" dir="ltr" data-elio data-elio-mode="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -825,7 +825,7 @@ __ELIO_DESKTOP_CHAT_JS__
   }
   function Rendersettings() {
     var Preferences = State && State.preferences ? State.preferences : {};
-    if (!Colorpending) elioTheme.apply(Preferences.rsColorMode || "light");
+    if (!Colorpending) elioTheme.apply(Preferences.rsColorMode || "dark");
     var Language = I18n ? I18n.normalize(Preferences.rsLanguage || "en") : "en";
     if (I18n) {
       I18n.setLanguage(Language);

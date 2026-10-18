@@ -79,7 +79,7 @@ impl Default for DesktopPreferences {
     fn default() -> Self {
         Self {
             language: "en".to_string(),
-            color_mode: "light".to_string(),
+            color_mode: "dark".to_string(),
             engine: "roblox".to_string(),
             work_mode: "balanced".to_string(),
             perm_mode: "sandbox".to_string(),
@@ -123,7 +123,7 @@ impl DesktopPreferences {
         self.tool_budget=self.tool_budget.min(1000);self.task_minutes=self.task_minutes.min(240);
         self.command_cooldown=if self.command_cooldown.is_finite(){(self.command_cooldown.clamp(0.0,120.0)*10.0).round()/10.0}else{0.0};
         if !matches!(self.stop_mode.as_str(),"safe"|"immediate") {self.stop_mode="immediate".into();}
-        if !matches!(self.color_mode.as_str(), "light" | "dark") {self.color_mode="light".into();}
+        if !matches!(self.color_mode.as_str(), "light" | "dark") {self.color_mode="dark".into();}
         if let Some(value) = &mut self.appearance {
             if value.theme=="solar" {value.theme="default".into();}
             if !matches!(value.theme.as_str(), "default" | "amethyst" | "cyan" | "rose" | "emerald" | "graphite" | "crimson" | "ocean" | "copper" | "aurora" | "orchid") { value.theme = "default".into(); }
@@ -440,14 +440,16 @@ mod tests {
     fn elio_color_mode_persists_and_rejects_unknown() {
         let root=temp_settings_path();
         let store=PreferencesStore::load_from(root.clone());
-        assert_eq!(store.snapshot().color_mode,"light");
+        assert_eq!(store.snapshot().color_mode,"dark");
         store.patch(serde_json::json!({"rsColorMode":"dark"})).unwrap();
         assert_eq!(store.snapshot().color_mode,"dark");
         drop(store);
         let reopened=PreferencesStore::load_from(root.clone());
         assert_eq!(reopened.snapshot().color_mode,"dark");
+        reopened.patch(serde_json::json!({"rsColorMode":"light"})).unwrap();
+        assert_eq!(PreferencesStore::load_from(root.clone()).snapshot().color_mode,"light");
         reopened.patch(serde_json::json!({"rsColorMode":"invalid"})).unwrap();
-        assert_eq!(reopened.snapshot().color_mode,"light");
+        assert_eq!(reopened.snapshot().color_mode,"dark");
         let _=std::fs::remove_file(root);
     }
 

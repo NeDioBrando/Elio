@@ -942,5 +942,10 @@
   "Studio MCP is off — enable it in Assistant settings": "Studio MCP बंद — Assistant सेटिंग में चालू करें",
   "Switch to dark theme": "डार्क थीम पर जाएँ",
   "Switch to light theme": "लाइट थीम पर जाएँ",
-  "Could not save theme": "थीम सहेजी नहीं जा सकी"
+  "Could not save theme": "थीम सहेजी नहीं जा सकी",
+  "Elio is thinking…": "Elio सोच रहा है…",
+  "Elio is connecting…": "Elio कनेक्ट हो रहा है…",
+  "Elio is running {tool}…": "Elio {tool} चला रहा है…",
+  "Elio is working…": "Elio काम कर रहा है…",
+  "Elio is stopping…": "Elio रुक रहा है…"
 }

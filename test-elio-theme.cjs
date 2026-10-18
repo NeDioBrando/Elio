@@ -8,8 +8,17 @@ async function main(){
  assert.equal(theme.mode,'dark');const button={isConnected:true,classList:{add:()=>{}},setAttribute:(k,v)=>attrs[k]=v};theme.mountBrowser(button);assert.equal(attrs['aria-pressed'],'true');assert.match(button.innerHTML,/<circle/);
  await button.onclick();assert.equal(written.rsColorMode,'light');assert.equal(root.dataset.elioMode,'light');assert.match(button.innerHTML,/<path/);assert.equal(attrs['aria-label'],'translated Switch to dark theme');assert.equal(button.disabled,false);
  change({rsColorMode:{newValue:'dark'}},'local');assert.equal(theme.mode,'dark');change({rsColorMode:{newValue:'light'}},'sync');assert.equal(theme.mode,'dark');
- theme.mount(button,async()=>{throw Error('offline')});await button.onclick();assert.equal(theme.mode,'dark');assert.match(button.title,/Could not save theme.*offline/);assert.equal(button.disabled,false);theme.apply('invalid');assert.equal(theme.mode,'light');
+ theme.mount(button,async()=>{throw Error('offline')});await button.onclick();assert.equal(theme.mode,'dark');assert.match(button.title,/Could not save theme.*offline/);assert.equal(button.disabled,false);theme.apply('invalid');assert.equal(theme.mode,'dark');theme.apply('light');
  let release;theme.mount(button,()=>new Promise(r=>release=r));const pending=button.onclick();assert.equal(button.disabled,true);assert.equal(theme.mode,'dark');release();await pending;assert.equal(button.disabled,false);
+ // Fresh extension defaults to dark, but explicitly stored light still wins.
+ for(const saved of [undefined,'light','dark']){
+  const nativeRoot={dataset:{},hasAttribute:()=>true};let storedNative=saved;
+  const native={document:{documentElement:nativeRoot},localStorage:{getItem:()=>storedNative,setItem:(k,v)=>{storedNative=v}}};
+  vm.createContext(native);vm.runInContext(read('core/theme.js'),native);
+  assert.equal(native.elioTheme.mode,saved==='light'?'light':'dark');
+  const extension={document:{documentElement:{dataset:{},hasAttribute:()=>false}},chrome:{storage:{local:{get:(k,cb)=>cb({rsColorMode:saved})},onChanged:{addListener:()=>{}}}}};
+  vm.createContext(extension);vm.runInContext(read('core/theme.js'),extension);assert.equal(extension.elioTheme.mode,saved==='light'?'light':'dark');
+ }
  for(const f of fs.readdirSync(require('node:path').join(__dirname,'core/locales'))){const d=JSON.parse(read('core/locales/'+f));for(const k of ['Switch to dark theme','Switch to light theme','Could not save theme'])assert.equal(typeof d[k],'string',f+': '+k);}
  for(const p of ['core/theme.css','core/theme.js'])assert.equal(read(p),read('elio-Extension/'+p));
  for(const p of ['manifest.json','elio-Extension/manifest.json'])for(const entry of JSON.parse(read(p)).content_scripts.filter(e=>e.js?.includes('core/main.js'))){assert(entry.js.includes('core/theme.js'));assert(entry.css.includes('core/theme.css'));}

@@ -942,5 +942,10 @@
   "Studio MCP is off — enable it in Assistant settings": "Studio MCP desactivado — actívalo en Assistant",
   "Switch to dark theme": "Cambiar al tema oscuro",
   "Switch to light theme": "Cambiar al tema claro",
-  "Could not save theme": "No se pudo guardar el tema"
+  "Could not save theme": "No se pudo guardar el tema",
+  "Elio is thinking…": "Elio está pensando…",
+  "Elio is connecting…": "Elio se está conectando…",
+  "Elio is running {tool}…": "Elio está ejecutando {tool}…",
+  "Elio is working…": "Elio está trabajando…",
+  "Elio is stopping…": "Elio se está deteniendo…"
 }

@@ -942,5 +942,10 @@
   "Studio MCP is off — enable it in Assistant settings": "Studio MCP 已关闭 — 请在 Assistant 设置中启用",
   "Switch to dark theme": "切换到深色主题",
   "Switch to light theme": "切换到浅色主题",
-  "Could not save theme": "无法保存主题"
+  "Could not save theme": "无法保存主题",
+  "Elio is thinking…": "Elio 正在思考…",
+  "Elio is connecting…": "Elio 正在连接…",
+  "Elio is running {tool}…": "Elio 正在运行 {tool}…",
+  "Elio is working…": "Elio 正在工作…",
+  "Elio is stopping…": "Elio 正在停止…"
 }

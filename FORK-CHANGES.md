@@ -43,3 +43,12 @@ Pinned the update API and exact release-asset URL validation to the renamed repo
 Supersedes earlier compatibility notes: owned identifiers now use Elio throughout native code, extension, Cargo/bin/icon paths, MCP tool names, protocol/storage/pairing, Windows packaging, helper and exact release assets. One elio.exe, no duplicate case-only alias. New and old product components must not be mixed; no automatic old-storage migration is claimed. Original authorship and legal notices remain unchanged.
 
 Added only a short Elio identity and exact startup acknowledgement: `Elio is ready to assist you.` Functional prompt rules are retained; focused hash/handshake tests guard the scope. Retired obsolete publishing helpers rather than presenting upstream hashes as current release metadata. Version remains 1.0.1; nothing was pushed or published.
+
+## Elio 1.0.1 — live chat and dark-default follow-up
+
+- Explicit provider-list invalidation on desktop snapshots; live work state included on unchanged revisions.
+- Presentation-only hiding of startup/control turns; raw archive and command handshake unchanged.
+- Animated Elio E/tongue/dot and localized neutral shimmer status, reduced-motion support, read recovery and stable message DOM.
+- Removed retired cool-blue/purple styles from extension stylesheets and generated panels; preserved semantic result colors and host page styling.
+- First launch defaults to dark without overriding saved light mode. Product version remains 1.0.1.
+- Added live export/Notion DOM regressions and expanded native/extension UI checks. See CHAT-FIX-1.0.1-RU.md for validation scope and installation.

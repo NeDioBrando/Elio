@@ -89,6 +89,7 @@ mod cancellation;
 mod chat_history;
 mod engram;
 mod debug_report;
+mod update_service;
 
 #[cfg(windows)]
 mod win_msg {
@@ -119,6 +120,8 @@ fn win_alert(title: &str, msg: &str) {
 struct Args {
     #[arg(long, help = "Run without the status window (for autostart/background use)")]
     headless: bool,
+    #[arg(long, hide = true)]
+    update_receipt: Option<PathBuf>,
     #[arg(long, help = "Open the desktop in the background")]
     background: bool,
     #[arg(long, help = "With --background, reopen the desktop window without taking focus")]
@@ -156,6 +159,7 @@ struct AppState {
     addon_refreshing: Arc<AtomicBool>,
     preferences: Arc<preferences::PreferencesStore>,
     ui: Arc<gui::UiShared>,
+    updates: Arc<update_service::Service>,
 }
 
 impl AppState {
@@ -171,6 +175,7 @@ impl AppState {
         Self {
             pairing_key,
             cancellation: Arc::new(cancellation::Hub::default()),
+            updates: Arc::new(update_service::Service::default()),
             roblox_queue: Arc::new(Mutex::new(VecDeque::new())),
             roblox_clients: Arc::new(RwLock::new(HashMap::new())),
             local_clients: Arc::new(RwLock::new(HashMap::new())),
@@ -1065,8 +1070,10 @@ async fn start() -> anyhow::Result<()> {
     tokio::time::timeout(Duration::from_secs(15), ready_rx).await
         .map_err(|_| anyhow::anyhow!("The local bridge did not finish binding within 15 seconds"))?
         .map_err(|_| anyhow::anyhow!("The local bridge failed to bind; inspect the startup log for the port error"))?;
+    if let Some(path)=&args.update_receipt { update_service::mark_ready(path)?; }
     drop(startup_guard);
     if args.headless {
+        let quit_ui=shared.clone();tokio::spawn(async move{loop{tokio::time::sleep(Duration::from_millis(200)).await;if quit_ui.quit_requested.load(Ordering::Relaxed){std::process::exit(0);}}});
         let _ = server.await;
         Ok(())
     } else {
@@ -1105,6 +1112,8 @@ fn studio_process_names_allow_platform_spacing() {
 }
 
 async fn run_server(state: AppState, addr: SocketAddr, start: std::time::Instant, ui: Arc<gui::UiShared>, ready: tokio::sync::oneshot::Sender<()>, listener: tokio::net::TcpListener, legacy_roblox: tokio::net::TcpListener, legacy_local: tokio::net::TcpListener) -> anyhow::Result<()> {
+    let update_check=state.updates.clone();
+    tokio::spawn(async move { loop { if let Err(error)=update_check.check().await{tracing::warn!("Update check: {error}");}tokio::time::sleep(Duration::from_secs(4*60*60)).await; } });
     let watcher_state = state.clone();
     let watcher_ui = ui.clone();
     tokio::spawn(async move {
@@ -1208,6 +1217,9 @@ async fn run_server(state: AppState, addr: SocketAddr, start: std::time::Instant
         .route("/api/result", post(result_handler))
         .route("/api/disconnect", post(disconnect_handler))
         .route("/api/status", get(status_handler))
+        .route("/api/updates/status", get(update_status_handler))
+        .route("/api/updates/check", post(update_check_handler))
+        .route("/api/updates/install", post(update_install_handler))
         .route("/desktop", get(desktop_handler))
         .route("/api/desktop/state", get(desktop_state_handler))
         .route("/api/desktop/preferences", post(desktop_preferences_handler))
@@ -1243,6 +1255,7 @@ async fn run_server(state: AppState, addr: SocketAddr, start: std::time::Instant
         .route("/api/mcp/catalog", get(mcp_catalog_handler))
         .route("/api/mcp/toggle", post(mcp_toggle_handler))
         .route("/ws", get(ws_handler))
+        .layer(axum::middleware::from_fn_with_state(state.updates.clone(), update_mutation_gate))
         .layer(axum::middleware::from_fn_with_state(state.pairing_key.clone(), security::require_pairing))
         .with_state(state)
         // Public shell contains no key; the native WebView injects credentials.
@@ -1385,6 +1398,7 @@ async fn checkpoint_tool_bounded(state: &AppState, engine: &str, id: &str, name:
     }
 }
 async fn checkpoint_tool(state: &AppState, engine: &str, id: &str, name: &str, args: serde_json::Value) -> anyhow::Result<McpOutput> {
+    let _update_guard=state.updates.begin_tool()?;
     if id.is_empty(){return checkpoint_tool_inner(state,engine,id,name,args).await;}
     let mut cancellation=state.cancellation.register(id);
     anyhow::ensure!(!*cancellation.borrow(),"Task stopped before tool dispatch.");
@@ -1474,7 +1488,9 @@ async fn desktop_shell_handler() -> impl IntoResponse {
         .replace("__SYNERIXCODE_TEMPLATE_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/templates.js")))
         .replace("__SYNERIXCODE_VERSION_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/version.js")))
         .replace("__SYNERIXCODE_PAIRING_KEY__", "")
-        .replace("__SYNERIXCODE_VERSION__", env!("CARGO_PKG_VERSION"));
+        .replace("__SYNERIXCODE_VERSION__", env!("CARGO_PKG_VERSION"))
+        .replace("__SYNERIXCODE_DESKTOP_CHAT_CSS__", include_str!("../../desktop/chat.css"))
+        .replace("__SYNERIXCODE_DESKTOP_CHAT_JS__", include_str!("../../desktop/chat.js"));
     ([(axum::http::header::CACHE_CONTROL, "no-store")], Html(html))
 }
 
@@ -1491,8 +1507,35 @@ async fn desktop_handler(State(state): State<AppState>) -> Html<String> {
         .replace("__SYNERIXCODE_TEMPLATE_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/templates.js")))
         .replace("__SYNERIXCODE_VERSION_UI__", include_str!(concat!(env!("SYNERIXCODE_EXTENSION_ROOT"), "/core/version.js")))
         .replace("__SYNERIXCODE_PAIRING_KEY__", state.pairing_key.as_str())
-        .replace("__SYNERIXCODE_VERSION__", env!("CARGO_PKG_VERSION"));
+        .replace("__SYNERIXCODE_VERSION__", env!("CARGO_PKG_VERSION"))
+        .replace("__SYNERIXCODE_DESKTOP_CHAT_CSS__", include_str!("../../desktop/chat.css"))
+        .replace("__SYNERIXCODE_DESKTOP_CHAT_JS__", include_str!("../../desktop/chat.js"));
     Html(html)
+}
+
+async fn update_status_handler(State(state):State<AppState>)->impl IntoResponse {Json(serde_json::json!({"ok":true,"update":state.updates.snapshot()}))}
+async fn update_check_handler(State(state):State<AppState>)->impl IntoResponse {
+    let service=state.updates.clone();tokio::spawn(async move{let _=service.check().await;});
+    Json(serde_json::json!({"ok":true,"update":state.updates.snapshot()}))
+}
+async fn update_install_handler(State(state):State<AppState>)->impl IntoResponse {
+    let reason=if !cfg!(windows){Some("Установка доступна только на Windows x64.")}
+        else if state.updates.installing.load(Ordering::SeqCst){Some("Обновление уже запущено.")}
+        else if state.updates.browser_busy() || state.updates.active_tools.load(Ordering::SeqCst)>0 || state.mcp_in_flight.load(Ordering::Relaxed)>0 {Some("Завершите активную задачу перед обновлением.")}
+        else if !state.roblox_queue.lock().await.is_empty(){Some("Дождитесь выполнения очереди Studio.")}
+        else if state.updates.snapshot()["outdated"]!=true {Some("Нет проверенной новой версии. Нажмите «Проверить обновления».")}
+        else{None};
+    if let Some(error)=reason{return (axum::http::StatusCode::CONFLICT,Json(serde_json::json!({"ok":false,"error":error}))).into_response();}
+    let service=state.updates.clone();let ui=state.ui.clone();
+    tokio::spawn(async move{if let Err(error)=service.install(ui).await{tracing::warn!("Update install: {error:#}");}});
+    Json(serde_json::json!({"ok":true,"message":"Запуск обновления принят. Следите за статусом."})).into_response()
+}
+async fn update_mutation_gate(State(service):State<Arc<update_service::Service>>,request:axum::extract::Request,next:axum::middleware::Next)->axum::response::Response {
+    let allowed=matches!(request.uri().path(),"/api/pair"|"/api/updates/check"|"/api/updates/install"|"/api/desktop/browser-agent"|"/api/desktop/activity"|"/api/desktop/agent-result"|"/api/debug/browser-log"|"/api/stop"|"/api/result");
+    if request.method()==axum::http::Method::POST && service.installing.load(Ordering::SeqCst) && !allowed {
+        return (axum::http::StatusCode::CONFLICT,Json(serde_json::json!({"ok":false,"error":"Обновление выполняется. Новая задача не была запущена."}))).into_response();
+    }
+    next.run(request).await
 }
 
 async fn desktop_state_handler(State(state): State<AppState>) -> impl IntoResponse {
@@ -1520,6 +1563,7 @@ async fn desktop_state_handler(State(state): State<AppState>) -> impl IntoRespon
         "fatal": fatal,
         "preferences": state.preferences.snapshot(),
         "browser_agent": state.ui.browser_agent_snapshot(),
+        "update": state.updates.snapshot(),
     }))
 }
 
@@ -1582,15 +1626,16 @@ async fn desktop_kill_studio_handler(State(state): State<AppState>) -> impl Into
 
 async fn browser_agent_handler(State(state): State<AppState>, Json(value): Json<serde_json::Value>) -> impl IntoResponse {
     state.ui.mark_extension_seen();
+    state.updates.note_browser(value["browser_id"].as_str().unwrap_or(""),value["any_running"]==true || value["canStop"]==true);
     let mut slot=state.ui.browser_agent.lock().unwrap_or_else(|error|error.into_inner());
-    let replace=slot.as_ref().map_or(true,|(at,current)|at.elapsed()>Duration::from_secs(3) || value["browser_focused"]==true || current["browser_id"]==value["browser_id"]);
+    let replace=slot.as_ref().map_or(true,|(at,current)|at.elapsed()>Duration::from_secs(3) || (value["browser_focused"]==true && current["pinned"]!=true) || current["browser_id"]==value["browser_id"]);
     if replace {*slot=Some((std::time::Instant::now(),value));}
     Json(serde_json::json!({"ok":true}))
 }
 
 async fn desktop_agent_handler(State(state): State<AppState>, Json(req): Json<serde_json::Value>) -> impl IntoResponse {
     let action = req.get("action").and_then(|value| value.as_str()).unwrap_or("");
-    if action.starts_with("cowork-") || action.starts_with("memory-") || action=="handoff-export" || action=="budget-resume" || action=="task-send" || action=="creator-send" || action=="creator-insert" || action=="activity-read" || action=="media-stage" || action=="stop" || action=="engine-set" { return desktop_cowork_handler(state, req).await; }
+    if action.starts_with("cowork-") || action.starts_with("memory-") || action=="handoff-export" || action=="budget-resume" || action=="task-send" || action=="creator-send" || action=="creator-insert" || action=="activity-read" || action=="chat-read" || action=="chat-pin" || action=="media-stage" || action=="stop" || action=="engine-set" { return desktop_cowork_handler(state, req).await; }
     let mut slot = state.ui.browser_agent.lock().unwrap_or_else(|error| error.into_inner());
     let available = slot.as_ref().filter(|(at, _)| at.elapsed() < Duration::from_secs(3));
     let key = match action { "start" => "canStart", "stop" => "canStop", "enhance" => "canEnhance", "cowork-queue" => "canQueue", "cowork-on" | "cowork-off" | "cowork-resume" | "cowork-remove" => "canCoWork", _ => "" };
@@ -1598,8 +1643,11 @@ async fn desktop_agent_handler(State(state): State<AppState>, Json(req): Json<se
         return (axum::http::StatusCode::BAD_REQUEST, Json(serde_json::json!({"ok":false,"error":"Enter a prompt first."}))).into_response();
     }
     if let Some((_, control)) = available {
+        if ["chat", "browser_id", "tab_id"].iter().any(|name| req.get(*name).is_some_and(|value| value != &control[*name])) {
+            return (axum::http::StatusCode::CONFLICT, Json(serde_json::json!({"ok":false,"error":"The selected chat changed. Review the destination before retrying."}))).into_response();
+        }
         if !key.is_empty() && control.get(key).and_then(|value| value.as_bool()) == Some(true) {
-            let event = serde_json::json!({"type":"desktop_agent_action","action":action,"tab_id":control.get("tab_id"),"browser_id":control.get("browser_id"),"prompt":req.get("prompt")});
+            let event = serde_json::json!({"type":"desktop_agent_action","action":action,"tab_id":control.get("tab_id"),"browser_id":control.get("browser_id"),"prompt":req.get("prompt"),"expected_chat":req.get("chat")});
             if state.ui.desktop_events.send(event).is_ok() {
                 if let Some((_, control)) = slot.as_mut().filter(|_| !action.starts_with("cowork-")) {
                     control["canStart"] = false.into(); control["canStop"] = false.into(); control["canEnhance"] = false.into();
@@ -1622,12 +1670,15 @@ async fn desktop_agent_result_handler(State(state): State<AppState>, Json(req): 
 
 async fn desktop_cowork_handler(state: AppState, req: serde_json::Value) -> axum::response::Response {
     let action = req.get("action").and_then(|value| value.as_str()).unwrap_or("");
-    let key = match action { "stop"=>"canStop", "media-stage"=>"canMedia", "task-send"=>"canTaskSend", "creator-send"=>"canCreate", "creator-insert"=>"canTaskSend", "cowork-queue" => "canQueue", "memory-import" => "canEnhance", "memory-export" | "activity-read" | "handoff-export" | "budget-resume" | "engine-set" => "canCoWork", "cowork-on" | "cowork-off" | "cowork-resume" | "cowork-remove" => "canCoWork", _ => "" };
+    let key = match action { "chat-read" => "canChatRead", "chat-pin" => "canChatPin", "stop"=>"canStop", "media-stage"=>"canMedia", "task-send"=>"canTaskSend", "creator-send"=>"canCreate", "creator-insert"=>"canTaskSend", "cowork-queue" => "canQueue", "memory-import" => "canEnhance", "memory-export" | "activity-read" | "handoff-export" | "budget-resume" | "engine-set" => "canCoWork", "cowork-on" | "cowork-off" | "cowork-resume" | "cowork-remove" => "canCoWork", _ => "" };
     let control = {
         let slot = state.ui.browser_agent.lock().unwrap_or_else(|error| error.into_inner());
         slot.as_ref().filter(|(at, control)| at.elapsed() < Duration::from_secs(3) && !key.is_empty() && control.get(key).and_then(|value| value.as_bool()) == Some(true)).map(|(_, control)| control.clone())
     };
     let Some(control) = control else { return (axum::http::StatusCode::CONFLICT, Json(serde_json::json!({"ok":false,"error":"Select a ready AI chat before sending. Follow-ups also require Co-work to be on."}))).into_response(); };
+    if ["chat", "browser_id", "tab_id"].iter().any(|name| req.get(*name).is_some_and(|value| value != &control[*name])) {
+        return (axum::http::StatusCode::CONFLICT, Json(serde_json::json!({"ok":false,"error":"The selected chat changed. Review the destination before retrying."}))).into_response();
+    }
     let id = req.get("request_id").and_then(|value| value.as_str()).unwrap_or("");
     if id.is_empty() || id.len() > 128 { return (axum::http::StatusCode::BAD_REQUEST, Json(serde_json::json!({"ok":false,"error":"Missing request ID."}))).into_response(); }
     let (sender, receiver) = tokio::sync::oneshot::channel();
@@ -1636,7 +1687,7 @@ async fn desktop_cowork_handler(state: AppState, req: serde_json::Value) -> axum
         if results.contains_key(id) || results.len() >= 50 { return (axum::http::StatusCode::CONFLICT, Json(serde_json::json!({"ok":false,"error":"This request is still being accepted. Please wait."}))).into_response(); }
         results.insert(id.to_string(), sender);
     }
-    let event = serde_json::json!({"type":"desktop_agent_action","action":action,"tab_id":control.get("tab_id"),"browser_id":control.get("browser_id"),"prompt":req.get("prompt"),"request_id":id});
+    let event = serde_json::json!({"type":"desktop_agent_action","action":action,"tab_id":control.get("tab_id"),"browser_id":control.get("browser_id"),"prompt":req.get("prompt"),"request_id":id,"expected_chat":req.get("chat")});
     let delivered = state.ui.desktop_events.send(event).is_ok();
     let result = if delivered { tokio::time::timeout(Duration::from_secs(if action == "media-stage" { 60 } else if action == "creator-insert" { 125 } else if action == "creator-send" { 100 } else { 5 }), receiver).await.ok().and_then(Result::ok) } else { None };
     state.ui.desktop_action_results.lock().unwrap_or_else(|error| error.into_inner()).remove(id);
@@ -1988,7 +2039,7 @@ async fn handle_ws(socket: axum::extract::ws::WebSocket, state: AppState) {
     while let Some(Ok(msg)) = recv.next().await {
         if let axum::extract::ws::Message::Text(txt) = msg {
             if let Ok(val) = serde_json::from_str::<serde_json::Value>(&txt) {
-                if val.get("code").is_some() {
+                if val.get("code").is_some() && !state.updates.installing.load(Ordering::SeqCst) {
                     let engine = val.get("engine").and_then(|v| v.as_str()).unwrap_or("roblox").to_string();
                     let payload = Payload{ id: val.get("id").and_then(|v| v.as_str()).unwrap_or("p-1").to_string(), target: engine.clone(), code: val.get("code").and_then(|v| v.as_str()).unwrap_or("").to_string(), language: "luau".into(), meta: val.clone()};
                     state.roblox_queue.lock().await.push_back(payload);
@@ -2106,6 +2157,9 @@ async fn handle_legacy_ws(ws_stream: tokio_tungstenite::WebSocketStream<tokio::n
             if let Ok(val) = serde_json::from_str::<serde_json::Value>(&txt) {
                 let typ = val.get("type").and_then(|v| v.as_str()).unwrap_or("");
                 let id = val.get("id").and_then(|v| v.as_u64()).unwrap_or(0);
+                if state.updates.installing.load(Ordering::SeqCst) && !matches!(typ,"ping"|"studio_status"|"list_tools") {
+                    send_json(&out_tx,serde_json::json!({"type":"result","id":id,"ok":false,"error":"Update in progress. No command was dispatched."}));continue;
+                }
                 match typ {
                     "ping" => { send_json(&out_tx, serde_json::json!({"type":"pong","id":id})); },
                     "list_tools" => {

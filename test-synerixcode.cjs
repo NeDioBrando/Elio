@@ -2,7 +2,7 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),cp=require('node:child_process');
 const root=__dirname,read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const manifest=JSON.parse(read('manifest.json'));
-assert.equal(manifest.name.startsWith('synerixcode'),true);assert.equal(manifest.version,'1.0.0');assert.equal(manifest.version_name,'v1');assert.equal(manifest.update_url,undefined);
+assert.equal(manifest.name.startsWith('synerixcode'),true);assert.match(manifest.version,/^\d+\.\d+\.\d+$/);assert.equal(manifest.version_name,manifest.version);assert.equal(manifest.update_url,undefined);
 const hosts=['https://vani.ai/*','https://www.vani.ai/*','https://c.vani.ai/*'];
 for(const host of hosts){
  assert(manifest.host_permissions.includes(host));
@@ -12,12 +12,13 @@ for(const host of hosts){
  assert(read('background.js').includes(host));
 }
 for(const b of manifest.content_scripts)for(const f of [...(b.js||[]),...(b.css||[])])assert(fs.existsSync(path.join(root,f)),f);
-const runtime=['agent/src/main.rs','agent/src/gui.rs','agent/src/desktop.html','background.js','core/main.js','core/version.js','popup.js','agent/src/preferences.rs'];
-for(const f of runtime){const s=read(f);for(const forbidden of ['/api/desktop/update','updater::','mod updater','update_ready_file','rsAutoUpdate','rsReleaseStatus','release-check','readReleaseStatus','Refreshupdates','Updateaction'])assert(!s.includes(forbidden),f+': '+forbidden);}
-assert(!fs.existsSync(path.join(root,'agent/src/updater.rs')));
-for(const f of ['Update-synerixcode.ps1','Update-synerixcode.bat','update-source.json'])assert(!fs.existsSync(path.join(root,f)));
-const version=require('./core/version.js');assert.equal(version.display('99.0.0'),'1');
-let shown='';version.render({set textContent(s){shown=s},set title(s){},setAttribute(){},removeAttribute(){}},'1.0.0',{},'synerixcode ');assert.equal(shown,'synerixcode v1');
+const updater=read('agent/src/update_service.rs');
+assert(updater.includes('NeDioBrando/SynerixCode'));
+assert(!updater.includes('stoveez'));
+assert(!read('agent/src/main.rs').includes('mod updater;'));
+const version=require('./core/version.js');assert.equal(version.display('1.0.1'),'1.0.1');
+assert.equal(version.describe('1.0.1',{current:'1.0.1',latest:'1.0.2',outdated:true}).outdated,true);
+assert.equal(version.describe('1.0.1',{current:'1.0.2',latest:'1.0.2',outdated:false}).reload,true);
 const p=new Function(read('providers/vani.js')+';return RSProvider;')();assert.equal(p.id,'vani');
 for(const key of ['init','getEditor','allItems','readAssistant','typeAndSend','stopGeneration','ensureComposerReady','scanError','conversationKey','installSendHooks'])assert.equal(typeof p[key],'function',key);
 assert(!read('providers/vani.js').includes('for (let i = 0; i < 5 && !sent'));
@@ -29,4 +30,4 @@ for(const dir of ['core','providers']){walk(dir);for(const name of fs.readdirSyn
 for(const f of ['manifest.json','background.js','popup.js','popup.html','overlay.css','icon.png'])assert.deepEqual(fs.readFileSync(path.join(root,f)),fs.readFileSync(path.join(root,'synerixcode-Extension',f)),f);
 syntax('background.js');syntax('popup.js');
 for(const f of ['agent/src/desktop.html','popup.html'])for(const [i,s]of [...read(f).matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].entries()){if(!s[1].trim()||s[1].trim().startsWith('__SYNERIXCODE_'))continue;cp.execFileSync(process.execPath,['--check'],{input:s[1],stdio:['pipe','pipe','pipe']});count++;}
-console.log('PASS synerixcode v1: identity, local version, Vani registration/contracts, updater removal, synced extension, syntax ('+count+' scripts)');
+console.log('PASS synerixcode v1: identity, full version, Vani registration/contracts, own update channel, synced extension, syntax ('+count+' scripts)');

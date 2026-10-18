@@ -4,3 +4,7 @@ __pycache__/
 *.pyc
 *.log
 .DS_Store
+
+synerix-chat-*.png
+node_modules/
+synerix-update-*.png

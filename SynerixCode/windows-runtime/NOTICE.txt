@@ -1,7 +1,0 @@
-WebView2Loader.dll (Windows x64): unmodified Microsoft WebView2 loader,
-as distributed with the upstream PlazCode 1.24.20 Windows release.
-This third-party component is not authored by synerixcode and is not relicensed.
-Microsoft WebView2 terms and distribution information:
-https://www.nuget.org/packages/Microsoft.Web.WebView2
-https://developer.microsoft.com/microsoft-edge/webview2/
-The installed Microsoft Edge WebView2 Runtime remains a separate prerequisite.

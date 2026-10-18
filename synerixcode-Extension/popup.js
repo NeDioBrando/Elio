@@ -169,6 +169,12 @@ function renderPopupVersion(value) {
   synerixcodeVersion.render(document.getElementById("ver"), chrome.runtime.getManifest().version, value);
 }
 renderPopupVersion(null);
+const popupUpdateHost=document.createElement('div');popupUpdateHost.id='popupUpdateNotice';
+document.body.prepend(popupUpdateHost);
+synerixcodeVersion.mount(popupUpdateHost,{current:chrome.runtime.getManifest().version,
+ getStatus:async()=>{const value=await chrome.runtime.sendMessage({type:'rs-update-status'});if(!value?.ok)throw Error(value?.error||'Нет связи с приложением.');renderPopupVersion(value.update);return value.update;},
+ invoke:async action=>{const value=await chrome.runtime.sendMessage({type:'rs-update-action',action});if(!value?.ok)throw Error(value?.error||'Не удалось запустить обновление.');return value;}
+});
 const runHint = document.getElementById("run-hint");
 if (runHint) {
   runHint.textContent = "synerixcode.exe";

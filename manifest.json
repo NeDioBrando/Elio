@@ -942,5 +942,5 @@
       "run_at": "document_idle"
     }
   ],
-  "version_name": "v1"
+  "version_name": "1.0.0"
 }

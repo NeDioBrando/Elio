@@ -1,12 +1,17 @@
-name: Build synerixcode v1 (Windows x64)
+name: Build and release SynerixCode (Windows x64)
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - 'v[0-9]*'
 permissions:
   contents: read
 jobs:
   windows:
     runs-on: windows-2022
     timeout-minutes: 60
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -18,12 +23,32 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: '1.99.1'
+      - name: Verify tag and package versions
+        shell: pwsh
+        run: |
+          $Version = (Get-Content manifest.json -Raw | ConvertFrom-Json).version
+          if ('${{ github.ref_type }}' -eq 'tag' -and '${{ github.ref_name }}' -ne "v$Version") { throw 'Tag does not match the package version.' }
       - name: Audit, test, compile and package
         shell: pwsh
         run: ./Build-Windows.ps1
-      - name: Upload Windows ZIP
+      - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
-          name: synerixcode-v1-Windows-x64
-          path: dist/synerixcode-v1-Windows-x64.zip
+          name: synerixcode-Windows-x64
+          path: dist/synerixcode-v*-Windows-x64.zip
           if-no-files-found: error
+      - name: Publish complete stable GitHub Release
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $Zip = @(Get-ChildItem dist/synerixcode-v*-Windows-x64.zip)
+          if ($Zip.Count -ne 1) { throw 'Expected exactly one Windows ZIP.' }
+          $Tag = '${{ github.ref_name }}'
+          # A new immutable version is required. Never overwrite published assets.
+          $Title = if ($Tag -eq 'v1.0.0') { 'SynerixCode v1' } else { "SynerixCode $Tag" }
+          gh release create $Tag $Zip[0].FullName --verify-tag --draft --title $Title --generate-notes
+          if ($LASTEXITCODE -ne 0) { throw 'Could not create draft release. Do not reuse an existing tag.' }
+          gh release edit $Tag --draft=false --latest
+          if ($LASTEXITCODE -ne 0) { throw 'Draft upload succeeded, but publication failed. Inspect it before publishing.' }

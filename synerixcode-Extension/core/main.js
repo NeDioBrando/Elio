@@ -385,6 +385,16 @@
   // manifest.json (single source of truth) rather than duplicated here.
   const EXT_VERSION = chrome.runtime.getManifest().version;
   let releaseStatus = null;
+  let updateBannerMounted=false;
+  function mountUpdateBanner(){
+    if(updateBannerMounted || !document.documentElement)return;updateBannerMounted=true;
+    const host=document.createElement('div');host.id='synerixcode-update-notice';host.hidden=true;document.documentElement.appendChild(host);
+    synerixcodeVersion.mount(host,{floating:true,current:EXT_VERSION,
+      getStatus:async()=>{const result=await bg({type:'rs-update-status'});if(!result?.ok)throw Error(result?.error||'Нет связи с приложением.');releaseStatus=result.update;renderVersionIndicators();return releaseStatus;},
+      invoke:async(action)=>{const result=await bg({type:'rs-update-action',action});if(!result?.ok)throw Error(result?.error||'Обновление не запущено.');return result;}
+    });
+  }
+  setTimeout(mountUpdateBanner,1500);
   synerixcodeVersion.detectBrowser(navigator).then(() => renderVersionIndicators()).catch(() => {});
   function renderVersionIndicators() {
     for (const element of document.querySelectorAll("[data-synerixcode-version]")) {
@@ -9579,7 +9589,7 @@ function renderCards(panel) {
       const rect=pageMounted ? bar.getBoundingClientRect() : null;
       const barVisible=!!(rect && rect.width>0 && rect.height>0 && rect.bottom>0 && rect.top<window.innerHeight && rect.right>0 && rect.left<window.innerWidth && getComputedStyle(bar).display!=="none" && (barCollapsed || getComputedStyle(bar).visibility!=="hidden"));
       const busy = !!(A.running || A.starting || A.injecting || A.enhancing || A.pendingToolSettles || P.isGenerating());
-      return { provider: P.displayName, pageMounted, barVisible, barCollapsed,
+      return { provider: P.displayName, pageMounted, barVisible, barCollapsed, canChatRead: !A.staleExtension && pageMounted,
         canStart: !A.staleExtension && !busy && !!actionBtn && !actionBtn.disabled &&
           !actionBtn.hidden && (kind === "start" || kind === "start-degraded"),
         canStop: !A.staleExtension && busy && !A.stopping,
@@ -9599,6 +9609,7 @@ function renderCards(panel) {
     }
     const coworkAccepted = new Map();
     let exportChatKey = null, exportRows = [], exportIndex = new Map(), exportBytes = 0, exportOverflow = false, exportRevision=0;
+    const desktopChatSession = crypto.randomUUID();
     const exportTextCache = new WeakMap();
     let exportDirty = true, exportCapturedAt = 0;
     function captureExportHistory(force = true) {
@@ -9700,7 +9711,22 @@ function renderCards(panel) {
       savedHandoff.engram_scope=engramScope();savedHandoff.project=currentProject;
       chrome.storage.local.set({rsLatestHandoff:savedHandoff});return savedHandoff;
     }
-    function desktopAgentAction(action, prompt, requestId) {
+    function desktopAgentAction(action, prompt, requestId, expectedChat) {
+      if(expectedChat && expectedChat !== P.id+'|'+P.conversationKey())return {ok:false,error:"The selected conversation changed. Review the new chat before sending."};
+      if(action === "chat-read") {
+        let request;try{request=JSON.parse(prompt || '{}');}catch{return {ok:false,error:"Invalid chat read request."};}
+        captureExportHistory(false);
+        const chat=P.id+'|'+P.conversationKey();
+        const revision=desktopChatSession+'|'+exportRevision+'|'+exportRows.length+'|'+exportBytes;
+        if(request.chat===chat && request.revision===revision)return {ok:true,chat,revision,not_modified:true};
+        // Bounded live window, independent from the durable chat archive.
+        let bytes=0;const history=[];
+        for(let i=exportRows.length-1;i>=0 && history.length<300;i--){
+          const row=exportRows[i];if(bytes+row.text.length>160000)break;
+          bytes+=row.text.length;history.unshift({...row});
+        }
+        return {ok:true,chat,provider:P.displayName,revision,history,omitted:Math.max(0,exportRows.length-history.length)+(exportOverflow?1:0),generating:!!P.isGenerating()};
+      }
       if(action==="engine-set") {
         if(!engineApi || !["roblox","local"].includes(prompt))return {ok:false,error:"Choose RobloxScript or AgentScript."};
         if(A.running || A.starting || A.injecting || A.enhancing)return {ok:false,error:"Stop the current task before switching its engine."};
@@ -10233,7 +10259,7 @@ rsInterval(() => {
     if (msg && msg.type === "rs-wake") { wakeDueSleepers(); try { sendResponse({ ok: true }); } catch {} return; }
     if (msg && (msg.type === "rs-desktop-agent-state" || msg.type === "rs-desktop-agent-action")) {
       try {
-        const result=msg.type === "rs-desktop-agent-state" ? ui.desktopAgentState() : ui.desktopAgentAction(msg.action, msg.prompt, msg.request_id);
+        const result=msg.type === "rs-desktop-agent-state" ? ui.desktopAgentState() : ui.desktopAgentAction(msg.action, msg.prompt, msg.request_id, msg.expected_chat);
         if(result && typeof result.then === "function"){result.then(sendResponse,error=>sendResponse({ok:false,error:String(error.message||error)}));return true;}
         sendResponse(result);
       } catch (error) { sendResponse({ ok: false, canStart: false, canStop: false, error: String(error.message || error) }); }

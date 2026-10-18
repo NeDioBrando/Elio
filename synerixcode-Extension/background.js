@@ -1003,15 +1003,46 @@ async function refreshProcStatus() {
 // Single-flight: the 5 s interval must never stack status reads on a slow bridge.
 let procStatusReading = false;
 
+let updateSnapshot=null,updateStatusAt=0,updateStatusFlight=null;
+async function readUpdateStatus(force=false){
+  if(!force && updateSnapshot && Date.now()-updateStatusAt<4000)return updateSnapshot;
+  if(updateStatusFlight)return updateStatusFlight;
+  updateStatusFlight=(async()=>{
+    const response=await bridgeFetch("http://127.0.0.1:3000/api/updates/status",{signal:AbortSignal.timeout(5000)});
+    if(!response.ok)throw Error("Обновите приложение SynerixCode до версии с поддержкой обновлятора.");
+    const value=await response.json();if(!value.ok)throw Error(value.error||"Не удалось прочитать статус обновления.");
+    updateSnapshot=value.update;updateStatusAt=Date.now();return updateSnapshot;
+  })().finally(()=>{updateStatusFlight=null;});
+  return updateStatusFlight;
+}
+async function updateAction(action){
+  if(action==='reload'){
+    if([...runTabs.values()].some(at=>Date.now()-at<RUN_BEAT_TTL_MS))throw Error("Сначала завершите задачи агента.");
+    setTimeout(()=>chrome.runtime.reload(),500);return {ok:true};
+  }
+  if(!['check','install'].includes(action))throw Error("Неизвестное действие обновления.");
+  const response=await bridgeFetch("http://127.0.0.1:3000/api/updates/"+action,{method:"POST",headers:{"Content-Type":"application/json"},body:"{}",signal:AbortSignal.timeout(6000)});
+  const value=await response.json();if(!response.ok||!value.ok)throw Error(value.error||"Обновление не запущено.");
+  updateStatusAt=0;return value;
+}
 const browserIdentity = crypto.randomUUID();
+let desktopPinnedTab = null;
+const desktopPinReady = chrome.storage.session.get("synerixcodeDesktopPinnedTab").then(value => {
+  desktopPinnedTab = Number.isInteger(value.synerixcodeDesktopPinnedTab) ? value.synerixcodeDesktopPinnedTab : null;
+}).catch(() => {});
 let desktopAgentReporting = false;
 let desktopAgentError = null;
 async function reportDesktopAgentState() {
   if (desktopAgentReporting || !rustMode) return;
   desktopAgentReporting = true;
   try {
-    const tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true, url: PROVIDER_URLS });
-    const tab = tabs[0];
+    await desktopPinReady;
+    let tab;
+    if (desktopPinnedTab !== null) {
+      try { tab = await chrome.tabs.get(desktopPinnedTab); }
+      catch { desktopPinnedTab = null; await chrome.storage.session.remove("synerixcodeDesktopPinnedTab"); }
+    }
+    if (!tab) tab = (await chrome.tabs.query({ active: true, lastFocusedWindow: true, url: PROVIDER_URLS }))[0];
     let control = { canStart: false, canStop: false, pageMounted:false, barVisible:false, status: "Select a supported AI chat in your browser." };
     if (tab && Number.isInteger(tab.id)) {
       try {
@@ -1022,7 +1053,11 @@ async function reportDesktopAgentState() {
         }
       } catch { control.status = "Refresh the selected AI chat to reconnect synerixcode."; }
     }
+    if(tab && Number.isInteger(tab.id))control.tab_id=tab.id;
+    control.canChatPin=Number.isInteger(control.tab_id);
+    control.any_running=control.canStop===true || [...runTabs.values()].some(at=>Date.now()-at<RUN_BEAT_TTL_MS);
     control.browser_id=browserIdentity;
+    control.pinned=desktopPinnedTab !== null;
     try {control.browser_focused=(await chrome.windows.getLastFocused()).focused===true;}catch{control.browser_focused=false;}
     if (desktopAgentError && Date.now() < desktopAgentError.until) control.status = desktopAgentError.message;
     await bridgeFetch("http://127.0.0.1:3000/api/desktop/browser-agent", {
@@ -1034,8 +1069,20 @@ async function dispatchDesktopAgentAction(msg) {
   if(msg.browser_id && msg.browser_id!==browserIdentity)return;
   let actionResult;
   try {
-    if (!Number.isInteger(msg.tab_id) || !["start", "stop", "enhance", "engine-set", "cowork-on", "cowork-off", "cowork-queue", "cowork-resume", "cowork-remove", "memory-export", "memory-import", "media-stage", "handoff-export", "budget-resume", "task-send", "activity-read", "creator-send", "creator-insert"].includes(msg.action)) throw new Error("Invalid desktop agent action.");
-    const reply = await chrome.tabs.sendMessage(msg.tab_id, { type: "rs-desktop-agent-action", action: msg.action, prompt: msg.prompt, request_id: msg.request_id });
+    if (!Number.isInteger(msg.tab_id) || !["start", "stop", "enhance", "engine-set", "cowork-on", "cowork-off", "cowork-queue", "cowork-resume", "cowork-remove", "memory-export", "memory-import", "media-stage", "handoff-export", "budget-resume", "task-send", "chat-read", "chat-pin", "activity-read", "creator-send", "creator-insert"].includes(msg.action)) throw new Error("Invalid desktop agent action.");
+    // Validate identity at the final hop, not only against the last heartbeat.
+    if (msg.expected_chat) {
+      const current = await chrome.tabs.sendMessage(msg.tab_id, {type:"rs-desktop-agent-state"});
+      if (current?.chat !== msg.expected_chat) throw new Error("The selected conversation changed. Review it before sending.");
+    }
+    let reply;
+    if (msg.action === "chat-pin") {
+      await desktopPinReady;
+      desktopPinnedTab = msg.prompt === "off" ? null : msg.tab_id;
+      if (desktopPinnedTab === null) await chrome.storage.session.remove("synerixcodeDesktopPinnedTab");
+      else await chrome.storage.session.set({synerixcodeDesktopPinnedTab:desktopPinnedTab});
+      reply = {ok:true,pinned:desktopPinnedTab !== null};
+    } else reply = await chrome.tabs.sendMessage(msg.tab_id, { type: "rs-desktop-agent-action", action: msg.action, prompt: msg.prompt, request_id: msg.request_id, expected_chat:msg.expected_chat });
     actionResult = reply;
     if (!reply || !reply.ok) throw new Error(reply && reply.error || "The AI tab did not accept the action.");
   } catch (error) {
@@ -2006,6 +2053,10 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     const mode = await tabEngine(tabId);
     const dispatch = (value, timeout) => normalizeEngine(msg.engine ?? mode) === "local" ? sendLocalEngine(value, timeout) : send(value, timeout);
     switch (msg.type) {
+      case "rs-update-status":
+        try{sendResponse({ok:true,update:await readUpdateStatus()});}catch(error){sendResponse({ok:false,error:error.message||String(error)});}break;
+      case "rs-update-action":
+        try{sendResponse(await updateAction(msg.action));}catch(error){sendResponse({ok:false,error:error.message||String(error)});}break;
       case "rs-run-beat":
         noteRunBeat(tabId, msg.running === true);
         sendResponse({ ok: true });

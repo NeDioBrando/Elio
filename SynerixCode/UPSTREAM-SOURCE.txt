@@ -1,7 +1,0 @@
-Upstream: PlazCode 1.24.20, GPL-3.0-or-later
-https://github.com/stoveez/PlazCode/releases/tag/v1.24.20
-Original ancestor: ZeroScript-Free
-https://github.com/sebattfg/ZeroScript-Free
-Vani provider: user-supplied test extension 1.24.13-notion-vani.
-This is an independent modified distribution, not endorsed by upstream authors.
-Original legal notices are retained unmodified.

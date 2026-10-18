@@ -1,7 +1,6 @@
 # Elio v1
 
 Independent GPL-3.0-or-later fork of PlazCode 1.24.20, originally derived from ZeroScript-Free.
-Blue identity, Vani AI provider, native desktop chat, and an opt-in product updater using this fork’s GitHub Releases.
 
 **This source package does not contain a prebuilt Windows executable.**
 See [README-RU.md](README-RU.md) for build, installation, limitations and Windows validation.

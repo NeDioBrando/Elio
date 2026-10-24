@@ -33,7 +33,7 @@ async fn runtime(scope:&str)->anyhow::Result<Arc<Mutex<Runtime>>>{
     let marker=dir.join("scope.json");
     if marker.is_file(){let stored:String=serde_json::from_slice(&tokio::fs::read(&marker).await?)?;anyhow::ensure!(stored==scope,"Memory scope collision; refused to open another project's database.");}
     else{tokio::fs::write(&marker,serde_json::to_vec(scope)?).await?;}
-    let mut env=HashMap::new();env.insert("ENGRAM_DATA_DIR".into(),dir.to_string_lossy().into_owned());env.insert("ENGRAM_PROJECT".into(),scope.into());env.insert("ENGRAM_CLOUD_AUTOSYNC".into(),"0".into());
+    let mut env=HashMap::new();env.insert("ENGRAM_DATA_DIR".into(),dir.to_string_lossy().into_owned());env.insert("ENGRAM_PROJECT".into(),format!("elio-{}",key(scope)));env.insert("ENGRAM_CLOUD_AUTOSYNC".into(),"0".into());
     let process=AddonRuntime::new("elio-engram".into(),ServerSpec{command:path.to_string_lossy().into_owned(),args:vec!["mcp".into(),"--tools=agent,admin".into()],env});
     let runtime=Arc::new(Mutex::new(Runtime{process,sessions:HashSet::new()}));registry.entries.insert(scope.into(),Entry{runtime:runtime.clone(),touched:tick});Ok(runtime)
 }
@@ -42,11 +42,12 @@ async fn execute(value:Value)->anyhow::Result<Value>{
     let scope=string(&value,"scope",2000)?;let chat=string(&value,"chat",2000)?;let action=string(&value,"action",30)?;
     if matches!(action.as_str(),"save"|"summary"|"checkpoint") {anyhow::ensure!(crate::memory::STORE.snapshot().automatic,"Automatic memory is off.");}
     let session=format!("elio-{}",key(&chat));
+    let project=format!("elio-{}",key(&scope));
     let (tool,args)=match action.as_str(){
-        "context"=>("mem_context",json!({"project":scope,"scope":"project","max_bytes":12000})),
-        "search"=>("mem_search",json!({"project":scope,"scope":"project","query":string(&value,"query",1000)?,"limit":8,"response_format":"compact"})),
-        "read"=>{let id=value["id"].as_u64().filter(|id|*id>0).ok_or_else(||anyhow::anyhow!("Positive observation id required"))?;("mem_get_observation",json!({"id":id,"project":scope}))},
-        "save"|"manual-save"=>("mem_save",json!({"session_id":session,"project":scope,"scope":"project","title":string(&value,"title",160)?,"content":string(&value,"content",16000)?,"topic_key":string(&value,"topic_key",160)?,"type":"discovery","capture_prompt":false})),
+        "context"=>("mem_context",json!({"project":project,"scope":"project","max_bytes":12000})),
+        "search"=>("mem_search",json!({"project":project,"scope":"project","query":string(&value,"query",1000)?,"limit":8,"response_format":"compact"})),
+        "read"=>{let id=value["id"].as_u64().filter(|id|*id>0).ok_or_else(||anyhow::anyhow!("Positive observation id required"))?;("mem_get_observation",json!({"id":id,"project":project}))},
+        "save"|"manual-save"=>("mem_save",json!({"session_id":session,"project":project,"scope":"project","title":string(&value,"title",160)?,"content":string(&value,"content",16000)?,"topic_key":string(&value,"topic_key",160)?,"type":"discovery","capture_prompt":false})),
         "manual-remove"=>{let id=value["id"].as_u64().filter(|id|*id>0).ok_or_else(||anyhow::anyhow!("Positive observation id required"))?;("mem_delete",json!({"id":id,"expected_project":scope,"hard_delete":false}))},
         "checkpoint"=>{
             let id=string(&value,"checkpoint",160)?;
@@ -55,9 +56,9 @@ async fn execute(value:Value)->anyhow::Result<Value>{
             let files=journal.details(&id)?;let paths=files["files"].as_array().map(|rows|rows.iter().filter_map(|row|row["path"].as_str()).take(40).map(|path|path.chars().take(300).collect::<String>()).collect::<Vec<_>>().join("\n")).unwrap_or_default();
             let content=format!("## Goal\n{}\n## Instructions\nHistorical checkpoint record. Verify current state before continuing; an ended loop is not proof every user goal was achieved.\n## Discoveries\nNo additional discoveries inferred automatically.\n## Accomplished\nRecorded checkpoint status: {}.\nRecorded tool steps: {}\nWarnings: {}\n## Next Steps\nInspect current state and unfinished goals before resuming.\n## Relevant Files\n{}",task.request.chars().take(4000).collect::<String>(),task.status,task.steps.iter().take(30).map(|step|step.chars().take(100).collect::<String>()).collect::<Vec<_>>().join(", "),task.warnings.iter().take(8).map(|warning|warning.chars().take(250).collect::<String>()).collect::<Vec<_>>().join("; "),paths);
             let mut end=content.len().min(16000);while !content.is_char_boundary(end){end-=1;}let content=&content[..end];
-            ("mem_save",json!({"session_id":session,"project":scope,"scope":"project","title":format!("Task checkpoint: {}",task.label.chars().take(120).collect::<String>()),"content":content,"topic_key":format!("checkpoint/{id}"),"type":"discovery","capture_prompt":false}))
+            ("mem_save",json!({"session_id":session,"project":project,"scope":"project","title":format!("Task checkpoint: {}",task.label.chars().take(120).collect::<String>()),"content":content,"topic_key":format!("checkpoint/{id}"),"type":"discovery","capture_prompt":false}))
         },
-        "summary"=>("mem_session_summary",json!({"session_id":session,"project":scope,"content":string(&value,"content",20000)?})),
+        "summary"=>("mem_session_summary",json!({"session_id":session,"project":project,"content":string(&value,"content",20000)?})),
         _=>anyhow::bail!("Use context, search, read, save or summary."),
     };
     let shared=runtime(&scope).await?;let mut runtime=shared.lock().await;

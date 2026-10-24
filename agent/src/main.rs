@@ -70,6 +70,7 @@ mod workspace;
 mod security;
 mod preferences;
 mod memory;
+mod vault;
 mod templates;
 mod creations;
 mod explorer;
@@ -1241,6 +1242,7 @@ async fn run_server(state: AppState, addr: SocketAddr, start: std::time::Instant
         .route("/api/stop", post(immediate_stop_handler))
         .route("/api/media/convert", post(media::post).layer(axum::extract::DefaultBodyLimit::max(64 * 1024 * 1024)))
         .route("/api/memory", get(memory::get).post(memory::post).layer(axum::extract::DefaultBodyLimit::max(4*1024*1024)))
+        .route("/api/vault",post(vault::post).layer(axum::extract::DefaultBodyLimit::max(6*1024*1024)))
         .route("/api/engram",post(engram::post).layer(axum::extract::DefaultBodyLimit::max(64000)))
         .route("/api/chat-history",get(chat_history::get).post(chat_history::post).layer(axum::extract::DefaultBodyLimit::max(6*1024*1024)))
         .route("/api/desktop/restart", post(desktop_restart_handler))
@@ -1483,6 +1485,7 @@ async fn desktop_shell_handler() -> impl IntoResponse {
         .replace("__ELIO_EXPLORER_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/explorer-ui.js")))
         .replace("__ELIO_MEDIA_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/media.js")))
         .replace("__ELIO_MEMORY_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/memory.js")))
+        .replace("__ELIO_VAULT_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/vault-ui.js")))
         .replace("__ELIO_TOOLKIT_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/toolkit-ui.js")))
         .replace("__ELIO_TASK_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/task-center.js")))
         .replace("__ELIO_TEMPLATE_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/templates.js")))
@@ -1506,6 +1509,7 @@ async fn desktop_handler(State(state): State<AppState>) -> Html<String> {
         .replace("__ELIO_EXPLORER_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/explorer-ui.js")))
         .replace("__ELIO_MEDIA_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/media.js")))
         .replace("__ELIO_MEMORY_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/memory.js")))
+        .replace("__ELIO_VAULT_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/vault-ui.js")))
         .replace("__ELIO_TOOLKIT_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/toolkit-ui.js")))
         .replace("__ELIO_TASK_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/task-center.js")))
         .replace("__ELIO_TEMPLATE_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/templates.js")))

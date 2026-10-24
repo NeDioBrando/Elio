@@ -1,0 +1,234 @@
+{
+  "product": "Elio",
+  "version": "1.0.1",
+  "source_baseline": "d2cfc0d3fa89117729a115a6d9800b3e0fdf08a3",
+  "environment": {
+    "os": "Linux",
+    "node": "24.14.1",
+    "browser": "real system Chromium, headless",
+    "native": "Rust debug build; real local API; isolated temporary profile",
+    "not_tested": [
+      "Windows EXE runtime",
+      "Windows WebView2",
+      "live external Engram runtime",
+      "user browser/installed extension end-to-end"
+    ]
+  },
+  "native": {
+    "command": "cargo test --locked --manifest-path agent/Cargo.toml",
+    "library_passed": 3,
+    "binary_passed": 136,
+    "failed": 0,
+    "ignored": 1,
+    "build": "cargo build --locked --manifest-path agent/Cargo.toml: passed"
+  },
+  "javascript_regression": {
+    "total": 186,
+    "passed": 162,
+    "failed": [
+      {
+        "test": "test-1.20.0-regressions.js",
+        "code": 1,
+        "seconds": 0.19,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "ok - cut-off commands do not stop the run after 3 failures\nError: ENOENT: no such file or directory, open '/data/Elio-memory/agent/src/updater.rs'"
+      },
+      {
+        "test": "test-1.22.0-debug-capture.js",
+        "code": 1,
+        "seconds": 2.4,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "expected: true,"
+      },
+      {
+        "test": "test-1.24.12-fixes.js",
+        "code": 1,
+        "seconds": 0.12,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "expected: true,"
+      },
+      {
+        "test": "test-1.24.13-merged-fixes.js",
+        "code": 1,
+        "seconds": 0.36,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "Error: ENOENT: no such file or directory, open '../../development/1.0.1/package.py'"
+      },
+      {
+        "test": "test-approach-summary.js",
+        "code": 1,
+        "seconds": 1.31,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "TypeError: elioVersion.mount is not a function"
+      },
+      {
+        "test": "test-blender.js",
+        "code": 1,
+        "seconds": 0.38,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "FAIL  glass tokens untouched\nSome blender checks failed."
+      },
+      {
+        "test": "test-bridges.js",
+        "code": 1,
+        "seconds": 0.11,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "if (!key) throw new Error(\"Run against an isolated bridge with ELIO_TEST_KEY set.\");\nError: Run against an isolated bridge with ELIO_TEST_KEY set."
+      },
+      {
+        "test": "test-claude.js",
+        "code": 1,
+        "seconds": 0.1,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "FAIL  glass tokens untouched\nSome Claude checks failed."
+      },
+      {
+        "test": "test-clickup-provider.js",
+        "code": 1,
+        "seconds": 0.09,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\nexpected: '1.0.0',"
+      },
+      {
+        "test": "test-design-upgrade.js",
+        "code": 1,
+        "seconds": 1.52,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "expected: 'amethyst',"
+      },
+      {
+        "test": "test-design-visual.js",
+        "code": 1,
+        "seconds": 0.92,
+        "baseline_code": 1,
+        "diagnostic_excerpt": ""
+      },
+      {
+        "test": "test-desktop-regression.js",
+        "code": 1,
+        "seconds": 0.09,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "if (actual !== expected) throw new Error(\"Protected elio file changed: \" + path + \"\\nexpected \" + expected + \"\\nactual   \" + actual);\nError: Protected elio file changed: core/config.js\nexpected 54e14472bb723ed02c949c2a3db2c8aad26ce6f8"
+      },
+      {
+        "test": "test-donation-links.js",
+        "code": 1,
+        "seconds": 1.02,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "ReferenceError: document is not defined"
+      },
+      {
+        "test": "test-notion-protocol-file.js",
+        "code": 124,
+        "seconds": 100.01,
+        "baseline_code": 124,
+        "diagnostic_excerpt": "Command '['node', '/data/Elio-memory/test-notion-protocol-file.js']' timed out after 100 seconds"
+      },
+      {
+        "test": "test-notion-startup-small-paste.js",
+        "code": 124,
+        "seconds": 100.03,
+        "baseline_code": 124,
+        "diagnostic_excerpt": "Command '['node', '/data/Elio-memory/test-notion-startup-small-paste.js']' timed out after 100 seconds"
+      },
+      {
+        "test": "test-package-version-display.js",
+        "code": 1,
+        "seconds": 0.09,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "TypeError: Cannot read properties of undefined (reading 'textContent')"
+      },
+      {
+        "test": "test-provider-preservation.js",
+        "code": 1,
+        "seconds": 0.65,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "for(const [fn,ast]of Object.entries(before)){if(fn==='RSProvider'||fn==='waitFor'||fn==='truncateForSend'||name==='qwen-net.js'&&fn==='consume'||exceptions[key]?.has(fn))continue;if(ast!==after[fn])(()=>{throw Error('Unexpected healthy control-flow change: '+name+' > '+fn);})();else total++;}\nError: Unexpected healthy control-flow change: notion.js > renderReadyAcknowledgement"
+      },
+      {
+        "test": "test-supported-ai-icons.js",
+        "code": 1,
+        "seconds": 1.09,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\nexpected: 15,"
+      },
+      {
+        "test": "test-supported-ai-links.js",
+        "code": 1,
+        "seconds": 1.13,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\nexpected: 15,"
+      },
+      {
+        "test": "test-ultracode-default.js",
+        "code": 1,
+        "seconds": 1.39,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\nexpected: '#e9ba53',"
+      },
+      {
+        "test": "test-v111.js",
+        "code": 1,
+        "seconds": 0.09,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "FAIL  manifest at 1.11.0 or newer\nFAIL  manifest name is elio"
+      },
+      {
+        "test": "test-v112.js",
+        "code": 1,
+        "seconds": 0.13,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "PASS  unlock failsafe skips while an owner is live\nFAIL  glass has @supports fallback\nFAIL  glass base opacity readable\nFAIL  manifest at 1.12.0 or newer\nPASS  composer-unlock failsafe in meter loop"
+      },
+      {
+        "test": "test-v115.js",
+        "code": 1,
+        "seconds": 0.26,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "FAIL  manifest 1.16+\nFAIL  glass base opacity readable\nFAIL  glass has @supports fallback\nFAIL  overlay brand is elio\nFAIL  popup brand is elio\nFAIL  copilot popup shortcut"
+      },
+      {
+        "test": "test-v118.js",
+        "code": 1,
+        "seconds": 0.09,
+        "baseline_code": 1,
+        "diagnostic_excerpt": "PASS  blenderCall explains a failed readback\nTypeError: Cannot read properties of undefined (reading 'get')"
+      }
+    ]
+  },
+  "baseline_comparison": {
+    "checked": 27,
+    "remaining_not_green": 24,
+    "all_remaining_reproduce_on_clean_baseline": true,
+    "new_regressions_found_and_fixed": [
+      "test-1.21.0-memory.js",
+      "test-provider-dom-guards.js",
+      "test-provider-dom-resilience.js"
+    ],
+    "note": "Not a claim that all old defects were repaired. Some non-green fixtures are obsolete contracts, missing environment/dependencies or timeouts; identical non-green status is not proof of identical root cause."
+  },
+  "focused": {
+    "test-vault-contract.cjs": "passed; includes final fail-closed project resolution and Unicode-safe idempotent migration",
+    "test-vault-live.cjs": "passed; real backend and Chromium: auth/origin, project isolation, concurrent revision/etag conflict, durable files/restart/history, no-op receipts, OFF gate, export/import, graph/backlinks, UI editing, inert HTML, keyboard, dirty draft, narrow/light UI, polling and full-body search",
+    "test-desktop-chat-ui.cjs": "passed",
+    "test-elio-identity.cjs": "passed",
+    "test-elio-rename.cjs": "passed",
+    "test-elio-audit.cjs": "passed",
+    "tools/test_package_windows.py": "passed (fixture only, does not compile/execute Windows code)"
+  },
+  "benchmark": {
+    "scenario": "1000 explicitly linked notes; one debug Linux run",
+    "cold_context_ms": 535.999859,
+    "warm_context_ms": 8.571357,
+    "capsule_characters": 1498,
+    "scope": "Not a Windows/release benchmark or latency guarantee"
+  },
+  "data_safety": "No user data or Roblox scene modified. Test profiles removed. Source package excludes generated test notes and credentials.",
+  "research": [
+    "https://obsidian.md/help/data-storage",
+    "https://obsidian.md/help/Editing+and+formatting/Properties",
+    "https://obsidian.md/help/links",
+    "https://github.com/nightisyang/obsidian-cli",
+    "https://github.com/jrcruciani/obsidian-memory-for-ai"
+  ]
+}

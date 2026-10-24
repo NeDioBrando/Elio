@@ -2042,7 +2042,7 @@ async function readPersonalMemory(action) {
   const response = await bridgeFetch("http://127.0.0.1:3000/api/memory", action ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(action), signal: AbortSignal.timeout(30000) } : { signal: AbortSignal.timeout(10000) });
   const value = await response.json();
   if (!response.ok) throw new Error(value.error || "Memory bridge is unavailable.");
-  const memory = value.memory || value;
+  const memory = value.memory ? {...value.memory,receipt:value.receipt||null} : value;
   const signature=JSON.stringify(memory);
   if(signature!==lastMemorySignature){await chrome.storage.local.set({ rsPersonalMemory: memory });lastMemorySignature=signature;}
   return memory;
@@ -2186,6 +2186,10 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
           const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),60000);try{const response=await bridgeFetch(url,{method:"POST",headers,body,signal:controller.signal});const value=await response.json();sendResponse(response.ok?value:{ok:false,error:value.error || "Template request failed."});}finally{clearTimeout(timer);}
         }catch(error){sendResponse({ok:false,error:error.message || String(error)});}
         break;
+      case "vault": {
+        try {const response=await bridgeFetch(RUST_ROBLOX_HTTP+"/api/vault",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(msg.request||{}),signal:AbortSignal.timeout(15000)});sendResponse(await response.json());}
+        catch(error){sendResponse({ok:false,error:error.message||String(error)});}break;
+      }
       case "engram": {
         const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),28000);
         try { const response=await bridgeFetch(RUST_ROBLOX_HTTP+"/api/engram",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(msg.request||{}),signal:controller.signal});sendResponse(await response.json()); }

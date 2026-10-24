@@ -787,6 +787,41 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "252afb9ae5eaa683babdc6a068b3f5726eb19e05070c731f9b2a23a7c3e8ed34"
 
 [[package]]
+name = "elio-agent"
+version = "1.0.1"
+dependencies = [
+ "anyhow",
+ "axum",
+ "chrono",
+ "clap",
+ "futures",
+ "getrandom 0.2.17",
+ "glob",
+ "http",
+ "image",
+ "libc",
+ "once_cell",
+ "rbx_binary",
+ "rbx_dom_weak",
+ "rbx_reflection_database",
+ "rbx_xml",
+ "regex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2",
+ "sysinfo",
+ "tao",
+ "tokio",
+ "tokio-tungstenite 0.26.2",
+ "tower",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+ "wry",
+]
+
+[[package]]
 name = "equivalent"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3098,41 +3133,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0bf256ce5efdfa370213c1dabab5935a12e49f2c58d15e9eac2870d3b4f27263"
 dependencies = [
  "futures-core",
-]
-
-[[package]]
-name = "elio-agent"
-version = "1.0.1"
-dependencies = [
- "anyhow",
- "axum",
- "chrono",
- "clap",
- "futures",
- "getrandom 0.2.17",
- "glob",
- "http",
- "image",
- "libc",
- "once_cell",
- "rbx_binary",
- "rbx_dom_weak",
- "rbx_reflection_database",
- "rbx_xml",
- "regex",
- "reqwest",
- "serde",
- "serde_json",
- "sha2",
- "sysinfo",
- "tao",
- "tokio",
- "tokio-tungstenite 0.26.2",
- "tower",
- "tower-http",
- "tracing",
- "tracing-subscriber",
- "wry",
 ]
 
 [[package]]

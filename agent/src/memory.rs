@@ -85,8 +85,12 @@ pub static STORE: once_cell::sync::Lazy<Store> = once_cell::sync::Lazy::new(|| {
 pub async fn get() -> axum::Json<Memory> { axum::Json(STORE.snapshot()) }
 pub async fn post(axum::Json(req): axum::Json<Value>) -> axum::response::Response {
     use axum::response::IntoResponse;
+    let previous=STORE.snapshot();let automatic_write=req["action"]=="remember";
     match STORE.update(req) {
-        Ok(memory) => axum::Json(json!({"ok":true,"memory":memory})).into_response(),
+        Ok(memory) => {
+            let receipt=if automatic_write {memory.entries.iter().find(|n|!previous.entries.iter().any(|o|o.id==n.id)).map(|n|json!({"id":format!("personal-{}",n.id),"title":n.title,"operation":"added"}))}else{None};
+            axum::Json(json!({"ok":true,"memory":memory,"receipt":receipt})).into_response()
+        },
         Err(error) => (axum::http::StatusCode::BAD_REQUEST, axum::Json(json!({"ok":false,"error":error.to_string()}))).into_response(),
     }
 }

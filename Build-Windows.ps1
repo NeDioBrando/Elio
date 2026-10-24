@@ -19,6 +19,8 @@ node .\test-elio-chat-live.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Live chat tests failed.' }
 node .\test-desktop-chat.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Desktop chat tests failed.' }
+node .\test-vault-contract.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Project memory and paragraph contracts failed.' }
 node .\test-elio.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Elio regression tests failed.' }
 node .\test-elio-theme.cjs

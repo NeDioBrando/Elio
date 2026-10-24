@@ -1350,13 +1350,24 @@ const RSProvider = (() => {
     if (!item) return "";
     const cached = _transcriptTextCache.get(item);
     if (cached && cached.epoch === _textReadEpoch) return cached.text;
-    let text;
-    if (safeQuery(item, ".rs-chip")) {
-      // Legacy/injected-result chips are extension UI, never assistant tokens.
-      const copy = item.cloneNode(true);
-      safeQueryAll(copy, ".rs-chip").forEach((node) => node.remove());
-      text = safeRead(() => copy.textContent, "") || "";
-    } else text = safeRead(() => item.textContent, "") || "";
+    // Preserve native block boundaries without layout-dependent innerText.
+    // Inline spans must remain contiguous; pre/code text must remain byte-faithful.
+    const codeBlocks=[];
+    function read(node, inPre=false) {
+      try {
+      if(node.nodeType===3)return node.nodeValue||'';
+      if(node.nodeType!==1)return '';
+      if(node.matches?.('.rs-chip,.rs-memory-receipt,[data-elio-ui],script,style'))return '';
+      const tag=node.tagName.toLowerCase();if(tag==='br')return '\n';
+      if(tag==='img' && node.classList.contains('notion-emoji'))return node.getAttribute('alt')||'';
+      if(tag==='pre'){const index=codeBlocks.push(node.textContent||'')-1;return '\n\uE000ELIO_PRE_'+index+'\uE001\n';}
+      const block=/^(?:p|div|section|article|h[1-6]|ul|ol|li|blockquote|tr|table)$/.test(tag)||node.classList?.contains('notion-selectable');
+      let value='';for(const child of node.childNodes)value+=read(child,inPre||tag==='code');
+      if(tag==='td'||tag==='th')value+='\t';
+      return block&&!inPre ? '\n'+value+'\n' : value;
+      } catch { return ''; }
+    }
+    const text=read(item).replace(/\n{3,}/g,'\n\n').trim().replace(/\uE000ELIO_PRE_(\d+)\uE001/g,(_,i)=>codeBlocks[Number(i)]||'');
     _transcriptTextCache.set(item, { epoch: _textReadEpoch, text });
     if (!_textEpochQueued) {
       _textEpochQueued = true;

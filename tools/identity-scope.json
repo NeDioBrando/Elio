@@ -1,6 +1,7 @@
 {
   "version": "1.0.1",
   "identity_line": "You are Elio, the user's AI assistant.\n",
-  "config_without_identity_sha256": "bf4c0d687698d8df55619904d3b4a1b8761d20e039cc6a16c9bbe2d62288309c",
-  "compact_ack_line": "After list_commands succeeds, reply exactly \"Elio is ready to assist you.\" and wait for the user's request.\n"
+  "config_without_identity_sha256": "ddfb3d7577f5c31430720a94eea255b3e8e6938162a4ea4a968c3f865e67db7c",
+  "compact_ack_line": "After list_commands succeeds, reply exactly \"Elio is ready to assist you.\" and wait for the user's request.\n",
+  "memory_revision_note": "Approved Elio vault feature: only project-memory sections and memory nudge updated; identity/ready text and tool execution contracts unchanged."
 }

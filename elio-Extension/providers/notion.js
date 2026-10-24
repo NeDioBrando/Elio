@@ -2266,7 +2266,8 @@ const RSProvider = (() => {
         diag("notion.start.nativeDraft", { retained: !!verifiedNativeEditor, chars: text.length });
       }
       if (!verifiedNativeEditor) {
-      const resultFile = /^Output of ['"]/.test(text);
+      const resultHeader = /^(?:\[elio retained the COMPLETE result\.[^\n]*\]\s*)?(Output of ['"][^\n]+)/.exec(text);
+      const resultFile = !!resultHeader;
       const name = `elio_${resultFile ? "tool_result" : "protocol"}_${Date.now()}_${++_imageSeq}.txt`;
       const files = [new File([text], name, { type: "text/plain" })];
       if (Array.isArray(images)) {
@@ -2297,15 +2298,15 @@ const RSProvider = (() => {
         _sendFailureDetail = `Notion did not finish the protocol file upload after ${attempts} attempt${attempts === 1 ? "" : "s"}. elio did not submit or repeat the message. Check the attachment spinner or upload error, remove the stalled elio attachment if it remains, then retry in a fresh Notion AI chat. In Edge or Brave, also verify the extension’s site access.`;
         return false;
       }
-      const header = /^Output of ['"][^\n]+/.exec(text);
-      const lead = header ? header[0].slice(0,200) : (text.startsWith("⟦RS-SYS⟧") ? "⟦RS-SYS⟧" : "elio protocol message");
+      const header = resultHeader;
+      const lead = header ? header[1].slice(0,200) : (text.startsWith("⟦RS-SYS⟧") ? "⟦RS-SYS⟧" : "elio protocol message");
       // 1.24.12: describe the attachment plainly (what it is, why it is a file)
       // instead of "preserve its exact commands and instructions", which reads
       // like an injected instruction to Notion's reviewer. The first sentence is
       // unchanged because other elio code recognises it.
       const instruction = options.userPrompt
         ? `Follow-up request\nThe complete request is in the attached file ${name}. It is my own message, attached as a text file only because it is too long to paste. Please read it and continue the current task.`
-        : `${lead}\nThe complete elio message is in the attached file ${name}. It was attached as a plain text file only because it is too long to paste into the chat. ${resultFile ? "It is the output of the command you requested earlier in this chat. Please read it and continue the current task using that output; do not restart it." : "It is my elio connection message: the available command list and my project preferences. Please read it and reply as it describes. Do not claim readiness until the enclosed startup handshake is complete."}`;
+        : `${lead}\nThe complete elio message is in the attached file ${name}. It was attached as a plain text file only because it is too long to paste into the chat. ${resultFile ? "It is the output of the command you requested earlier in this chat. Please read it and continue the current task using that output; do not restart it." : text.startsWith("⟦RS-SYS⟧") ? "It is my elio connection message: the available command list and my project preferences. Please read it and reply as it describes. Do not claim readiness until the enclosed startup handshake is complete." : "It is an Elio service message for the current task, not a new connection request. Read the attachment in the context of the current task; do not restart the startup handshake."}`;
       diag("notion.protocol.file", { chars:text.length, filename:name });
       const sent = await typeAndSend(instruction, null, { ...options, protocolFile:true });
       if (!sent && _ownedAttachment) clearAttachments();

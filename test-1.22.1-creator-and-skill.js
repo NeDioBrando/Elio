@@ -33,19 +33,10 @@ assert(HB && typeof HB.compile === 'function', 'headless builder loads');
   const r = HB.compile({ ...bp, action_id: 'preview-' + require('crypto').randomUUID() });
   assert(r.ok, 'generated preview action_id is valid: ' + r.error);
 }
-// (3) skill -> real tool reroute.
-const G = require(GUARD);
-const tools = [{ name: 'skill', inputSchema: { type: 'object', properties: { name: { type: 'string' } } } },
-  { name: 'creation_preview', inputSchema: { type: 'object', required: ['action'], properties: { action: { type: 'string', enum: ['save', 'read', 'list', 'feedback'] }, build_id: { type: 'string' } } } },
-  { name: 'execute_luau', inputSchema: { type: 'object', properties: { code: { type: 'string' } }, required: ['code'] } }];
-let c = { tool: 'skill', arguments: { name: 'creation_preview', arguments: { action: 'list' } } };
-G.repair(c, tools); assert.equal(c.tool, 'creation_preview'); assert.deepEqual(c.arguments, { action: 'list' }); assert.deepEqual(G.check(c, tools), []);
-c = { tool: 'skill', arguments: { skill: 'creation_preview', action: 'read', build_id: 'crate-1' } };
-G.repair(c, tools); assert.equal(c.tool, 'creation_preview'); assert.deepEqual(c.arguments, { action: 'read', build_id: 'crate-1' });
-c = { tool: 'skill', arguments: { name: '/execute_luau', args: '{"code":"print(1)"}' } };
-G.repair(c, tools); assert.equal(c.tool, 'execute_luau'); assert.deepEqual(c.arguments, { code: 'print(1)' });
-// Real skills and unknown names are left for the MCP to answer.
-c = { tool: 'skill', arguments: { name: 'rbx-debug' } }; G.repair(c, tools); assert.equal(c.tool, 'skill'); assert.deepEqual(c.arguments, { name: 'rbx-debug' });
-c = { tool: 'skill', arguments: { name: 'skill' } }; G.repair(c, tools); assert.equal(c.tool, 'skill');
-c = { tool: 'creation_preview', arguments: { name: 'execute_luau', action: 'list' } }; G.repair(c, tools); assert.equal(c.tool, 'creation_preview');
-console.log('PASS: removed desktop builders stay absent, AI preview action_id filled, skill-wrapped tool calls rerouted.');
+// (3) Knowledge requests must never be silently promoted to other commands.
+const G=require(GUARD);
+const tools=[{name:'skill',inputSchema:{type:'object',properties:{skill_name:{type:'string'}}}},{name:'headless_build'},{name:'creation_preview'},{name:'execute_luau'}];
+for(const args of [{skill_name:'headless_build',studio_id:'studio'},{name:'creation_preview',arguments:{action:'save'}},{skill:'creation_preview',action:'read',build_id:'crate-1'},{name:'/execute_luau',args:'{"code":"return 1"}'},{name:'rbx-debug'}]){
+ const call={tool:'skill',arguments:structuredClone(args)};G.repair(call,tools);assert.equal(call.tool,'skill');assert.deepEqual(call.arguments,args);
+}
+console.log('PASS desktop action contracts, preview action_id generation and skill lookup isolation.');

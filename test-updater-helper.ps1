@@ -35,6 +35,10 @@ function Run-Case([string]$Name,[string]$NewExe,[string]$ManifestVersion,[string
  [IO.File]::WriteAllText((Join-Path $bundle 'elio-Extension\manifest.json'),('{"version":"'+$ManifestVersion+'"}'))
  [IO.File]::WriteAllText((Join-Path $bundle 'WebView2Loader.dll'),'fixture-only')
  [IO.File]::WriteAllText((Join-Path $bundle 'config.json'),'do-not-overwrite-user')
+ New-Item -ItemType Directory -Path (Join-Path $bundle 'runtime\engram'),(Join-Path $install 'runtime\engram') -Force|Out-Null
+ [IO.File]::WriteAllText((Join-Path $install 'runtime\engram\engram-windows-amd64.exe'),'old-sidecar-fixture-not-executable')
+ [IO.File]::WriteAllText((Join-Path $bundle 'runtime\engram\engram-windows-amd64.exe'),'new-sidecar-fixture-not-executable')
+ [IO.File]::WriteAllText((Join-Path $bundle 'runtime\engram\untrusted.exe'),'must-not-install')
  $zip=Join-Path $stage 'release.zip';[IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $case 'bundle'),$zip)
  if($Mode -eq 'traversal'){
   $z=[IO.Compression.ZipFile]::Open($zip,[IO.Compression.ZipArchiveMode]::Update)
@@ -49,6 +53,8 @@ function Run-Case([string]$Name,[string]$NewExe,[string]$ManifestVersion,[string
  $actual=& (Join-Path $install 'elio.exe') --version
  Assert ($actual -eq $(if($Success){'elio-agent 1.0.2'}else{'elio-agent 1.0.1'})) "$Name did not preserve expected executable"
  Assert (!(Test-Path -LiteralPath (Join-Path $case 'escape.txt'))) "$Name escaped ZIP staging"
+ Assert ((Get-Content -LiteralPath (Join-Path $install 'runtime\engram\engram-windows-amd64.exe') -Raw) -eq $(if($Success){'new-sidecar-fixture-not-executable'}else{'old-sidecar-fixture-not-executable'})) "$Name failed sidecar install/rollback"
+ Assert (!(Test-Path -LiteralPath (Join-Path $install 'runtime\engram\untrusted.exe'))) "$Name installed an unallowlisted runtime"
  $pidFile=Join-Path $install 'fixture.pid'
  if(Test-Path -LiteralPath $pidFile){$fixturePid=[int](Get-Content -LiteralPath $pidFile -Raw);Stop-Process -Id $fixturePid -Force -ErrorAction SilentlyContinue}
  Write-Host "PASS Windows updater helper: $Name"

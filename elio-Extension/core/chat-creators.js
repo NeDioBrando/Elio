@@ -26,25 +26,39 @@ const elioChatCreators = (() => {
     return {tool:'creation_preview',arguments:value};
   }
   function previewOnly(text) {
+    if (/(?:не\s+(?:вставляй|вставлять|добавляй|изменяй)|только\s+(?:предпросмотр|черновик|план|экспорт))/i.test(String(text||''))) return true;
     return /\b(?:preview[ -]only|draft[ -]only|export[ -]only|(?:do not|don['’]?t|never)\s+insert|(?:do not|don['’]?t|never)\s+(?:modify|change)\s+(?:Roblox\s+)?Studio)\b/i.test(String(text||'')) || /\b(?:just|only)\s+(?:a\s+)?(?:preview|draft|plan)\b/i.test(String(text||''));
   }
   function routeRequest(text) {
     const request=String(text||'').replace(/```[\s\S]*?```/g,' ').trim();
-    if(request.length>40000 || /^(?:how\b|explain\b|what\b|why\b|can (?:i|someone)\b)/i.test(request))return '';
-    const creation=/\b(?:make|build|create|generate|design|recreate)\b/i.test(request);
-    const visual=/\b(?:ui|gui|hud|user interface|interface|model|3d model|shop menu|inventory menu|settings menu)\b/i.test(request);
+    if(request.length>40000 || /^(?:how\b|explain\b|what\b|why\b|can (?:i|someone)\b|как(?:\s|$)|объясни|почему)/i.test(request))return '';
+    const creation=/\b(?:make|build|create|generate|design|recreate)\b|(?:^|\s)(?:сделай|создай|построй|сгенерируй|воссоздай)(?:\s|$)/i.test(request);
+    const visual=/\b(?:ui|gui|hud|user interface|interface|model|3d model|shop menu|inventory menu|settings menu)\b|модел[ьи]|интерфейс|меню/i.test(request);
     if(!creation || !visual || /\b(?:machine learning|language model|data model|view model|database model)\b/i.test(request))return '';
     return policy+'\nAvailable chat insertion command: '+JSON.stringify(tool)+'\nContinue the current request through the creator tools. Preserve explicit preview-only and placement instructions; do not restart the agent.';
   }
-  function enhancementRequest(raw){return '(System note: Automatically enhance the current elio model/UI request before any creator mutation. Output only an improved prompt; do not create, save or insert anything in this rewrite turn.)\n'+elioEnhancer.buildRequest(raw);}
+  function enhancementRequest(raw,requestId){
+    elioEnhancer.buildRequest(raw);
+    return '(System note: Automatically enhance the current elio model/UI request for this requested creation task. Do not create, save or insert anything in this rewrite turn.)\n'+elioEnhancer.rules+'\n\nAUTOMATIC PASS RESPONSE FORMAT: For this pass, put the improved prompt in enhanced_prompt inside one JSON object with request_id='+JSON.stringify(requestId)+'. This JSON envelope replaces the plain-text output format above. Return only that object, with no commentary, commands or request to stop.\n\nRAW USER REQUEST:\n'+raw;
+  }
   function executionRequest(raw,enhanced){return '(System note: The creator prompt enhancement pass is complete. Continue the current task using the enhanced wording below. The exact original request remains authoritative: retain its names, dimensions, placement, style, constraints, preview-only instructions and all unfinished goals. Do not repeat the rewrite pass. No earlier proposed creator command was executed.)\n'+policy+'\nEXACT ORIGINAL REQUEST:\n'+raw+'\nENHANCED CREATION BRIEF:\n'+enhanced;}
+  function parseRewrite(text,requestId){
+    let source=String(text||'').trim();
+    const fence=/^```(?:json)?\s*\n([\s\S]*?)\n```$/.exec(source);if(fence)source=fence[1];
+    let value;try{value=JSON.parse(source);}catch{throw Error('Invalid enhancer response; expected the matching rewrite JSON. The original request was kept.');}
+    if(!value||Array.isArray(value)||value.request_id!==requestId||Object.keys(value).some(k=>!['request_id','enhanced_prompt'].includes(k))||typeof value.enhanced_prompt!=='string')throw Error('Enhancer response belongs to another request or is not a rewrite. The original request was kept.');
+    const prompt=value.enhanced_prompt.trim();
+    if(!prompt||prompt.length>40000)throw Error('The enhanced creation prompt is empty or too long. No creator command was executed.');
+    if(/(?:^|\n)\s*(?:Output of ['"]|ERROR|###LUA###|###MCP_TOOL###)|```|["']command["']\s*:/i.test(prompt))throw Error('Enhancer returned commands or tool feedback instead of a creation brief.');
+    return prompt;
+  }
   function createEnhancer(env){
-    const pending=new Map();
+    const pending=new Map();let sequence=0;
     return {perform(key,raw){
       const context=env.context(),identity=context+'|'+key;
       if(pending.has(identity))return pending.get(identity);
       const check=()=>{if(env.cancelled()||env.context()!==context)throw Error('Creation prompt enhancement stopped or chat/engine changed. No creator command was executed.');};
-      const operation=(async()=>{check();if(typeof raw!=='string'||!raw.trim()||raw.length>40000)throw Error('Use a creation request of at most 40,000 characters. The original request remains in the chat.');const enhanced=await env.rewrite(raw,check);check();if(typeof enhanced!=='string'||!enhanced.trim()||enhanced.length>40000)throw Error('The enhanced creation prompt is empty or too long. No creator command was executed.');const base=await env.send(executionRequest(raw,enhanced));check();return {base,enhanced};})();
+      const operation=(async()=>{check();if(typeof raw!=='string'||!raw.trim()||raw.length>40000)throw Error('Use a creation request of at most 40,000 characters. The original request remains in the chat.');const requestId='elio-rewrite-'+Date.now().toString(36)+'-'+(++sequence);const response=await env.rewrite(raw,check,requestId);check();const enhanced=parseRewrite(response,requestId);if(typeof enhanced!=='string'||!enhanced.trim()||enhanced.length>40000)throw Error('The enhanced creation prompt is empty or too long. No creator command was executed.');const base=await env.send(executionRequest(raw,enhanced));check();return {base,enhanced};})();
       pending.set(identity,operation);operation.finally(()=>{if(pending.get(identity)===operation)pending.delete(identity);}).catch(()=>{});return operation;
     }};
   }
@@ -109,6 +123,6 @@ const elioChatCreators = (() => {
     }
     return {insert};
   }
-  return {policy,tool,routeRequest,previewOnly,recoverPreview,batches,create,enhancementRequest,executionRequest,createEnhancer};
+  return {policy,tool,routeRequest,previewOnly,recoverPreview,batches,create,enhancementRequest,executionRequest,parseRewrite,createEnhancer};
 })();
 if(typeof module!=='undefined')module.exports=elioChatCreators;

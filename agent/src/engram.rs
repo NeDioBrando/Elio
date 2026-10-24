@@ -19,7 +19,7 @@ fn executable()->anyhow::Result<PathBuf>{
     // Prefer the bundled runtime so automatic upgrades carry the matching Engram build.
     let bundled=root.join("elio.app/Contents/Resources/engram").join(&filename);
     let path=if cfg!(target_os="macos") && bundled.is_file(){bundled}else{root.join("runtime").join("engram").join(filename)};
-    anyhow::ensure!(path.is_file(),"The bundled Engram runtime is unavailable. Existing memory and chat logging remain available.");Ok(path)
+    anyhow::ensure!(path.is_file(),"The bundled Engram runtime is unavailable at {}. Reinstall the complete Elio package including runtime/engram. Source builds: prepare the pinned runtime before packaging. Existing memory and chat logging remain available.",path.display());Ok(path)
 }
 async fn runtime(scope:&str)->anyhow::Result<Arc<Mutex<Runtime>>>{
     let mut registry=REGISTRY.lock().await;registry.tick+=1;let tick=registry.tick;

@@ -1893,7 +1893,7 @@
 
   let chatCreatorInserter;
   function importedRobloxTools() {
-    const tools = [];
+    const tools = [{name:"elio_tool_schema",server:"roblox",description:"Read the full JSON Schema and usage example for an advertised command, without executing it. Use this before unfamiliar builder/preview commands.",inputSchema:{type:"object",required:["name"],properties:{name:{type:"string"}},additionalProperties:false}}];
     if (typeof ZSHeadlessBuilder !== "undefined") tools.push(ZSHeadlessBuilder.TOOL);
     if (typeof elioCreator !== "undefined") tools.push(elioCreator.tool);
     if (typeof elioChatCreators !== "undefined") tools.push(elioChatCreators.tool);
@@ -2274,7 +2274,7 @@ return result`;
         fresh.push(String(ln).slice(0, 200));
       }
       if (!fresh.length) return feedback;
-      return String(feedback) + "\n[AUTO DEBUG] New Studio errors/warnings:\n- " + fresh.slice(0, 6).join("\n- ") + "\nFix these next with the smallest command.";
+      return String(feedback) + "\n[AUTO DEBUG] New Studio errors/warnings:\n- " + fresh.slice(0, 6).join("\n- ") + "\nThese are observed log entries, not proof of a new defect. Check relevance and intentional diagnostic errors before proposing changes; preserve the current user scope.";
     } catch {
       return feedback;
     } finally {
@@ -2378,6 +2378,19 @@ return result`;
       catch (error) { if (error.name === 'AbortError') throw new SendAbortedError(error.message); throw error; }
     }
     if (name === "elio_result_read") return readRetainedToolResult(args);
+    if (name === "elio_tool_schema") {
+      if(typeof args.name!=="string" || Object.keys(args).some(key=>key!=="name"))return "ERROR: supply exactly one advertised command name.";
+      const tools=await ensureTools();const tool=tools.find(tool=>tool.name===args.name);
+      if(!tool)return "ERROR: command is not in the current tool catalogue. No command was executed.";
+      const result={name:tool.name,description:tool.description,inputSchema:tool.inputSchema||tool.input_schema||tool.parameters,executed:false};
+      if(["headless_build","creation_preview"].includes(args.name)){
+        const blueprint={action_id:"example-pass-1",build_id:"example-model",mode:"model",operation:"replace",target_parent:"game.Workspace",root_id:"root",root_name:"ExampleModel",nodes:[{id:"root",class:"Model",name:"ExampleModel"},{id:"body",class:"Part",parent:"root",properties:{Size:{type:"Vector3",x:2,y:2,z:2},CFrame:{type:"CFrame",x:0,y:3,z:0},Color:{type:"Color3",hex:"#BDA98A"},Anchored:true,Material:{type:"Enum",value:"Enum.Material.SmoothPlastic"}}}]};
+        result.preview_example={command:"creation_preview",arguments:{action:"save",status:"building",blueprint}};
+        result.notes="Example only; this lookup does not save or execute it. headless_build replace/patch are mutations, not standalone dry-run operations. creation_preview validates and saves a draft without changing Studio; creation_insert is separate. build_id belongs inside blueprint; revisions are required for later patches. Nodes use class, not className. Typed properties follow the example.";
+        result.blueprintSchema=typeof ZSHeadlessBuilder!=="undefined"?ZSHeadlessBuilder.TOOL.inputSchema:undefined;
+      }
+      return "Output of 'elio_tool_schema':\n"+JSON.stringify(result);
+    }
     if (name === "elio_checklist") {
       try { return "Output of 'elio_checklist':\n" + JSON.stringify(activity.checklist(args.steps)); }
       catch(error) { return "ERROR: " + error.message; }
@@ -3590,16 +3603,16 @@ return result`;
   const creatorPromptEnhancer=elioChatCreators.createEnhancer({
     context:()=>JSON.stringify([P.conversationKey(),activeEngine(),A.sessionGen]),
     cancelled:()=>A.stop||A.userStopped,
-    rewrite:async(raw,check)=>{
+    rewrite:async(raw,check,requestId)=>{
       const previous=P.lastAssistant(),previousId=P.lastAssistantId?P.lastAssistantId():undefined,previousCount=P.assistantCount();
-      check();await submitAndGetBase(elioChatCreators.enhancementRequest(raw));check();
+      check();await submitAndGetBase(elioChatCreators.enhancementRequest(raw,requestId));check();
       const enhanced=await elioEnhancer.waitForRewrite({read:()=>{const fresh=P.lastAssistantId&&previousId!==undefined?P.lastAssistantId()!==previousId:P.lastAssistant()!==previous||P.assistantCount()>previousCount;return fresh?String((P.readAssistant()||{}).reply||''):'';},busy:()=>P.isBusyNow()||!!(P.responsePending&&P.responsePending(P.lastAssistant())),cancelled:()=>{try{check();return false;}catch{return true;}},sleep});
       check();rememberExecuted(P.lastAssistant(),enhanced);return enhanced;
     },
     send:text=>submitAndGetBase(text),
   });
   async function enhanceCreationBeforeTools(res){
-    if(activeEngine()!=='roblox')return null;
+    if(activeEngine()!=='roblox' || !A.creatorTask)return null;
     const calls=res.calls||[];
     // 1.24.10: enhance only right before a real creator mutation. Previously
     // any first command (multi_edit, read_file…) of a UI/model task was

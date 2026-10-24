@@ -8,7 +8,17 @@ const elioReliability = (() => {
   function visual(call) {
     const name=String(call.tool || '');if(name.includes('/')||name.includes('__'))return false;
     if(/^(?:ui_|terrain_|lighting_|surface_gui_|decal_set|mesh_set_texture|generate_mesh$|insert_from_creator_store$)/.test(name))return true;
-    return name==='execute_luau'&&/ScreenGui|SurfaceGui|BillboardGui|Color3|Lighting|Terrain|BasePart|\.CFrame\s*=|\.Position\s*=/.test(String(call.arguments?.code || ''));
+    if(name!=='execute_luau')return false;
+    const code=String(call.arguments?.code||'');
+    const literals=[];
+    const executable=code.replace(/--\[(=*)\[[\s\S]*?\]\1\]|--[^\r\n]*|\[(=*)\[[\s\S]*?\]\2\]|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'/g,token=>{
+      if(token.startsWith('--'))return ' ';
+      literals.push(token);return '__elio_literal_'+(literals.length-1);
+    });
+    if (/\.\s*(?:CFrame|Position|Orientation|Size|Color|Color3|Transparency|Parent|Material|Brightness|ClockTime|Ambient|OutdoorAmbient|Text|Visible|Enabled)\s*=(?!=)|:(?:Destroy|PivotTo|MoveTo|ClearAllChildren|FillBlock|FillBall|FillRegion|WriteVoxels)\s*\(/.test(executable))return true;
+    const creates=/Instance\.new\s*\(\s*__elio_literal_(\d+)/g;
+    for(const match of executable.matchAll(creates))if(/^["'](?:Part|Model|MeshPart|ScreenGui|SurfaceGui|BillboardGui|Frame|TextLabel|TextButton|ParticleEmitter|Beam|Trail|PointLight|SpotLight)["']$/.test(literals[Number(match[1])]))return true;
+    return false;
   }
   function fingerprint(image) {let hash=2166136261;const s=String(image.data || '');for(let i=0;i<s.length;i++){hash^=s.charCodeAt(i);hash=Math.imul(hash,16777619);}return s.length+':'+(hash>>>0);}
   function userRequest(row) {

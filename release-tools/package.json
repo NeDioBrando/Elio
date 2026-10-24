@@ -5,6 +5,7 @@
     "terser": "^5.44.0"
   },
   "devDependencies": {
-    "playwright": "^1.56.1"
+    "playwright": "^1.56.1",
+    "luau-web": "1.5.1"
   }
 }

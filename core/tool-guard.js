@@ -97,23 +97,6 @@ const elioToolGuard = (() => {
     if (Array.isArray(value) && object(schema.items)) for (let i = 0; i < Math.min(value.length, 2000); i++) value[i] = coerce(value[i], schema.items, depth + 1);
     return value;
   }
-  // Some Studio MCPs expose a generic `skill` tool. Models sometimes pass a
-  // elio or MCP tool name to it ({tool:"skill",arguments:{name:"creation_preview",...}}),
-  // which fails with "Unknown skill". When the name is an advertised tool (and
-  // not skill itself), call that tool directly with the nested arguments.
-  function rerouteSkill(call, tools) {
-    const bare = String(call.tool || '').split('/').pop();
-    if (bare !== 'skill' && !/__skill$/.test(bare)) return;
-    const args = call.arguments, key = ['name', 'skill', 'skill_name'].find(k => typeof args[k] === 'string');
-    if (!key) return;
-    const target = args[key].trim().replace(/^\//, '');
-    const list = tools || [];
-    if (!target || target === 'skill' || !list.some(t => t && t.name === target)) return;
-    let inner = ['arguments', 'args', 'input', 'params', 'parameters'].map(k => args[k]).find(v => v != null);
-    if (typeof inner === 'string') { try { inner = JSON.parse(inner); } catch { inner = undefined; } }
-    if (!object(inner)) { inner = { ...args }; delete inner[key]; for (const k of ['arguments', 'args', 'input', 'params', 'parameters']) delete inner[k]; }
-    call.tool = target; call.arguments = inner; call.reroutedFrom = 'skill';
-  }
   function repair(call, tools) {
     if (!call || typeof call !== 'object') return call;
     if (typeof call.tool === 'string') call.tool = call.tool.trim();
@@ -123,7 +106,6 @@ const elioToolGuard = (() => {
       else { try { const parsed = JSON.parse(t); if (object(parsed)) call.arguments = parsed; } catch {} }
     }
     if (!object(call.arguments)) return call;
-    rerouteSkill(call, tools);
     const name = typeof call.tool === 'string' ? call.tool.split('/').pop() : '';
     const tool = (tools || []).find(t => t.name === call.tool || t.name === name);
     coerce(call.arguments, tool?.inputSchema || tool?.input_schema || tool?.parameters);

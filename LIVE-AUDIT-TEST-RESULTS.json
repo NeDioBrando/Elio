@@ -1,0 +1,883 @@
+{
+  "baseline_commit": "27f9fc71b27bba86c9296b00a5259d0cd53076eb",
+  "tests": [
+    {
+      "test": "test-1.21.0-asset-upload-ai.js",
+      "exit": 0,
+      "seconds": 0.08
+    },
+    {
+      "test": "test-1.21.0-asset-upload.js",
+      "exit": 0,
+      "seconds": 0.08
+    },
+    {
+      "test": "test-1.21.0-busy-wait.js",
+      "exit": 0,
+      "seconds": 0.11
+    },
+    {
+      "test": "test-1.21.0-clarify.js",
+      "exit": 0,
+      "seconds": 0.08
+    },
+    {
+      "test": "test-1.21.0-cooldown.js",
+      "exit": 0,
+      "seconds": 0.11
+    },
+    {
+      "test": "test-1.21.0-memory.js",
+      "exit": 0,
+      "seconds": 0.1
+    },
+    {
+      "test": "test-1.21.0-vision.js",
+      "exit": 0,
+      "seconds": 0.09
+    },
+    {
+      "test": "test-1.22.1-creator-and-skill.js",
+      "exit": 0,
+      "seconds": 0.12
+    },
+    {
+      "test": "test-1.22.1-notion-leaf-composer.js",
+      "exit": 0,
+      "seconds": 1.09
+    },
+    {
+      "test": "test-1.22.1-request-timeouts.js",
+      "exit": 0,
+      "seconds": 0.29
+    },
+    {
+      "test": "test-1.24.10-fixes.js",
+      "exit": 0,
+      "seconds": 5.31
+    },
+    {
+      "test": "test-1.24.11-fixes.js",
+      "exit": 0,
+      "seconds": 9.58
+    },
+    {
+      "test": "test-1.24.13-dialog-layer.js",
+      "exit": 0,
+      "seconds": 5.04
+    },
+    {
+      "test": "test-1.24.13-enhancer-paste.js",
+      "exit": 0,
+      "seconds": 3.22
+    },
+    {
+      "test": "test-1.24.13-fixes.js",
+      "exit": 0,
+      "seconds": 0.06
+    },
+    {
+      "test": "test-1.24.13-skill-offer.js",
+      "exit": 0,
+      "seconds": 1.63
+    },
+    {
+      "test": "test-1.24.13-skills.js",
+      "exit": 0,
+      "seconds": 1.06
+    },
+    {
+      "test": "test-1.24.13-status.js",
+      "exit": 0,
+      "seconds": 0.08
+    },
+    {
+      "test": "test-1.24.14-fixes.js",
+      "exit": 0,
+      "seconds": 1.19
+    },
+    {
+      "test": "test-1.24.16-fixes.js",
+      "exit": 0,
+      "seconds": 0.62
+    },
+    {
+      "test": "test-1.24.17-fixes.js",
+      "exit": 0,
+      "seconds": 0.38
+    },
+    {
+      "test": "test-activity-folding.js",
+      "exit": 0,
+      "seconds": 0.1
+    },
+    {
+      "test": "test-activity-progress.js",
+      "exit": 0,
+      "seconds": 0.1
+    },
+    {
+      "test": "test-activity-visibility.js",
+      "exit": 0,
+      "seconds": 0.5
+    },
+    {
+      "test": "test-animlib.js",
+      "exit": 0,
+      "seconds": 0.06
+    },
+    {
+      "test": "test-auto-creator-enhancement.js",
+      "exit": 0,
+      "seconds": 0.06
+    },
+    {
+      "test": "test-bar-hide-space.js",
+      "exit": 0,
+      "seconds": 4.48
+    },
+    {
+      "test": "test-bar-hide.js",
+      "exit": 0,
+      "seconds": 5.25
+    },
+    {
+      "test": "test-bar-status-text.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-blender-command-results.js",
+      "exit": 0,
+      "seconds": 0.58
+    },
+    {
+      "test": "test-blender-connection.js",
+      "exit": 0,
+      "seconds": 0.13
+    },
+    {
+      "test": "test-blender-receipts.js",
+      "exit": 0,
+      "seconds": 0.16
+    },
+    {
+      "test": "test-bridge-hang.js",
+      "exit": 0,
+      "seconds": 0.22
+    },
+    {
+      "test": "test-bridge-no-replay.js",
+      "exit": 0,
+      "seconds": 0.08
+    },
+    {
+      "test": "test-browser-isolation.js",
+      "exit": 0,
+      "seconds": 0.05
+    },
+    {
+      "test": "test-builder-toolkit-notifications.js",
+      "exit": 0,
+      "seconds": 1.14
+    },
+    {
+      "test": "test-capture-viewer.js",
+      "exit": 0,
+      "seconds": 1.34
+    },
+    {
+      "test": "test-chat-creators.js",
+      "exit": 0,
+      "seconds": 0.4
+    },
+    {
+      "test": "test-chatgpt-anchor.js",
+      "exit": 0,
+      "seconds": 0.07
+    },
+    {
+      "test": "test-chatgpt-cm-refresh.js",
+      "exit": 0,
+      "seconds": 0.09
+    },
+    {
+      "test": "test-chatgpt-folding.js",
+      "exit": 0,
+      "seconds": 0.09
+    },
+    {
+      "test": "test-chatgpt-screenshot-send.js",
+      "exit": 0,
+      "seconds": 1.38
+    },
+    {
+      "test": "test-chatgpt.js",
+      "exit": 0,
+      "seconds": 0.1
+    },
+    {
+      "test": "test-checklist-retention.js",
+      "exit": 0,
+      "seconds": 0.94
+    },
+    {
+      "test": "test-clarification.js",
+      "exit": 0,
+      "seconds": 8.51
+    },
+    {
+      "test": "test-claude-command-frame.js",
+      "exit": 0,
+      "seconds": 0.93
+    },
+    {
+      "test": "test-claude-send-button.js",
+      "exit": 0,
+      "seconds": 7.77
+    },
+    {
+      "test": "test-command-lifecycle.js",
+      "exit": 0,
+      "seconds": 0.08
+    },
+    {
+      "test": "test-composer-recovery.js",
+      "exit": 0,
+      "seconds": 0.7
+    },
+    {
+      "test": "test-condo-lock-removal.js",
+      "exit": 0,
+      "seconds": 0.09
+    },
+    {
+      "test": "test-confirmed-session-proof.js",
+      "exit": 0,
+      "seconds": 0.07
+    },
+    {
+      "test": "test-continuation-offer-toggle.js",
+      "exit": 0,
+      "seconds": 3.41
+    },
+    {
+      "test": "test-continuation.js",
+      "exit": 0,
+      "seconds": 0.05
+    },
+    {
+      "test": "test-cowork-injection-composer.js",
+      "exit": 0,
+      "seconds": 0.5
+    },
+    {
+      "test": "test-cowork-notion-plain-text.js",
+      "exit": 0,
+      "seconds": 1.32
+    },
+    {
+      "test": "test-cowork-panel.js",
+      "exit": 0,
+      "seconds": 0.68
+    },
+    {
+      "test": "test-cowork-receipts.js",
+      "exit": 0,
+      "seconds": 0.73
+    },
+    {
+      "test": "test-cowork.js",
+      "exit": 0,
+      "seconds": 0.07
+    },
+    {
+      "test": "test-creator-response-recovery.js",
+      "exit": 0,
+      "seconds": 0.05
+    },
+    {
+      "test": "test-creator-roundtrip.js",
+      "exit": 0,
+      "seconds": 0.08
+    },
+    {
+      "test": "test-creator-ui.js",
+      "exit": 0,
+      "seconds": 0.77
+    },
+    {
+      "test": "test-creator.js",
+      "exit": 0,
+      "seconds": 0.22
+    },
+    {
+      "test": "test-deepseek-ultracode.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-deleted-skills.js",
+      "exit": 0,
+      "seconds": 1.18
+    },
+    {
+      "test": "test-desktop-chat-ui.cjs",
+      "exit": 0,
+      "seconds": 21.39
+    },
+    {
+      "test": "test-desktop-chat.cjs",
+      "exit": 0,
+      "seconds": 0.16
+    },
+    {
+      "test": "test-elio-audit.cjs",
+      "exit": 0,
+      "seconds": 3.64
+    },
+    {
+      "test": "test-elio-chat-live.cjs",
+      "exit": 0,
+      "seconds": 0.06
+    },
+    {
+      "test": "test-elio-extension-ui.cjs",
+      "exit": 0,
+      "seconds": 6.39
+    },
+    {
+      "test": "test-elio-identity.cjs",
+      "exit": 0,
+      "seconds": 0.11
+    },
+    {
+      "test": "test-elio-notion-live.cjs",
+      "exit": 0,
+      "seconds": 0.76
+    },
+    {
+      "test": "test-elio-rename.cjs",
+      "exit": 0,
+      "seconds": 0.29
+    },
+    {
+      "test": "test-elio-theme-ui.cjs",
+      "exit": 0,
+      "seconds": 26.34
+    },
+    {
+      "test": "test-elio-theme.cjs",
+      "exit": 0,
+      "seconds": 0.06
+    },
+    {
+      "test": "test-elio-ui.cjs",
+      "exit": 0,
+      "seconds": 36.08
+    },
+    {
+      "test": "test-elio.cjs",
+      "exit": 0,
+      "seconds": 0.11
+    },
+    {
+      "test": "test-execution-usability.js",
+      "exit": 0,
+      "seconds": 0.74
+    },
+    {
+      "test": "test-explorer-properties.js",
+      "exit": 0,
+      "seconds": 0.46
+    },
+    {
+      "test": "test-explorer-regression.js",
+      "exit": 0,
+      "seconds": 2.03
+    },
+    {
+      "test": "test-firefox-package.js",
+      "exit": 0,
+      "seconds": 0.45
+    },
+    {
+      "test": "test-history-performance.js",
+      "exit": 0,
+      "seconds": 0.05
+    },
+    {
+      "test": "test-language.js",
+      "exit": 0,
+      "seconds": 0.4
+    },
+    {
+      "test": "test-live-audit-fixes.cjs",
+      "exit": 0,
+      "seconds": 0.05
+    },
+    {
+      "test": "test-luau-wrap.js",
+      "exit": 0,
+      "seconds": 0.03
+    },
+    {
+      "test": "test-media.js",
+      "exit": 0,
+      "seconds": 0.06
+    },
+    {
+      "test": "test-memory-activity.js",
+      "exit": 0,
+      "seconds": 0.21
+    },
+    {
+      "test": "test-memory-import.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-mesh-transfer-control.js",
+      "exit": 0,
+      "seconds": 0.24
+    },
+    {
+      "test": "test-mode-switch.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-motion.js",
+      "exit": 0,
+      "seconds": 0.03
+    },
+    {
+      "test": "test-native-cowork.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-native-send-intent.js",
+      "exit": 0,
+      "seconds": 0.03
+    },
+    {
+      "test": "test-notion-bar-follow.js",
+      "exit": 0,
+      "seconds": 0.74
+    },
+    {
+      "test": "test-notion-bar-seat.js",
+      "exit": 0,
+      "seconds": 0.47
+    },
+    {
+      "test": "test-notion-block-transcript.js",
+      "exit": 0,
+      "seconds": 1.42
+    },
+    {
+      "test": "test-notion-localized-completion.js",
+      "exit": 0,
+      "seconds": 0.64
+    },
+    {
+      "test": "test-notion-localized-composer.js",
+      "exit": 0,
+      "seconds": 0.64
+    },
+    {
+      "test": "test-notion-native-write.js",
+      "exit": 0,
+      "seconds": 7.72
+    },
+    {
+      "test": "test-notion-paste-model.js",
+      "exit": 0,
+      "seconds": 0.7
+    },
+    {
+      "test": "test-notion-pending-start.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-notion-protocol-file.js",
+      "exit": 0,
+      "seconds": 121.52
+    },
+    {
+      "test": "test-notion-protocol-retry.js",
+      "exit": 0,
+      "seconds": 8.4
+    },
+    {
+      "test": "test-notion-results.js",
+      "exit": 0,
+      "seconds": 0.03
+    },
+    {
+      "test": "test-notion-routes.js",
+      "exit": 0,
+      "seconds": 0.66
+    },
+    {
+      "test": "test-notion-send-flow.js",
+      "exit": 0,
+      "seconds": 3.71
+    },
+    {
+      "test": "test-notion-send-inference.js",
+      "exit": 0,
+      "seconds": 0.5
+    },
+    {
+      "test": "test-notion-send-receipts.js",
+      "exit": 0,
+      "seconds": 6.37
+    },
+    {
+      "test": "test-notion-send-recovery.js",
+      "exit": 0,
+      "seconds": 1.73
+    },
+    {
+      "test": "test-notion-settings-visibility.js",
+      "exit": 0,
+      "seconds": 0.46
+    },
+    {
+      "test": "test-notion-slow-composer.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-notion-slow-render.js",
+      "exit": 0,
+      "seconds": 52.05
+    },
+    {
+      "test": "test-notion-startup-fast.js",
+      "exit": 0,
+      "seconds": 18.19
+    },
+    {
+      "test": "test-notion-startup-lock.js",
+      "exit": 0,
+      "seconds": 0.35
+    },
+    {
+      "test": "test-notion-startup-recovery.js",
+      "exit": 0,
+      "seconds": 0.37
+    },
+    {
+      "test": "test-notion-startup-small-paste.js",
+      "exit": 0,
+      "seconds": 135.11
+    },
+    {
+      "test": "test-notion-startup.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-notion-tool-status.js",
+      "exit": 0,
+      "seconds": 0.38
+    },
+    {
+      "test": "test-notion-turn-key.js",
+      "exit": 0,
+      "seconds": 0.41
+    },
+    {
+      "test": "test-page-startup.js",
+      "exit": 0,
+      "seconds": 1.21
+    },
+    {
+      "test": "test-parser-key-order.js",
+      "exit": 0,
+      "seconds": 0.03
+    },
+    {
+      "test": "test-parser.js",
+      "exit": 0,
+      "seconds": 0.03
+    },
+    {
+      "test": "test-popup-appearance.js",
+      "exit": 0,
+      "seconds": 0.03
+    },
+    {
+      "test": "test-provider-dom-guards.js",
+      "exit": 0,
+      "seconds": 0.26
+    },
+    {
+      "test": "test-provider-dom-resilience.js",
+      "exit": 0,
+      "seconds": 1.12
+    },
+    {
+      "test": "test-provider-healthy-regression.js",
+      "exit": 0,
+      "seconds": 1.06
+    },
+    {
+      "test": "test-provider-input-cleanup.js",
+      "exit": 0,
+      "seconds": 0.26
+    },
+    {
+      "test": "test-quick-command-catalogue.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-reliability.js",
+      "exit": 0,
+      "seconds": 0.03
+    },
+    {
+      "test": "test-reply-recovery.js",
+      "exit": 0,
+      "seconds": 0.54
+    },
+    {
+      "test": "test-request-deadlines.js",
+      "exit": 0,
+      "seconds": 0.06
+    },
+    {
+      "test": "test-request-scope.js",
+      "exit": 0,
+      "seconds": 0.46
+    },
+    {
+      "test": "test-response-body-deadlines.js",
+      "exit": 0,
+      "seconds": 0.18
+    },
+    {
+      "test": "test-response-dispatch.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-response-owner.js",
+      "exit": 0,
+      "seconds": 0.07
+    },
+    {
+      "test": "test-response-sweep.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-response-turn-identity.js",
+      "exit": 0,
+      "seconds": 0.09
+    },
+    {
+      "test": "test-result-delivery.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-session-continuity.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-skills-import.js",
+      "exit": 0,
+      "seconds": 0.54
+    },
+    {
+      "test": "test-skills-menu.js",
+      "exit": 0,
+      "seconds": 0.56
+    },
+    {
+      "test": "test-skills-regression.js",
+      "exit": 0,
+      "seconds": 0.54
+    },
+    {
+      "test": "test-skills-simple-editor.js",
+      "exit": 0,
+      "seconds": 0.78
+    },
+    {
+      "test": "test-skills.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-startup-command-status.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-stop.js",
+      "exit": 0,
+      "seconds": 0.16
+    },
+    {
+      "test": "test-stream-completion.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-studio-capture-routing.js",
+      "exit": 0,
+      "seconds": 0.25
+    },
+    {
+      "test": "test-studio-status.js",
+      "exit": 0,
+      "seconds": 0.03
+    },
+    {
+      "test": "test-task-checklist.js",
+      "exit": 0,
+      "seconds": 0.42
+    },
+    {
+      "test": "test-template-upload.js",
+      "exit": 0,
+      "seconds": 2.51
+    },
+    {
+      "test": "test-templates.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-theme-sync.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-tool-catalog.js",
+      "exit": 0,
+      "seconds": 0.03
+    },
+    {
+      "test": "test-tool-guard-repair.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-tool-guard.js",
+      "exit": 0,
+      "seconds": 0.03
+    },
+    {
+      "test": "test-tool-result-send.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-ultra-rebrand.js",
+      "exit": 0,
+      "seconds": 0.64
+    },
+    {
+      "test": "test-ultracode-efficiency.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-unattended-run.js",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-update-ui.cjs",
+      "exit": 0,
+      "seconds": 2.78
+    },
+    {
+      "test": "test-updates.cjs",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test-v1249-recovery.js",
+      "exit": 0,
+      "seconds": 0.76
+    },
+    {
+      "test": "test-version.js",
+      "exit": 0,
+      "seconds": 1.63
+    }
+  ],
+  "baseline_failing_tests": [
+    "test-1.20.0-regressions.js",
+    "test-1.22.0-debug-capture.js",
+    "test-1.24.12-fixes.js",
+    "test-1.24.13-merged-fixes.js",
+    "test-approach-summary.js",
+    "test-blender.js",
+    "test-bridges.js",
+    "test-claude.js",
+    "test-clickup-provider.js",
+    "test-design-upgrade.js",
+    "test-design-visual.js",
+    "test-desktop-regression.js",
+    "test-donation-links.js",
+    "test-package-version-display.js",
+    "test-provider-preservation.js",
+    "test-supported-ai-icons.js",
+    "test-supported-ai-links.js",
+    "test-ultracode-default.js",
+    "test-v111.js",
+    "test-v112.js",
+    "test-v115.js",
+    "test-v118.js"
+  ],
+  "additional_verification": {
+    "native_rust": {
+      "passed": 132,
+      "failed": 0,
+      "ignored": 1,
+      "platform": "Linux",
+      "binary_tests_passed": 129,
+      "library_tests_passed": 3
+    },
+    "native_build": "cargo build --locked: passed on Linux",
+    "native_bridge_connectivity": "passed on isolated temporary workspace: HTTP, WebSockets, independent extension identities, origin rejection, concurrent sockets; Roblox editor honestly offline",
+    "motion_luau": "actual generated Luau executed on mock DataModel: returned success/error receipts, copy fidelity/replay, integration/replay, generated runtime syntax",
+    "engram": "official download/archive SHA256/binary SHA256/atomic install/offline reuse/refusal tests passed; Windows executable not run",
+    "windows_packager": "actual packager, marked product EXE fixture, verified real sidecar, ZIP paths/SHA256/product/version refusal passed; does not execute Windows code",
+    "provider_file_transport": "actual Notion provider on mocked DOM in 4 configurations: ROBLOXSCRIPT/AGENTSCRIPT and tagged/truncated cards; retained results and generic service attachments stay on current task"
+  },
+  "remaining_baseline_failures": [
+    "test-1.20.0-regressions.js",
+    "test-1.22.0-debug-capture.js",
+    "test-1.24.12-fixes.js",
+    "test-1.24.13-merged-fixes.js",
+    "test-approach-summary.js",
+    "test-blender.js",
+    "test-claude.js",
+    "test-clickup-provider.js",
+    "test-design-upgrade.js",
+    "test-design-visual.js",
+    "test-desktop-regression.js",
+    "test-donation-links.js",
+    "test-package-version-display.js",
+    "test-provider-preservation.js",
+    "test-supported-ai-icons.js",
+    "test-supported-ai-links.js",
+    "test-ultracode-default.js",
+    "test-v111.js",
+    "test-v112.js",
+    "test-v115.js",
+    "test-v118.js"
+  ]
+}

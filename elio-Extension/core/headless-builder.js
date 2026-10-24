@@ -60,7 +60,7 @@ const ZSHeadlessBuilder = (() => {
 
   const TOOL = Object.freeze({
     name: "headless_build", server: "roblox",
-    description: "Validate, dry-run, and transactionally create or patch an owned Roblox UI/model hierarchy from structured JSON or an optional inline-HTML UI blueprint. Runs headlessly through Studio with no Figma, Meshy, browser tab, import menu, or visible Studio UI. Use stable build_id/root_name across bounded passes; action_id is exactly-once idempotency.",
+    description: "Validate and transactionally create or patch an owned Roblox UI/model hierarchy from structured JSON or an optional inline-HTML UI blueprint. Runs headlessly through Studio with no Figma, Meshy, browser tab, import menu, or visible Studio UI. Use stable build_id/root_name across bounded passes; action_id is exactly-once idempotency. This command changes Studio; use creation_preview for a non-inserting draft and elio_tool_schema for full schema/examples.",
     inputSchema: {
       type: "object",
       required: ["action_id", "build_id", "mode", "operation", "target_parent", "root_name"],
@@ -113,7 +113,7 @@ const ZSHeadlessBuilder = (() => {
     return Object.is(n, -0) ? 0 : n;
   }
   function exactKeys(obj, allowed, label) {
-    for (const key of Object.keys(obj)) if (!allowed.has(key)) throw new Error(`${label} has unknown key '${key}'`);
+    for (const key of Object.keys(obj)) if (!allowed.has(key)) throw new Error(`${label} has unknown key '${key}'. Allowed keys: ${[...allowed].join(', ')}`);
   }
   function samePrefix(path, prefixes) {
     return prefixes.some((prefix) => path === prefix || path.startsWith(prefix + "."));

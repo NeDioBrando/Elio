@@ -99,7 +99,7 @@ const notionRender=t=>t.split('\n').map(l=>l.replace(/^\s*[-*]\s+/,'').replace(/
   const main=fs.readFileSync('core/main.js','utf8');
   const s0=main.indexOf('  async function enhanceCreationBeforeTools(res){'),e0=main.indexOf('  let latestRequestCache=null;',s0);
   let performs=0,fail=false;
-  const A={creatorContext:'UI policy',creatorRequestKey:'k',creatorEnhancedKey:null,stop:false,userStopped:false};
+  const A={creatorTask:true,creatorContext:'UI policy',creatorRequestKey:'k',creatorEnhancedKey:null,stop:false,userStopped:false};
   const box=vm.createContext({A,activeEngine:()=>'roblox',rememberExecuted(){},diag(){},P:{lastAssistant:()=>null},ui:{toast(){}},
     creatorPromptEnhancer:{perform:async()=>{performs++;if(fail)throw Error('rewrite failed');return {base:7};}}});
   vm.runInContext(main.slice(s0,e0)+';this.enh=enhanceCreationBeforeTools;',box);

@@ -1,8 +1,8 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const source=fs.readFileSync('core/main.js','utf8'),start=source.indexOf('    let exportChatKey ='),end=source.indexOf('    rsInterval(()=>',start);
 let items=[],chat='a',reads=0;
-const context={P:{conversationKey:()=>chat,allItems:()=>items,isUserItem:x=>x.role==='user',isAssistantItem:x=>x.role==='assistant',itemKey:x=>x.id,itemText:x=>{reads++;return x.textContent;}},Map,WeakMap,Date};
-vm.createContext(context);vm.runInContext(source.slice(start,end)+';this.capture=captureExportHistory;this.dirty=()=>{exportDirty=true};this.overflow=()=>exportOverflow;',context);
+const context={crypto:require('node:crypto').webcrypto,P:{conversationKey:()=>chat,allItems:()=>items,isUserItem:x=>x.role==='user',isAssistantItem:x=>x.role==='assistant',itemKey:x=>x.id,itemText:x=>{reads++;return x.textContent;}},Map,WeakMap,Date};
+context.RS={SYS_MARKER:'⟦RS-SYS⟧'};vm.createContext(context);context.RSParse=vm.runInContext(fs.readFileSync('core/parser.js','utf8')+';RSParse;',context);vm.runInContext(source.slice(start,end)+';this.capture=captureExportHistory;this.dirty=()=>{exportDirty=true};this.overflow=()=>exportOverflow;',context);
 const item=(id,text,role='user')=>({id,textContent:text,role});
 items=[item('2','second'),item('3','third')];context.capture();const initial=reads;context.capture();assert.equal(reads,initial);
 items.unshift(item('1','first'));assert.equal(JSON.stringify(context.capture().map(x=>x.text)),JSON.stringify(['first','second','third']));

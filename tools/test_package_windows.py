@@ -41,7 +41,7 @@ with tempfile.TemporaryDirectory(prefix='elio-package-test-') as temp:
         assert z.testzip() is None
         names = z.namelist()
         assert all(n.startswith('elio/') for n in names)
-        assert [n for n in names if n.lower().endswith('.exe')] == ['elio/elio.exe']
+        assert [n for n in names if n.lower().endswith('.exe')] == ['elio/elio.exe', 'elio/runtime/engram/engram-windows-amd64.exe']
         assert z.read('elio/elio.exe') == exe.read_bytes()
         assert json.loads(z.read('elio/elio-Extension/manifest.json'))['version'] == '1.0.1'
         sums = z.read('elio/SHA256SUMS.txt').decode().splitlines()

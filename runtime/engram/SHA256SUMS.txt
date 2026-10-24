@@ -1,3 +1,4 @@
 bb410e4a578bee96888f848764dbbf9e7dd78971204c05bb7fb81a4a8db324a3  engram_3.0.0_windows_amd64.zip
 68cc3eebbb265d1c45999a429d1e6774150ba71ac008f4dd381b9d73b10c79dd  engram_3.0.0_darwin_amd64.tar.gz
 54e080ed64a1d1b7b8a5d59e5a6d17100adbd69a6aafbb73d270dbeb37c03266  engram_3.0.0_darwin_arm64.tar.gz
+743037ca1415b1ab2f9f71dba9024b020020c413c2efd8c1acf1c08143772eb7  engram-windows-amd64.exe

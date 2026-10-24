@@ -29,6 +29,8 @@ function Assert-NoReparse([string]$Path){
 function Is-PackageFile([string]$Relative){
  # Never replace user data, config.json, MCP config, history, logs or workspace.
  if($Relative -match '^elio-Extension[\\/]'){return $true}
+ # Only the pinned sidecar and its notices; never accept arbitrary runtime executables.
+ if($Relative -match '^runtime[\\/]engram[\\/](engram-windows-amd64\.exe|LICENSE|README\.txt|SHA256SUMS\.txt)$'){return $true}
  return @('elio.exe','WebView2Loader.dll','bridge-pairing.cjs','Setup-Mcp-Runtime.ps1','Start-elio-Agent.cmd','launch_studio_mcp.py','launch_blender_mcp.py','blender_bridge.ps1','blender_once.ps1','blender_once.py','blender_ops.py','blender_fbx.py','README-RU.md','README.md','SOURCE.txt','UPSTREAM-SOURCE.txt','FORK-CHANGES.md','LICENSE','BRANDING-NOTICE.txt','THIRD-PARTY-NOTICES.txt','THIRD_PARTY_TEMPLATE_LICENSES.txt','TEST-REPORT.md','DESKTOP-CHAT-RU.md','DESKTOP-CHAT-TEST-REPORT.md','UPDATES-RU.md','UPDATES-TEST-REPORT.md','ELIO-RU.md','ELIO-TEST-REPORT.md','WINDOWS-RUNTIME-NOTICE.txt','SHA256SUMS.txt') -contains $Relative
 }
 try {

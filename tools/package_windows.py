@@ -18,7 +18,8 @@ if stage.exists():shutil.rmtree(stage)
 stage.mkdir()
 # Complete installable extension includes all bundled resources needed by the agent.
 shutil.copytree(ROOT/'elio-Extension',stage/'elio-Extension')
-for name in ['config.json','bridge-pairing.cjs','Setup-Mcp-Runtime.ps1','Start-elio-Agent.cmd','launch_studio_mcp.py','launch_blender_mcp.py','blender_bridge.ps1','blender_once.ps1','blender_once.py','blender_ops.py','blender_fbx.py','README-RU.md','README.md','SOURCE.txt','UPSTREAM-SOURCE.txt','FORK-CHANGES.md','LICENSE','BRANDING-NOTICE.txt','THIRD-PARTY-NOTICES.txt','THIRD_PARTY_TEMPLATE_LICENSES.txt','TEST-REPORT.md','DESKTOP-CHAT-RU.md','DESKTOP-CHAT-TEST-REPORT.md','UPDATES-RU.md','UPDATES-TEST-REPORT.md','ELIO-RU.md','ELIO-TEST-REPORT.md','ELIO-MEMORY-IMPLEMENTATION.md','VAULT-TEST-RESULTS.json']:
+shutil.copytree(ROOT/'figma-plugin',stage/'figma-plugin')
+for name in ['config.json','bridge-pairing.cjs','Setup-Mcp-Runtime.ps1','Start-elio-Agent.cmd','launch_studio_mcp.py','launch_blender_mcp.py','blender_bridge.ps1','blender_once.ps1','blender_once.py','blender_ops.py','blender_fbx.py','README-RU.md','README.md','SOURCE.txt','UPSTREAM-SOURCE.txt','FORK-CHANGES.md','LICENSE','BRANDING-NOTICE.txt','THIRD-PARTY-NOTICES.txt','THIRD_PARTY_TEMPLATE_LICENSES.txt','TEST-REPORT.md','DESKTOP-CHAT-RU.md','DESKTOP-CHAT-TEST-REPORT.md','UPDATES-RU.md','UPDATES-TEST-REPORT.md','ELIO-RU.md','ELIO-TEST-REPORT.md','ELIO-MEMORY-IMPLEMENTATION.md','VAULT-TEST-RESULTS.json','FIGMA-RU.md','FIGMA-TEST-RESULTS.json','ORIVEO-RU.md','ORIVEO-TEST-RESULTS.json','ECLIPSE-ANIMATOR-RU.md','ECLIPSE-TEST-RESULTS.json','VFX-STUDIO-RU.md','VFX-STUDIO-TEST-RESULTS.json','PERFORMANCE-AUDIT-RU.md','PERFORMANCE-AUDIT-RESULTS.json']:
  if (ROOT/name).is_file():shutil.copy2(ROOT/name,stage/name)
 shutil.copy2(exe,stage/'elio.exe')
 (stage/'runtime/engram').mkdir(parents=True)

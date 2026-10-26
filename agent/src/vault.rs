@@ -256,10 +256,12 @@ impl Vault {
             );
             sig.push((path, m.len(), m.modified()?));
         }
+        anyhow::ensure!(sig.iter().map(|(_,bytes,_)|*bytes).sum::<u64>()<=64*1024*1024,"Project memory files exceed 64 MB; files preserved. Export/split the vault before loading.");
         sig.sort();
         anyhow::ensure!(sig.len() <= MAX_NOTES, "Vault has more than 5,000 notes");
         if sig != cache.signature {
             let mut notes = Vec::new();
+            let mut text_bytes=0usize;
             for (p, _, _) in &sig {
                 let n = decode(&std::fs::read_to_string(p)?).map_err(|e| {
                     anyhow::anyhow!(
@@ -272,6 +274,8 @@ impl Vault {
                     n.scope == scope && p.file_stem().and_then(|s| s.to_str()) == Some(&n.id),
                     "Memory identity/scope mismatch"
                 );
+                text_bytes=text_bytes.saturating_add(n.text.len());
+                anyhow::ensure!(text_bytes<=32*1024*1024,"Project memory exceeds 32 MB; files preserved. Export/split the vault before loading.");
                 notes.push(n);
             }
             cache.notes = notes;
@@ -1032,4 +1036,13 @@ mod transfer_tests {
         );
         let _ = std::fs::remove_dir_all(root);
     }
+}
+
+#[cfg(test)]mod resource_tests{
+ use super::*;
+ #[test]fn externally_enlarged_vault_is_rejected_before_reading_note_bodies(){
+  let root=std::env::temp_dir().join(format!("elio-vault-limits-{}",std::process::id()));std::fs::create_dir_all(root.join("notes")).unwrap();
+  for i in 0..700{std::fs::File::create(root.join("notes").join(format!("{i}.md"))).unwrap().set_len(100000).unwrap();}
+  let mut cache=Cache::default();let error=Vault::scan(&root,"project:test",&mut cache).unwrap_err();assert!(error.to_string().contains("64 MB"));assert!(cache.notes.is_empty());assert_eq!(std::fs::read_dir(root.join("notes")).unwrap().count(),700);let _=std::fs::remove_dir_all(root);
+ }
 }

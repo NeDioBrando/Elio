@@ -1,0 +1,130 @@
+{
+  "product": "Elio",
+  "version": "1.0.1",
+  "feature": "Figma local Plugin API design bridge",
+  "source_base": {
+    "archive": "Elio-v1.0.1-Memory-Vault-SOURCE.zip",
+    "sha256": "f9f033bade6b789d614c1b206022add5e8d57cb35c5776308fae4db79b378d73",
+    "memory_update_preserved": true
+  },
+  "implementation": {
+    "native": "agent/src/figma.rs",
+    "ui_and_schema": "core/figma.js (mirrored into elio-Extension)",
+    "plugin": "figma-plugin/manifest.json + code.js + ui.html",
+    "tool": "elio_figma: status/read/apply/export/result",
+    "transport": "Local HTTP capability bridge, not the official Figma MCP",
+    "data": "No Figma OAuth/PAT is requested; no pairing code persisted to disk"
+  },
+  "research": {
+    "remote_mcp": "Official remote supports canvas writes and Codex, but only approved clients may connect. Elio is not registered and does not impersonate Codex.",
+    "desktop_mcp": "Official desktop MCP is not a canvas-write path.",
+    "selected_path": "Local development plugin using official Figma Plugin API, with restricted structured operations rather than arbitrary eval",
+    "sources": [
+      "https://developers.figma.com/docs/figma-mcp-server/remote-server-installation/",
+      "https://developers.figma.com/docs/figma-mcp-server/write-to-canvas/",
+      "https://developers.figma.com/docs/figma-mcp-server/local-server-installation/",
+      "https://help.figma.com/hc/en-us/articles/39888629089175-Codex-and-Figma-Set-up-the-MCP-server",
+      "https://developers.figma.com/docs/plugins/manifest/",
+      "https://developers.figma.com/docs/plugins/making-network-requests/",
+      "https://developers.figma.com/docs/plugins/api/figma/"
+    ]
+  },
+  "tests": {
+    "rust": {
+      "library_passed": 3,
+      "binary_passed": 141,
+      "total_passed": 144,
+      "failed": 0,
+      "ignored": 1,
+      "command": "cargo test --locked --manifest-path agent/Cargo.toml"
+    },
+    "focused_javascript": [
+      {
+        "test": "test-figma.cjs",
+        "code": 0
+      },
+      {
+        "test": "test-vault-contract.cjs",
+        "code": 0
+      },
+      {
+        "test": "test-elio-identity.cjs",
+        "code": 0
+      },
+      {
+        "test": "test-elio-rename.cjs",
+        "code": 0
+      },
+      {
+        "test": "test-elio-audit.cjs",
+        "code": 0
+      },
+      {
+        "test": "test-elio-chat-live.cjs",
+        "code": 0
+      },
+      {
+        "test": "test-desktop-chat.cjs",
+        "code": 0
+      },
+      {
+        "test": "test-elio.cjs",
+        "code": 0
+      },
+      {
+        "test": "test-elio-theme.cjs",
+        "code": 0
+      },
+      {
+        "test": "test-updates.cjs",
+        "code": 0
+      },
+      {
+        "test": "test-live-audit-fixes.cjs",
+        "code": 0
+      },
+      {
+        "test": "test-elio-notion-live.cjs",
+        "code": 0
+      },
+      {
+        "test": "test-provider-dom-guards.js",
+        "code": 0
+      },
+      {
+        "test": "test-provider-dom-resilience.js",
+        "code": 0
+      }
+    ],
+    "plugin_contract": "Native node mapping, Auto Layout/components/text/SVG, font preflight, staging rollback, added-user-layer guard, changed-page guard during font await, shared read budget, idempotency, unsafe SVG/invalid tree rejection, bounded export, offline Studio tool discovery, dispatch guard, compact asset replies, UI mount, manifest/extension parity. SDK simulated.",
+    "http_and_ui": "Real Rust server + Chromium: dedicated-key/main-key isolation, CORS/private-network preflight, origin rejection, read-only gate, command delivery once, idempotent completion ACK, heartbeat, native queue/result/export, exact embedded plugin sources, ZIP CRC, actual desktop section, demo/results/preview/download, narrow layout, revoke. Plugin API worker simulated.",
+    "chat_ui": "Existing Chromium desktop chat integration passed",
+    "memory_ui": "Existing real Rust + Chromium vault integration passed, including live update/full-body search",
+    "packager": "Actual Windows packager fixture passed, including all 3 plugin files and every SHA256; no Windows executable was compiled/executed by this fixture"
+  },
+  "environment": {
+    "host": "Linux",
+    "native": "real debug build",
+    "browser": "real system Chromium",
+    "figma_worker": "contract simulation, not a signed-in Figma account"
+  },
+  "not_verified": [
+    "Actual development plugin import and execution in real Figma Desktop",
+    "Actual Figma canvas visual appearance, font availability, library/account permissions",
+    "Windows WebView2 runtime and LNA permission UI",
+    "Installed browser extension to signed-in AI to real Figma end-to-end",
+    "All old root JS fixtures were not re-run; historical VAULT-TEST-RESULTS.json belongs to previous delivery"
+  ],
+  "limitations": [
+    "1–120 flat parent-before-child nodes per apply, <=300KB JSON",
+    "Whole owned-build replacement, no granular patch/variables/styles/variants/library APIs",
+    "Static SVG vectors only, no raster generation or arbitrary JS",
+    "Read snapshots are bounded; not all properties or whole libraries",
+    "SVG/PNG export <=1MB; exports reviewed/downloaded in application",
+    "32 recent request records in memory; restart requires reconnect/read-before-retry",
+    "Staging protects normal API failures, not a database transaction across Figma crashes",
+    "Successful node creation is not proof of beautiful visual composition"
+  ],
+  "deployment": "Use existing GitHub Actions. Windows artifact now includes figma-plugin; application can also download exact embedded plugin ZIP. Import once in Figma Desktop and keep plugin open; manual Allow edits required.",
+  "user_data": "No real Figma document or Roblox scene was modified. Tests use temporary local profiles; no account tokens or test notes in source archive."
+}

@@ -52,3 +52,13 @@ Added only a short Elio identity and exact startup acknowledgement: `Elio is rea
 - Removed retired cool-blue/purple styles from extension stylesheets and generated panels; preserved semantic result colors and host page styling.
 - First launch defaults to dark without overriding saved light mode. Product version remains 1.0.1.
 - Added live export/Notion DOM regressions and expanded native/extension UI checks. See CHAT-FIX-1.0.1-RU.md for validation scope and installation.
+
+
+## Oriveo browser provider (1.0.1)
+
+Added the app.oriveoai.com text-chat adapter, supported-AI links, scoped single-send acknowledgement, stable message IDs, paragraph/code extraction and regression fixtures. Image/file upload is explicitly unsupported. Existing Figma and project vault are retained. See ORIVEO-RU.md and ORIVEO-TEST-RESULTS.json for verification boundaries.
+
+
+## Eclipse Animator built-in skill (1.0.1)
+
+User-provided Eclipse reference with preserved originals, Elio-specific tool/permission adaptation, safe AnimSaves authoring helpers, Blender-aware task selection, paginated read-only resources and a normal-effort Skills card. Original paid plugin is not bundled. No live Eclipse UI success is claimed by the fixture tests. See ECLIPSE-ANIMATOR-RU.md.

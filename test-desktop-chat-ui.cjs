@@ -8,7 +8,7 @@ const output=process.env.ELIO_TEST_OUTPUT || process.cwd();
 fs.mkdirSync(output,{recursive:true});
 function html(){
  let text=fs.readFileSync(path.join(root,'agent/src/desktop.html'),'utf8');
- const tokens={I18N_CATALOG:'i18n-catalog',I18N:'i18n',SKILLS_UI:'skills-ui',EXPLORER_UI:'explorer-ui',MEDIA_UI:'media',MEMORY_UI:'memory',VAULT_UI:'vault-ui',TOOLKIT_UI:'toolkit-ui',TASK_UI:'task-center',TEMPLATE_UI:'templates',VERSION_UI:'version',CHAT_VIEW:'chat-view'};
+ const tokens={I18N_CATALOG:'i18n-catalog',I18N:'i18n',SKILLS_UI:'skills-ui',EXPLORER_UI:'explorer-ui',MEDIA_UI:'media',MEMORY_UI:'memory',VAULT_UI:'vault-ui',FIGMA_UI:'figma',TOOLKIT_UI:'toolkit-ui',TASK_UI:'task-center',TEMPLATE_UI:'templates',VERSION_UI:'version',CHAT_VIEW:'chat-view'};
  for(const [token,file] of Object.entries(tokens))text=text.replace('__ELIO_'+token+'__',()=>fs.readFileSync(path.join(root,'elio-Extension/core',file+'.js'),'utf8'));
  return text.replace('__ELIO_THEME_CSS__',()=>fs.readFileSync(path.join(root,'core/theme.css'),'utf8')).replace('__ELIO_THEME_JS__',()=>fs.readFileSync(path.join(root,'core/theme.js'),'utf8')).replaceAll('__ELIO_VERSION__',require('./manifest.json').version).replaceAll('__ELIO_PAIRING_KEY__','a'.repeat(64)).replace('__ELIO_SHELL_CSS__',()=>fs.readFileSync(path.join(root,'desktop/elio.css'),'utf8')).replace('__ELIO_DESKTOP_CHAT_CSS__',()=>fs.readFileSync(path.join(root,'desktop/chat.css'),'utf8')).replace('__ELIO_DESKTOP_CHAT_JS__',()=>fs.readFileSync(path.join(root,'desktop/chat.js'),'utf8'));
 }

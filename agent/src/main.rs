@@ -4,9 +4,9 @@ use axum::{extract::{Query, State}, http::Method, response::{Html, IntoResponse}
 use clap::Parser;
 use futures::{SinkExt, StreamExt};
 use serde::{Deserialize, Serialize};
-use std::{collections::{HashMap, VecDeque}, fs::File, net::SocketAddr, path::PathBuf, process::Stdio, sync::{atomic::{AtomicBool, AtomicU32, AtomicU64, AtomicUsize, Ordering}, Arc}, time::Duration};
+use std::{collections::HashMap, net::SocketAddr, path::PathBuf, process::Stdio, sync::{atomic::{AtomicBool, AtomicU32, AtomicU64, AtomicUsize, Ordering}, Arc}, time::Duration};
 use tokio::{
-    io::{AsyncBufReadExt, AsyncWriteExt, BufReader, Lines},
+    io::{AsyncWriteExt},
     process::{Child, ChildStdin, ChildStdout, Command},
     sync::{broadcast, Mutex, RwLock},
 };
@@ -23,7 +23,7 @@ const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 /// diagnostics outside the signed macOS bundle (stdout is invisible there).
 #[derive(Clone)]
 struct FileLog {
-    file: Arc<std::sync::Mutex<File>>,
+    file: Arc<std::sync::Mutex<resource_limits::RollingFile>>,
     ui: Option<Arc<gui::UiShared>>,
 }
 impl<'a> tracing_subscriber::fmt::MakeWriter<'a> for FileLog {
@@ -51,7 +51,7 @@ fn init_file_logger(ui: Option<Arc<gui::UiShared>>) {
         .unwrap_or_else(|| PathBuf::from("logs"));
     let _ = std::fs::create_dir_all(&dir);
     let path = dir.join("agent.log");
-    match File::options().create(true).append(true).open(&path) {
+    match resource_limits::RollingFile::open(path,5*1024*1024) {
         Ok(file) => {
             tracing_subscriber::fmt()
                 .with_env_filter("info")
@@ -65,18 +65,22 @@ fn init_file_logger(ui: Option<Arc<gui::UiShared>>) {
     }
 }
 
+mod resource_limits;
 mod gui;
 mod workspace;
 mod security;
 mod preferences;
 mod memory;
 mod vault;
+mod figma;
 mod templates;
 mod creations;
 mod explorer;
 mod skills;
 mod shared_learning;
 mod starter_skills;
+mod eclipse_skill;
+mod vfx_studio_skill;
 mod creation_export;
 mod toolkit;
 mod blender;
@@ -140,7 +144,8 @@ struct Payload { id: String, target: String, code: String, language: String, #[s
 struct AppState {
     pairing_key: Arc<String>,
     cancellation: Arc<cancellation::Hub>,
-    roblox_queue: Arc<Mutex<VecDeque<Payload>>>,
+    roblox_queue: Arc<Mutex<resource_limits::BudgetQueue<Payload>>>,
+    bridge_tool_slots: Arc<tokio::sync::Semaphore>,
     roblox_clients: Arc<RwLock<HashMap<String, String>>>,
     local_clients: Arc<RwLock<HashMap<String, String>>>,
     workspace: Arc<workspace::Workspace>,
@@ -177,7 +182,8 @@ impl AppState {
             pairing_key,
             cancellation: Arc::new(cancellation::Hub::default()),
             updates: Arc::new(update_service::Service::default()),
-            roblox_queue: Arc::new(Mutex::new(VecDeque::new())),
+            roblox_queue: Arc::new(Mutex::new(resource_limits::BudgetQueue::new(32,8*1024*1024))),
+            bridge_tool_slots: Arc::new(tokio::sync::Semaphore::new(32)),
             roblox_clients: Arc::new(RwLock::new(HashMap::new())),
             local_clients: Arc::new(RwLock::new(HashMap::new())),
             workspace,
@@ -230,7 +236,7 @@ struct McpRuntime {
     request_pending: bool,
     child: Option<Child>,
     stdin: Option<ChildStdin>,
-    stdout: Option<Lines<BufReader<ChildStdout>>>,
+    stdout: Option<resource_limits::LimitedLines<ChildStdout>>,
     next_id: u64,
     tools: Vec<serde_json::Value>,
     studio_id: Option<serde_json::Value>,
@@ -330,7 +336,7 @@ impl McpRuntime {
         let mut child = cmd.spawn().map_err(|e| { tracing::error!("MCP helper spawn failed: {e}"); e })?;
         info!("MCP helper spawned OK");
         self.stdin = child.stdin.take();
-        self.stdout = child.stdout.take().map(|s| BufReader::new(s).lines());
+        self.stdout = child.stdout.take().map(|s| resource_limits::LimitedLines::new(s,32*1024*1024));
         self.child = Some(child);
         let _ = self.request("initialize", serde_json::json!({
             "protocolVersion": "2025-06-18",
@@ -699,7 +705,7 @@ mod startup_tests {
         let mut child = Command::new("python").args(["-u", "-c", script])
             .stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::null()).kill_on_drop(true).spawn().unwrap();
         let mut mcp = McpRuntime::new(Arc::new(AtomicBool::new(true)));
-        mcp.stdin=child.stdin.take();mcp.stdout=child.stdout.take().map(|s|BufReader::new(s).lines());mcp.child=Some(child);mcp
+        mcp.stdin=child.stdin.take();mcp.stdout=child.stdout.take().map(|s|resource_limits::LimitedLines::new(s,32*1024*1024));mcp.child=Some(child);mcp
     }
 
     #[tokio::test]
@@ -782,7 +788,7 @@ for line in sys.stdin:
                 .stdin(Stdio::piped()).stdout(Stdio::piped()).spawn().unwrap();
             let mut mcp = McpRuntime::new(Arc::new(AtomicBool::new(true)));
             mcp.stdin = child.stdin.take();
-            mcp.stdout = child.stdout.take().map(|stream| BufReader::new(stream).lines());
+            mcp.stdout = child.stdout.take().map(|stream| resource_limits::LimitedLines::new(stream,32*1024*1024));
             mcp.child = Some(child);
             let tools = mcp.list_tools().await.unwrap();
             assert!(!tools[0]["inputSchema"]["required"].as_array().unwrap().contains(&serde_json::json!("studio_id")));
@@ -806,7 +812,7 @@ for line in sys.stdin:
         let mut child=Command::new(python).args(["-u","-c",script]).kill_on_drop(true)
             .stdin(Stdio::piped()).stdout(Stdio::piped()).spawn().unwrap();
         let mut mcp=McpRuntime::new(Arc::new(AtomicBool::new(true)));
-        mcp.stdin=child.stdin.take();mcp.stdout=child.stdout.take().map(|s|BufReader::new(s).lines());mcp.child=Some(child);mcp
+        mcp.stdin=child.stdin.take();mcp.stdout=child.stdout.take().map(|s|resource_limits::LimitedLines::new(s,32*1024*1024));mcp.child=Some(child);mcp
     }
     #[tokio::test]
     async fn mcp_notification_noise_and_backpressured_writes_have_total_deadlines() {
@@ -1207,8 +1213,8 @@ async fn run_server(state: AppState, addr: SocketAddr, start: std::time::Instant
     let cors = CorsLayer::new().allow_origin(tower_http::cors::AllowOrigin::predicate(|origin, _| {
         let mut headers = axum::http::HeaderMap::new();
         headers.insert("origin", origin.clone());
-        security::allowed_origin(&headers)
-    })).allow_methods([Method::GET, Method::POST, Method::OPTIONS]).allow_headers(Any);
+        security::allowed_origin(&headers) || matches!(origin.to_str().ok(),Some("null"|"https://www.figma.com"|"https://figma.com"))
+    })).allow_methods([Method::GET, Method::POST, Method::OPTIONS]).allow_headers(Any).allow_private_network(true);
     let app = Router::new()
         .route("/", get(|| async { Json(serde_json::json!({"ok": true, "service": "elio-agent", "version": env!("CARGO_PKG_VERSION")})) }))
         .route("/api/pair", post(|| async { axum::http::StatusCode::FORBIDDEN }))
@@ -1242,6 +1248,7 @@ async fn run_server(state: AppState, addr: SocketAddr, start: std::time::Instant
         .route("/api/stop", post(immediate_stop_handler))
         .route("/api/media/convert", post(media::post).layer(axum::extract::DefaultBodyLimit::max(64 * 1024 * 1024)))
         .route("/api/memory", get(memory::get).post(memory::post).layer(axum::extract::DefaultBodyLimit::max(4*1024*1024)))
+        .route("/api/figma",post(figma::post).layer(axum::extract::DefaultBodyLimit::max(400_000)))
         .route("/api/vault",post(vault::post).layer(axum::extract::DefaultBodyLimit::max(6*1024*1024)))
         .route("/api/engram",post(engram::post).layer(axum::extract::DefaultBodyLimit::max(64000)))
         .route("/api/chat-history",get(chat_history::get).post(chat_history::post).layer(axum::extract::DefaultBodyLimit::max(6*1024*1024)))
@@ -1262,6 +1269,7 @@ async fn run_server(state: AppState, addr: SocketAddr, start: std::time::Instant
         .with_state(state)
         // Public shell contains no key; the native WebView injects credentials.
         // Register after pairing middleware; every API remains authenticated.
+        .route("/figma-link",post(figma::plugin).layer(axum::extract::DefaultBodyLimit::max(1_600_000)))
         .route("/desktop-ui", get(desktop_shell_handler))
         .layer(cors);
     info!("elio bridge listening on http://{} (WS /ws)", addr);
@@ -1275,19 +1283,15 @@ async fn run_server(state: AppState, addr: SocketAddr, start: std::time::Instant
 async fn connect_handler(State(state): State<AppState>, Json(req): Json<serde_json::Value>) -> impl IntoResponse {
     let client_id = req.get("client_id").and_then(|v| v.as_str()).unwrap_or("studio-1").to_string();
     let engine = req.get("engine").and_then(|v| v.as_str()).unwrap_or("roblox").to_string();
-    let editor_connected = if engine.to_lowercase() == "local" {
-        state.local_clients.write().await.insert(client_id.clone(), engine.clone());
-        state.workspace.ready()
-    } else {
-        state.roblox_clients.write().await.insert(client_id.clone(), engine.clone());
-        state.roblox_editor_connected.load(Ordering::Relaxed)
-    };
+    let clients=if engine.to_lowercase()=="local"{&state.local_clients}else{&state.roblox_clients};
+    if let Err(error)=resource_limits::register_client(clients,&client_id,&engine).await{return (axum::http::StatusCode::TOO_MANY_REQUESTS,Json(serde_json::json!({"ok":false,"error":error}))).into_response();}
+    let editor_connected=if engine.to_lowercase()=="local"{state.workspace.ready()}else{state.roblox_editor_connected.load(Ordering::Relaxed)};
     Json(serde_json::json!({
         "ok": true,
         "bridge_registered": true,
         "editor_connected": editor_connected,
         "client_id": client_id,
-    }))
+    })).into_response()
 }
 async fn poll_handler(State(state): State<AppState>, Query(_q): Query<HashMap<String,String>>) -> impl IntoResponse {
     let queue = &state.roblox_queue;
@@ -1300,8 +1304,10 @@ async fn poll_handler(State(state): State<AppState>, Query(_q): Query<HashMap<St
 async fn push_handler(State(state): State<AppState>, Json(req): Json<serde_json::Value>) -> impl IntoResponse {
     let engine = req.get("engine").and_then(|v| v.as_str()).or(req.get("target").and_then(|v| v.as_str())).unwrap_or("roblox");
     let payload = if let Some(p) = req.get("payload") { serde_json::from_value::<Payload>(p.clone()).unwrap_or(Payload{id: format!("p-{}", chrono::Utc::now().timestamp_millis()), target: engine.to_string(), code: p.to_string(), language: "luau".into(), meta: p.clone()}) } else { Payload{id: req.get("id").and_then(|v| v.as_str()).unwrap_or(&format!("p-{}", chrono::Utc::now().timestamp_millis())).to_string(), target: engine.to_string(), code: req.get("code").and_then(|v| v.as_str()).unwrap_or("").to_string(), language: req.get("language").and_then(|v| v.as_str()).unwrap_or("luau").to_string(), meta: req.clone()} };
-    state.roblox_queue.lock().await.push_back(payload.clone());
-    Json(serde_json::json!({"ok": true, "queued": payload.id}))
+    let size=serde_json::to_vec(&payload).map_or(usize::MAX,|v|v.len());
+    let id=payload.id.clone();
+    if let Err(error)=state.roblox_queue.lock().await.push(payload,size){return (axum::http::StatusCode::TOO_MANY_REQUESTS,Json(serde_json::json!({"ok":false,"error":error}))).into_response();}
+    Json(serde_json::json!({"ok": true, "queued": id})).into_response()
 }
 async fn result_handler(State(state): State<AppState>, Json(res): Json<ExecResult>) -> impl IntoResponse {
     let _ = state.result_tx.send(res);
@@ -1486,6 +1492,7 @@ async fn desktop_shell_handler() -> impl IntoResponse {
         .replace("__ELIO_MEDIA_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/media.js")))
         .replace("__ELIO_MEMORY_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/memory.js")))
         .replace("__ELIO_VAULT_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/vault-ui.js")))
+        .replace("__ELIO_FIGMA_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/figma.js")))
         .replace("__ELIO_TOOLKIT_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/toolkit-ui.js")))
         .replace("__ELIO_TASK_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/task-center.js")))
         .replace("__ELIO_TEMPLATE_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/templates.js")))
@@ -1510,6 +1517,7 @@ async fn desktop_handler(State(state): State<AppState>) -> Html<String> {
         .replace("__ELIO_MEDIA_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/media.js")))
         .replace("__ELIO_MEMORY_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/memory.js")))
         .replace("__ELIO_VAULT_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/vault-ui.js")))
+        .replace("__ELIO_FIGMA_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/figma.js")))
         .replace("__ELIO_TOOLKIT_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/toolkit-ui.js")))
         .replace("__ELIO_TASK_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/task-center.js")))
         .replace("__ELIO_TEMPLATE_UI__", include_str!(concat!(env!("ELIO_EXTENSION_ROOT"), "/core/templates.js")))
@@ -1674,7 +1682,7 @@ async fn desktop_agent_handler(State(state): State<AppState>, Json(req): Json<se
 
 async fn desktop_agent_result_handler(State(state): State<AppState>, Json(req): Json<serde_json::Value>) -> impl IntoResponse {
     let id = req.get("request_id").and_then(|value| value.as_str()).unwrap_or("");
-    if let Some(sender) = state.ui.desktop_action_results.lock().unwrap_or_else(|error| error.into_inner()).remove(id) {
+    if let Some((_,sender)) = state.ui.desktop_action_results.lock().unwrap_or_else(|error| error.into_inner()).remove(id) {
         let _ = sender.send(req.get("result").cloned().unwrap_or(serde_json::json!({"ok":false,"error":"Missing browser result."})));
     }
     Json(serde_json::json!({"ok":true}))
@@ -1694,15 +1702,11 @@ async fn desktop_cowork_handler(state: AppState, req: serde_json::Value) -> axum
     let id = req.get("request_id").and_then(|value| value.as_str()).unwrap_or("");
     if id.is_empty() || id.len() > 128 { return (axum::http::StatusCode::BAD_REQUEST, Json(serde_json::json!({"ok":false,"error":"Missing request ID."}))).into_response(); }
     let (sender, receiver) = tokio::sync::oneshot::channel();
-    {
-        let mut results = state.ui.desktop_action_results.lock().unwrap_or_else(|error| error.into_inner());
-        if results.contains_key(id) || results.len() >= 50 { return (axum::http::StatusCode::CONFLICT, Json(serde_json::json!({"ok":false,"error":"This request is still being accepted. Please wait."}))).into_response(); }
-        results.insert(id.to_string(), sender);
-    }
+    let pending=match state.ui.reserve_desktop_action(id,sender){Ok(lease)=>lease,Err(error)=>return (axum::http::StatusCode::CONFLICT,Json(serde_json::json!({"ok":false,"error":error}))).into_response()};
     let event = serde_json::json!({"type":"desktop_agent_action","action":action,"tab_id":control.get("tab_id"),"browser_id":control.get("browser_id"),"prompt":req.get("prompt"),"request_id":id,"expected_chat":req.get("chat")});
     let delivered = state.ui.desktop_events.send(event).is_ok();
     let result = if delivered { tokio::time::timeout(Duration::from_secs(if action == "task-send" { 100 } else if action == "media-stage" { 60 } else if action == "creator-insert" { 125 } else if action == "creator-send" { 100 } else { 5 }), receiver).await.ok().and_then(Result::ok) } else { None };
-    state.ui.desktop_action_results.lock().unwrap_or_else(|error| error.into_inner()).remove(id);
+    drop(pending);
     match result {
         Some(result) if result.get("ok").and_then(|value| value.as_bool()) == Some(true) => Json(result).into_response(),
         Some(result) => (axum::http::StatusCode::CONFLICT, Json(result)).into_response(),
@@ -1920,12 +1924,12 @@ fn close_competing_studio_helpers() -> Vec<String> {
 /// Timeouts are ordinary misses: Studio can be busy for a few seconds.
 fn probe_failure_is_fatal(error: &anyhow::Error) -> bool {
     let msg = format!("{error:#}");
-    msg.contains("exited") || msg.contains("stdin unavailable") || msg.contains("stdout unavailable") || msg.contains("spawn failed")
+    msg.contains("exited") || msg.contains("stdin unavailable") || msg.contains("stdout unavailable") || msg.contains("spawn failed") || msg.contains("MCP response line exceeds its memory limit")
 }
 fn helper_is_dead(error: &anyhow::Error) -> bool {
     let msg = format!("{error:#}");
     msg.contains("exited") || msg.contains("timed out") || msg.contains("stdin unavailable")
-        || msg.contains("stdout unavailable") || msg.contains("spawn failed")
+        || msg.contains("stdout unavailable") || msg.contains("spawn failed") || msg.contains("MCP response line exceeds its memory limit")
 }
 
 struct InFlight<'a>(&'a AtomicUsize);
@@ -2047,14 +2051,16 @@ async fn roblox_tool(state: &AppState, name: &str, args: serde_json::Value) -> a
 async fn handle_ws(socket: axum::extract::ws::WebSocket, state: AppState) {
     let (mut send, mut recv) = socket.split();
     let mut rx = state.result_tx.subscribe();
-    let send_task = tokio::spawn(async move { while let Ok(res) = rx.recv().await { let txt = serde_json::to_string(&res).unwrap_or_default(); if send.send(axum::extract::ws::Message::Text(txt)).await.is_err() { break; } } });
+    let send_task = tokio::spawn(async move { loop { match rx.recv().await {Ok(res)=>{let txt=serde_json::to_string(&res).unwrap_or_default();if !matches!(tokio::time::timeout(Duration::from_secs(10),send.send(axum::extract::ws::Message::Text(txt))).await,Ok(Ok(()))){break;}},Err(broadcast::error::RecvError::Lagged(_))=>continue,Err(_)=>break} } });
     while let Some(Ok(msg)) = recv.next().await {
         if let axum::extract::ws::Message::Text(txt) = msg {
             if let Ok(val) = serde_json::from_str::<serde_json::Value>(&txt) {
                 if val.get("code").is_some() && !state.updates.installing.load(Ordering::SeqCst) {
                     let engine = val.get("engine").and_then(|v| v.as_str()).unwrap_or("roblox").to_string();
                     let payload = Payload{ id: val.get("id").and_then(|v| v.as_str()).unwrap_or("p-1").to_string(), target: engine.clone(), code: val.get("code").and_then(|v| v.as_str()).unwrap_or("").to_string(), language: "luau".into(), meta: val.clone()};
-                    state.roblox_queue.lock().await.push_back(payload);
+                    let size=serde_json::to_vec(&payload).map_or(usize::MAX,|v|v.len());
+                    let id=payload.id.clone();
+                    if let Err(error)=state.roblox_queue.lock().await.push(payload,size){let _=state.result_tx.send(ExecResult{id,ok:false,result:String::new(),error:Some(error.into())});}
                 }
             }
         }
@@ -2087,16 +2093,13 @@ async fn run_legacy_ws(state: AppState, listener: tokio::net::TcpListener, engin
 async fn handle_legacy_ws(ws_stream: tokio_tungstenite::WebSocketStream<tokio::net::TcpStream>, state: AppState, engine: String) {
     static NEXT_CLIENT: AtomicUsize = AtomicUsize::new(1);
     let client_key = format!("ext-{engine}-{}", NEXT_CLIENT.fetch_add(1,Ordering::Relaxed));
-    if engine == "local" {
-        state.local_clients.write().await.insert(client_key.clone(), engine.clone());
-    } else {
-        state.roblox_clients.write().await.insert(client_key.clone(), engine.clone());
-    }
+    let clients=if engine=="local"{&state.local_clients}else{&state.roblox_clients};
+    if resource_limits::register_client(clients,&client_key,&engine).await.is_err(){return;}
     state.ui.mark_extension_seen();
     info!("legacy WS [{engine}] client connected");
     let (mut write, mut read) = ws_stream.split();
     // Outbound channel so ping/status keep flowing while a tool runs on another task.
-    let (out_tx, mut out_rx) = tokio::sync::mpsc::unbounded_channel::<String>();
+    let (out_tx, mut out_rx, mut closed_rx) = resource_limits::BridgeSender::channel(32,64*1024*1024);
     let mut desktop_rx = state.ui.desktop_events.subscribe();
     let desktop_tx = out_tx.clone();
     let desktop_forwarder = tokio::spawn(async move {
@@ -2108,12 +2111,15 @@ async fn handle_legacy_ws(ws_stream: tokio_tungstenite::WebSocketStream<tokio::n
             }
         }
     });
+    let writer_closed=out_tx.clone();
     let writer = tokio::spawn(async move {
-        while let Some(txt) = out_rx.recv().await {
-            if write.send(tokio_tungstenite::tungstenite::Message::Text(txt.into())).await.is_err() { break; }
+        while let Some(mut frame) = out_rx.recv().await {
+            let message=tokio_tungstenite::tungstenite::Message::Text(std::mem::take(&mut frame.text).into());
+            if !matches!(tokio::time::timeout(Duration::from_secs(10),write.send(message)).await,Ok(Ok(()))){break;}
         }
+        writer_closed.close();
     });
-    let send_json = |tx: &tokio::sync::mpsc::UnboundedSender<String>, v: serde_json::Value| {
+    let send_json = |tx: &resource_limits::BridgeSender, v: serde_json::Value| {
         let _ = tx.send(v.to_string());
     };
 
@@ -2164,7 +2170,8 @@ async fn handle_legacy_ws(ws_stream: tokio_tungstenite::WebSocketStream<tokio::n
     if let Ok(intro) = intro { if !intro.is_null() { let _ = intro_tx.send(intro.to_string()); } }
     });
     let mut last_online: Option<bool> = None;
-    while let Some(Ok(msg)) = read.next().await {
+    loop {
+        let msg=tokio::select!{_ = closed_rx.changed()=>break, message=read.next()=>match message{Some(Ok(message))=>message,_=>break}};
         if let tokio_tungstenite::tungstenite::Message::Text(txt) = msg {
             if let Ok(val) = serde_json::from_str::<serde_json::Value>(&txt) {
                 let typ = val.get("type").and_then(|v| v.as_str()).unwrap_or("");
@@ -2263,6 +2270,7 @@ async fn handle_legacy_ws(ws_stream: tokio_tungstenite::WebSocketStream<tokio::n
                         let _ = alive;
                     },
                     "call_tool" => {
+                        let permit=match state.bridge_tool_slots.clone().try_acquire_owned(){Ok(permit)=>permit,Err(_)=>{send_json(&out_tx,serde_json::json!({"type":"tool_result","id":id,"ok":false,"kind":"busy","error":"Bridge tool capacity reached. No command was dispatched."}));continue;}};
                         let name = val.get("name").and_then(|v| v.as_str()).unwrap_or("unknown").to_string();
                         let args = val.get("arguments").cloned().unwrap_or(serde_json::Value::Null);
                         let budget = native_tool_timeout(&name,val.get("timeout").and_then(|v|v.as_u64()));
@@ -2271,6 +2279,7 @@ async fn handle_legacy_ws(ws_stream: tokio_tungstenite::WebSocketStream<tokio::n
                         let checkpoint_id = val.get("checkpoint_id").and_then(|v|v.as_str()).unwrap_or("").to_string();
                         let tx = out_tx.clone();
                         tokio::spawn(async move {
+                            let _permit=permit;
                             let outcome = checkpoint_tool_bounded(&state2, &eng, &checkpoint_id, &name, args, budget).await;
                             let response = match outcome {
                                 Ok(out) => {
@@ -2325,8 +2334,10 @@ async fn handle_legacy_ws(ws_stream: tokio_tungstenite::WebSocketStream<tokio::n
     }
     desktop_forwarder.abort();
     intro_task.abort();
-    drop(out_tx);
+    out_tx.close();
+    writer.abort();
     let _ = writer.await;
+    drop(out_tx);
     if engine == "local" {
         state.local_clients.write().await.remove(&client_key);
     } else {

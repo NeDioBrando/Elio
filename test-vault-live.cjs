@@ -306,7 +306,7 @@ async function save(title, text, category, tags = []) {
     await page
       .getByRole("textbox", { name: "Title", exact: true })
       .fill("Unsent draft title");
-    await page.locator("[data-refresh]").click();
+    await page.locator("#vaultWorkspace [data-refresh]").click();
     assert.equal(
       await page
         .getByRole("textbox", { name: "Title", exact: true })

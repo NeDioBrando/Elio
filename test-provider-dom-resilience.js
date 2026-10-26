@@ -3,6 +3,7 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const {JSDOM}=require('jsdom');
 const {prelude}=require('./test-support/provider-dom.cjs');
 const fixtures={
+ oriveo:['https://app.oriveoai.com/chat/test','<div class="InputComposer_wrap"><textarea class="InputComposer_textarea"></textarea></div>'],
  chatgpt:['https://chatgpt.com/c/test','<div id="prompt-textarea" class="ProseMirror" contenteditable="true"></div>'],
  deepseek:['https://chat.deepseek.com/a/chat/test','<textarea></textarea>'],
  claude:['https://claude.ai/chat/test','<div class="ProseMirror" contenteditable="true"></div>'],
@@ -74,5 +75,5 @@ function probe(p){for(const name of ['getEditor','editorText','allItems','assist
  // Faults in the native setter and rich-text selection must always release control.
  {const d=load('notion','<textarea placeholder="Ask Notion AI" readonly></textarea>');const w=d.window,e=w.document.querySelector('textarea');try{const old=Object.getOwnPropertyDescriptor(w.HTMLTextAreaElement.prototype,'value');Object.defineProperty(w.HTMLTextAreaElement.prototype,'value',{...old,set(){throw Error('setter failed');}});check('Notion failed write releases selfWrite',()=>{assert.throws(()=>w.testdom.setRichText(e,'text'));assert.equal(w.testdom.selfWrite,false);assert.equal(e.readOnly,true);});Object.defineProperty(w.HTMLTextAreaElement.prototype,'value',old);}finally{w.close();}}
  {const d=load('notion','<div contenteditable="true" role="textbox" aria-label="Ask Notion AI"></div>'),w=d.window;try{w.getSelection=()=>{throw Error('selection failed');};check('Notion selection error releases selfWrite',()=>{assert.equal(w.testdom.setRichText(w.document.querySelector('[contenteditable]'),'text'),'rejected');assert.equal(w.testdom.selfWrite,false);});}finally{w.close();}}
- console.log('PASS '+checks+' provider DOM resilience checks (13 active adapters + 2 retained legacy adapters).');
+ console.log('PASS '+checks+' provider DOM resilience checks (14 active adapters + 2 retained legacy adapters).');
 })().catch(e=>{console.error(e);process.exitCode=1;});

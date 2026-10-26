@@ -1,0 +1,193 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        background: #24221d;
+        color: #e4ddcf;
+        font: 13px/1.6 system-ui;
+      }
+      h1 {
+        font: 26px Georgia;
+        margin: 0;
+      }
+      p {
+        color: #b8ac96;
+      }
+      input,
+      button {
+        box-sizing: border-box;
+        width: 100%;
+        margin: 8px 0;
+        padding: 10px;
+        background: #302c25;
+        color: #e4ddcf;
+        border: 1px solid #514b40;
+        border-radius: 9px;
+      }
+      input[type="checkbox"] {
+        width: auto;
+        accent-color: #b8ac96;
+      }
+      button {
+        cursor: pointer;
+      }
+      #status {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      label {
+        display: block;
+      }
+      small {
+        color: #b8ac96;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Elio Link</h1>
+    <p>Editable UI and vector icons in this file.</p>
+    <label
+      >Pairing code from Elio → Figma<input
+        id="code"
+        type="password"
+        autocomplete="off"
+        spellcheck="false" /></label
+    ><label
+      ><input id="edits" type="checkbox" /> Allow edits to Elio-owned
+      designs</label
+    ><button id="connect">Connect</button
+    ><button id="disconnect" disabled>Disconnect</button>
+    <div id="status" role="status">
+      Only 127.0.0.1:3000. No Figma API token required.
+    </div>
+    <p>
+      <small
+        >Keep this plugin open. Edits replace only a matching Elio build, not
+        your other layers. Reconnect after switching pages. For important work
+        use a draft or duplicate.</small
+      >
+    </p>
+    <script>
+      const base = "http://127.0.0.1:3000/figma-link",
+        client = crypto.randomUUID();
+      let code = "",
+        active = false,
+        generation = 0,
+        pending = null,
+        retryResult = null;
+      const q = (id) => document.getElementById(id),
+        say = (s) => (q("status").textContent = s);
+      async function api(body) {
+        const r = await fetch(base, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + code,
+          },
+          body: JSON.stringify({ ...body, client_id: client }),
+          signal: AbortSignal.timeout(10000),
+        });
+        const v = await r.json();
+        if (!v.ok) throw Error(v.error || "Connection failed");
+        return v;
+      }
+      function stop() {
+        active = false;
+        generation++;
+        code = "";
+        pending = null;
+        retryResult = null;
+        q("connect").disabled = false;
+        q("disconnect").disabled = true;
+        say("Disconnected. Revoke in Elio to invalidate this pairing code.");
+      }
+      q("disconnect").onclick = async () => {
+        try {
+          await api({ action: "disconnect" });
+        } catch {}
+        stop();
+      };
+      q("connect").onclick = () => {
+        code = q("code").value.trim();
+        if (!/^[a-f0-9]{64}$/.test(code)) {
+          say("Generate a new pairing code in Elio → Figma.");
+          return;
+        }
+        q("connect").disabled = true;
+        parent.postMessage({ pluginMessage: { type: "context" } }, "*");
+      };
+      window.onmessage = async (e) => {
+        if (e.source !== parent) return;
+        const m = e.data.pluginMessage;
+        if (!m) return;
+        try {
+          if (m.type === "context") {
+            await api({
+              action: "hello",
+              document: m.document,
+              writable: q("edits").checked,
+            });
+            active = true;
+            generation++;
+            q("disconnect").disabled = false;
+            say("Connected: " + m.document.name + " / " + m.document.page);
+            loop(generation);
+          }
+          if (m.type === "result" && pending === m.request_id) {
+            retryResult = {
+              action: "complete",
+              request_id: m.request_id,
+              result: m.result,
+            };
+            say(
+              m.result.ok
+                ? "Completed " + m.request_id
+                : "Failed: " + m.result.error,
+            );
+          }
+        } catch (err) {
+          stop();
+          say(err.message);
+        }
+      };
+      async function loop(gen) {
+        while (active && gen === generation) {
+          try {
+            if (retryResult) {
+              await api(retryResult);
+              retryResult = null;
+              pending = null;
+            }
+            if (pending)
+              await api({ action: "heartbeat", writable: q("edits").checked });
+            if (!pending) {
+              const r = await api({
+                action: "poll",
+                writable: q("edits").checked,
+              });
+              if (r.command) {
+                pending = r.command.request_id;
+                say("Running " + r.command.action + " · " + pending);
+                parent.postMessage(
+                  { pluginMessage: { type: "execute", command: r.command } },
+                  "*",
+                );
+              }
+            }
+          } catch (e) {
+            say(
+              "Connection interrupted: " +
+                e.message +
+                "\nNo command will be re-executed automatically.",
+            );
+          }
+          await new Promise((r) => setTimeout(r, 1000));
+        }
+      }
+    </script>
+  </body>
+</html>

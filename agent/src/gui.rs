@@ -55,6 +55,7 @@ fn supported_ai_url(action: &str) -> Option<&'static str> {
         "open:crax" => Some("https://gpt.crax.lol/"),
         "open:useai" => Some("https://use.ai/"),
         "open:oxalpha" => Some("https://oxalpha.com/"),
+        "open:oriveo" => Some("https://app.oriveoai.com/chat"),
         "open:vani" => Some("https://c.vani.ai/c"),
         "open:notion" => Some("https://www.notion.so/ai"),
         "open:ollama" => Some("https://ollama.com/"),
@@ -85,9 +86,11 @@ pub struct UiShared {
     pub servers: Mutex<Vec<mcp_addons::ServerSummary>>,
     pub desktop_events: tokio::sync::broadcast::Sender<serde_json::Value>,
     pub browser_agent: Mutex<Option<(std::time::Instant, serde_json::Value)>>,
-    pub desktop_action_results: Mutex<std::collections::HashMap<String, tokio::sync::oneshot::Sender<serde_json::Value>>>,
+    pub desktop_action_results: Mutex<std::collections::HashMap<String, (u64,tokio::sync::oneshot::Sender<serde_json::Value>)>>,
 }
 
+pub struct DesktopActionLease{ui:Arc<UiShared>,id:String,generation:u64}
+impl Drop for DesktopActionLease{fn drop(&mut self){let mut pending=self.ui.desktop_action_results.lock().unwrap_or_else(|e|e.into_inner());if pending.get(&self.id).is_some_and(|(generation,_)|*generation==self.generation){pending.remove(&self.id);}}}
 const LOG_CAP: usize = 1200;
 
 impl UiShared {
@@ -109,6 +112,12 @@ impl UiShared {
             browser_agent: Mutex::new(None),
             desktop_action_results: Mutex::new(std::collections::HashMap::new()),
         }
+    }
+
+    pub fn reserve_desktop_action(self:&Arc<Self>,id:&str,sender:tokio::sync::oneshot::Sender<serde_json::Value>)->Result<DesktopActionLease,&'static str>{
+        static GENERATION:std::sync::atomic::AtomicU64=std::sync::atomic::AtomicU64::new(1);
+        let mut pending=self.desktop_action_results.lock().unwrap_or_else(|e|e.into_inner());if pending.contains_key(id)||pending.len()>=50{return Err("This request is still being accepted. Please wait.");}
+        let generation=GENERATION.fetch_add(1,Ordering::Relaxed);pending.insert(id.into(),(generation,sender));Ok(DesktopActionLease{ui:self.clone(),id:id.into(),generation})
     }
 
     pub fn browser_agent_snapshot(&self) -> serde_json::Value {
@@ -143,7 +152,7 @@ impl UiShared {
             if logs.len() == LOG_CAP {
                 logs.pop_front();
             }
-            logs.push_back(trimmed.to_string());
+            logs.push_back(trimmed.chars().take(4000).collect());
         }
     }
 
@@ -464,7 +473,7 @@ mod tests {
 
     #[test] fn supported_ai_links_are_fixed_and_match_desktop_buttons() {
         let html=include_str!("desktop.html");
-        let actions=["clickup","chatgpt","deepseek","claude","gemini","kimi","glm","qwen","arena","freebuff","crax","useai","oxalpha","vani","notion","ollama"];
+        let actions=["clickup","chatgpt","deepseek","claude","gemini","kimi","glm","qwen","arena","freebuff","crax","useai","oxalpha","vani","oriveo","notion","ollama"];
         for name in actions {
             let action=format!("open:{name}");let url=supported_ai_url(&action).expect("missing supported AI action");
             assert!(url.starts_with("https://"));assert!(html.contains(&format!("data-ipc=\"{action}\"")));
@@ -535,4 +544,11 @@ mod tests {
         assert!(rows.iter().any(|row| row.name == "web_fetch" && row.source == "elio"));
         assert!(!rows.iter().any(|row| row.name == "web_search" && row.source == "elio"));
     }
+}
+
+#[cfg(test)]mod resource_tests{use super::*;#[test]fn log_ring_bounds_line_length_and_count(){let ui=UiShared::new(Arc::new(AtomicBool::new(false)));ui.log(&"🐔".repeat(100000));assert_eq!(ui.logs.lock().unwrap().back().unwrap().chars().count(),4000);for _ in 0..2000{ui.log("bounded");}assert_eq!(ui.logs.lock().unwrap().len(),1200);}}
+
+#[cfg(test)]mod desktop_lease_tests{use super::*;
+ #[tokio::test]async fn cancelled_waiter_releases_its_slot(){let ui=Arc::new(UiShared::new(Arc::new(AtomicBool::new(false))));let copy=ui.clone();let(ready,seen)=tokio::sync::oneshot::channel();let task=tokio::spawn(async move{let(sender,_receiver)=tokio::sync::oneshot::channel();let _lease=copy.reserve_desktop_action("cancelled",sender).unwrap();let _=ready.send(());std::future::pending::<()>().await;});seen.await.unwrap();assert_eq!(ui.desktop_action_results.lock().unwrap().len(),1);task.abort();let _=task.await;assert!(ui.desktop_action_results.lock().unwrap().is_empty());}
+ #[test]fn old_lease_cannot_remove_reused_request_id(){let ui=Arc::new(UiShared::new(Arc::new(AtomicBool::new(false))));let(sender,_)=tokio::sync::oneshot::channel();let old=ui.reserve_desktop_action("same",sender).unwrap();ui.desktop_action_results.lock().unwrap().remove("same");let(sender,_)=tokio::sync::oneshot::channel();let new=ui.reserve_desktop_action("same",sender).unwrap();drop(old);assert_eq!(ui.desktop_action_results.lock().unwrap().len(),1);drop(new);assert!(ui.desktop_action_results.lock().unwrap().is_empty());}
 }

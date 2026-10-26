@@ -1,0 +1,313 @@
+{
+  "product": "Elio",
+  "version": "1.0.1",
+  "scope": "Source resource/lifecycle/performance audit; Linux native fixtures and headless Chromium, not Windows acceptance",
+  "rust": {
+    "passed": 165,
+    "ignored": 1,
+    "failed": 0
+  },
+  "regression_commands": [
+    {
+      "test": "node test-resource-lifecycle.cjs",
+      "exit_code": 0,
+      "seconds": 2.07
+    },
+    {
+      "test": "node test-vfx-studio.cjs",
+      "exit_code": 0,
+      "seconds": 0.6
+    },
+    {
+      "test": "node test-elio-identity.cjs",
+      "exit_code": 0,
+      "seconds": 0.07
+    },
+    {
+      "test": "node test-elio-rename.cjs",
+      "exit_code": 0,
+      "seconds": 0.07
+    },
+    {
+      "test": "node test-elio-audit.cjs",
+      "exit_code": 0,
+      "seconds": 1.73
+    },
+    {
+      "test": "node test-elio-chat-live.cjs",
+      "exit_code": 0,
+      "seconds": 0.05
+    },
+    {
+      "test": "node test-desktop-chat.cjs",
+      "exit_code": 0,
+      "seconds": 0.05
+    },
+    {
+      "test": "node test-eclipse.cjs",
+      "exit_code": 0,
+      "seconds": 0.48
+    },
+    {
+      "test": "node test-oriveo.cjs",
+      "exit_code": 0,
+      "seconds": 0.79
+    },
+    {
+      "test": "node test-figma.cjs",
+      "exit_code": 0,
+      "seconds": 0.36
+    },
+    {
+      "test": "node test-vault-contract.cjs",
+      "exit_code": 0,
+      "seconds": 0.44
+    },
+    {
+      "test": "node test-elio.cjs",
+      "exit_code": 0,
+      "seconds": 0.08
+    },
+    {
+      "test": "node test-elio-theme.cjs",
+      "exit_code": 0,
+      "seconds": 0.05
+    },
+    {
+      "test": "node test-updates.cjs",
+      "exit_code": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "node test-live-audit-fixes.cjs",
+      "exit_code": 0,
+      "seconds": 0.05
+    },
+    {
+      "test": "node test-auto-creator-enhancement.js",
+      "exit_code": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "node test-tool-guard-repair.js",
+      "exit_code": 0,
+      "seconds": 0.03
+    },
+    {
+      "test": "node test-motion.js",
+      "exit_code": 0,
+      "seconds": 0.03
+    },
+    {
+      "test": "node test-notion-protocol-file.js",
+      "exit_code": 0,
+      "seconds": 121.75
+    },
+    {
+      "test": "node tools/test_eclipse_luau.mjs",
+      "exit_code": 0,
+      "seconds": 0.18
+    },
+    {
+      "test": "node tools/test_motion_luau.mjs",
+      "exit_code": 0,
+      "seconds": 0.31
+    },
+    {
+      "test": "node test-elio-ui.cjs",
+      "exit_code": 0,
+      "seconds": 35.22
+    },
+    {
+      "test": "node test-desktop-chat-ui.cjs",
+      "exit_code": 0,
+      "seconds": 21.54
+    },
+    {
+      "test": "node test-elio-extension-ui.cjs",
+      "exit_code": 0,
+      "seconds": 5.03
+    },
+    {
+      "test": "node test-elio-theme-ui.cjs",
+      "exit_code": 0,
+      "seconds": 25.95
+    },
+    {
+      "test": "node test-update-ui.cjs",
+      "exit_code": 0,
+      "seconds": 3.07
+    },
+    {
+      "test": "python tools/test_package_windows.py",
+      "exit_code": 0,
+      "seconds": 5.11
+    },
+    {
+      "test": "python tools/test_prepare_engram.py",
+      "exit_code": 0,
+      "seconds": 0.19
+    }
+  ],
+  "lifecycle_checks": 18,
+  "vfx_luau_checks": 31,
+  "core_provider_syntax_files": 68,
+  "browser_memory": [
+    {
+      "label": "before",
+      "removed_roots": 300,
+      "buttons_per_root": 30,
+      "samples": [
+        {
+          "usedSize": 1228508,
+          "totalSize": 1871872,
+          "embedderHeapUsedSize": 687456,
+          "backingStorageSize": 21556
+        },
+        {
+          "usedSize": 2314984,
+          "totalSize": 2793472,
+          "embedderHeapUsedSize": 1722360,
+          "backingStorageSize": 12356
+        },
+        {
+          "usedSize": 3406000,
+          "totalSize": 3878912,
+          "embedderHeapUsedSize": 3028928,
+          "backingStorageSize": 12356
+        },
+        {
+          "usedSize": 4454412,
+          "totalSize": 5091328,
+          "embedderHeapUsedSize": 4386368,
+          "backingStorageSize": 12356
+        }
+      ],
+      "growth_bytes": 3225904
+    },
+    {
+      "label": "after",
+      "removed_roots": 300,
+      "buttons_per_root": 30,
+      "samples": [
+        {
+          "usedSize": 1233988,
+          "totalSize": 1871872,
+          "embedderHeapUsedSize": 811064,
+          "backingStorageSize": 23988
+        },
+        {
+          "usedSize": 1387732,
+          "totalSize": 2269184,
+          "embedderHeapUsedSize": 428344,
+          "backingStorageSize": 13572
+        },
+        {
+          "usedSize": 1399696,
+          "totalSize": 2269184,
+          "embedderHeapUsedSize": 441936,
+          "backingStorageSize": 13572
+        },
+        {
+          "usedSize": 1409928,
+          "totalSize": 2269184,
+          "embedderHeapUsedSize": 323688,
+          "backingStorageSize": 13572
+        }
+      ],
+      "growth_bytes": 175940
+    }
+  ],
+  "native_comparison": [
+    {
+      "label": "before",
+      "seconds": 60.04,
+      "status_requests": 1105,
+      "captures": 61,
+      "messages_per_capture": 1500,
+      "capture_median_ms": 52.908,
+      "capture_p95_ms": 64.747,
+      "rss_samples_bytes": [
+        27791360,
+        36278272,
+        36155392,
+        36470784,
+        37056512
+      ],
+      "queue_accepted": 64,
+      "queue_refused": 0,
+      "websocket": "PASS 80 WebSocket reconnect/ping/close cycles, client cleanup. Only temporary fixture reads.",
+      "archive_export_verified": true
+    },
+    {
+      "label": "after",
+      "seconds": 60.04,
+      "status_requests": 1104,
+      "captures": 61,
+      "messages_per_capture": 1500,
+      "capture_median_ms": 44.113,
+      "capture_p95_ms": 59.202,
+      "rss_samples_bytes": [
+        27971584,
+        37019648,
+        37101568,
+        36950016,
+        48939008
+      ],
+      "queue_accepted": 20,
+      "queue_refused": 44,
+      "websocket": "PASS 80 WebSocket reconnect/ping/close cycles, client cleanup, slow-reader flood closes under bounded tool/outbound capacity. Only temporary fixture reads.",
+      "archive_export_verified": true
+    }
+  ],
+  "final_candidate_smoke": [
+    {
+      "label": "after",
+      "seconds": 8.96,
+      "status_requests": 600,
+      "captures": 61,
+      "messages_per_capture": 1500,
+      "capture_median_ms": 50.456,
+      "capture_p95_ms": 81.814,
+      "rss_samples_bytes": [
+        28254208,
+        37404672,
+        37961728,
+        37531648,
+        48209920
+      ],
+      "queue_accepted": 20,
+      "queue_refused": 44,
+      "websocket": "PASS 80 WebSocket reconnect/ping/close cycles, client cleanup, slow-reader flood closes under bounded tool/outbound capacity. Only temporary fixture reads.",
+      "archive_export_verified": true
+    }
+  ],
+  "final_linux_build": "passed (16 compiler warnings)",
+  "final_packaging_contract": "passed; fixture only, does not execute Windows executable",
+  "changed_baseline_files": [
+    "Build-Windows.ps1",
+    "core/creator-ui.js",
+    "core/i18n.js",
+    "core/main.js",
+    "core/skills-ui.js",
+    "core/theme.js",
+    "tools/package_windows.py",
+    "elio-Extension/core/creator-ui.js",
+    "elio-Extension/core/i18n.js",
+    "elio-Extension/core/main.js",
+    "elio-Extension/core/skills-ui.js",
+    "elio-Extension/core/theme.js",
+    "agent/src/chat_history.rs",
+    "agent/src/gui.rs",
+    "agent/src/main.rs",
+    "agent/src/mcp_addons.rs",
+    "agent/src/vault.rs"
+  ],
+  "limitations": [
+    "No real Windows/WebView2 build or multi-hour soak in this environment",
+    "No live provider/Studio/Blender/Figma/plugin UI acceptance",
+    "Final RSS comparison is not workload-equivalent: candidate includes additional slow-reader flood",
+    "Do not infer whole-application RAM or AI-generation performance from fixture metrics"
+  ],
+  "data_safety": "No user project/chat/vault files deleted; overload rejects new requests, no automatic mutation replay"
+}

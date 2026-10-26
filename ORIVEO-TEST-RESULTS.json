@@ -1,0 +1,143 @@
+{
+  "product": "Elio",
+  "version": "1.0.1",
+  "provider": "Oriveo",
+  "origin": "https://app.oriveoai.com",
+  "checked_at": "2026-10-24T22:16:27.231683+00:00",
+  "source_base": "Elio-v1.0.1-Figma-UI-Icons-SOURCE.zip",
+  "source_base_sha256": "cf64cc69ed2372f48f9fd5aeaf8475e1198a2748d502df130b6f519c93436b86",
+  "live_browser": {
+    "anonymous_chat_observed": true,
+    "diagnostic_messages_sent": 2,
+    "diagnostic_responses_observed": 2,
+    "production_adapter_send_acknowledged": true,
+    "production_adapter_generation_start_and_finish_observed": true,
+    "final_reply": "Adapter OK — Кириллица 🐔",
+    "paragraph_unicode_json_read_verified": true,
+    "roblox_or_figma_mutations_executed": false,
+    "native_extension_end_to_end_verified": false
+  },
+  "automated": {
+    "javascript": [
+      {
+        "test": "test-oriveo.cjs",
+        "status": "passed",
+        "summary": "PASS Oriveo: 23 checks (live-DOM fixture, roles, paragraphs/code, streaming, scoped single send, ambiguity, hooks, registration/parity)"
+      },
+      {
+        "test": "test-provider-dom-guards.js",
+        "status": "passed",
+        "summary": "PASS 562 guarded query/layout/attribute reads and 13 input-control finally regions."
+      },
+      {
+        "test": "test-provider-dom-resilience.js",
+        "status": "passed",
+        "summary": "PASS oriveo resilience\nPASS chatgpt resilience\nPASS deepseek resilience\nPASS claude resilience\nPASS gemini resilience\nPASS kimi resilience\nPASS glm resilience\nPASS arena resilience\nPASS freebuff resilience\nPASS qwen resilience\nPASS crax resilience\nPASS useai resilience\nPASS oxalpha resilience\nPASS notion resilience\nPASS copilot resilience\nPASS meta resilience\nPASS 325 provider DOM resilience checks (14 active adapters + 2 retained legacy adapters)."
+      },
+      {
+        "test": "test-elio-identity.cjs",
+        "status": "passed",
+        "summary": "PASS identity: Elio in Roblox/local/compact/Notion prompts; exact ready text; real handshake accepts requested acknowledgement, rejects commands; LF/CRLF prompt-scope hash unchanged; real edits detected; extension parity."
+      },
+      {
+        "test": "test-elio-rename.cjs",
+        "status": "passed",
+        "summary": "PASS complete rename: 1.0.1, Cargo/bin/icons, runtime identifiers, recursive extension parity, one executable, packager/helper/update authority/workflow contracts."
+      },
+      {
+        "test": "test-elio-audit.cjs",
+        "status": "passed",
+        "summary": "PASS elio v1: identity, full version, Vani registration/contracts, own update channel, synced extension, syntax (70 scripts)"
+      },
+      {
+        "test": "test-elio-chat-live.cjs",
+        "status": "passed",
+        "summary": "PASS live chat: forced provider invalidation, new turns and streamed revisions without observer/reload, activity on unchanged revisions, idle/tool/stop, hidden setup with raw history retained, ordinary prose preserved, 15 locales."
+      },
+      {
+        "test": "test-desktop-chat.cjs",
+        "status": "passed",
+        "summary": "PASS desktop chat: snapshots, streaming revisions, bounds, target guards, request IDs, pin/unpin, source parity"
+      },
+      {
+        "test": "test-figma.cjs",
+        "status": "passed",
+        "summary": "PASS Figma contracts: native editable layer mapping, Auto Layout/components/text/SVG, font preflight, staged rollback, user-layer preservation, idempotency, unsafe SVG rejection, bounded reads/export, UI bootstrap, schema/manifest parity, guarded dispatch, Figma available with Studio offline. Plugin API is simulated here; real Figma Desktop still needs acceptance testing."
+      },
+      {
+        "test": "test-vault-contract.cjs",
+        "status": "passed",
+        "summary": "PASS vault contracts: production Notion block boundaries, inline spans, list/BR/code preservation, desktop paragraphs, confirmed-only receipts, compact save replies, bound project scope, conflicts, fresh-chat guard, extension parity, Unicode-safe long-note import and duplicate prevention."
+      },
+      {
+        "test": "test-elio.cjs",
+        "status": "passed",
+        "summary": "PASS Elio: protocol cards preserve prose, truthful tool states, user delivery ACK, explicit post-Stop resume, retry deduplication, fresh read, 15-language coverage"
+      },
+      {
+        "test": "test-elio-theme.cjs",
+        "status": "passed",
+        "summary": "PASS theme: persisted browser storage, cross-tab updates, SVG/ARIA, delayed save, failed-save rollback, 15 locales, embed/parity, representative AA text pairs\nlight text/canvas 10.74:1; light text/surface 11.65:1; light muted/surface 5.84:1; light on-accent/accent 7.00:1; light green-text/green-bg 5.94:1; light error-text/error-bg 5.68:1; light warn-text/warn-bg 5.32:1; dark text/canvas 11.86:1; dark text/surface 10.66:1; dark muted/surface 7.06:1; dark on-accent/accent 7.57:1; dark green-text/green-bg 7.01:1; dark error-text/error-bg 6.97:1; dark warn-text/warn-bg 6.70:1"
+      },
+      {
+        "test": "test-updates.cjs",
+        "status": "passed",
+        "summary": "PASS updates: shared Outdated/action state, progress, extension reload, no false current, own channel, native/helper guard contracts"
+      },
+      {
+        "test": "test-live-audit-fixes.cjs",
+        "status": "passed",
+        "summary": "PASS live audit fixes: no skill rerouting, read-only schema/example, creator scope gate, correlated rewrites, Russian preview-only, Motion scopes/pagination/returned receipts, read-only visual detection."
+      },
+      {
+        "test": "test-auto-creator-enhancement.js",
+        "status": "passed",
+        "summary": "Automatic creator enhancement: existing rules, exact original constraints, rewrite-before-execution, concurrent deduplication, Stop/navigation, invalid results and manual-enhancer reuse passed."
+      },
+      {
+        "test": "test-tool-guard-repair.js",
+        "status": "passed",
+        "summary": "Tool guard repairs harmless argument mistakes and still rejects real ones."
+      },
+      {
+        "test": "test-motion.js",
+        "status": "passed",
+        "summary": "PASS  deep scan compiles\nPASS  scan covers storage and live containers\nPASS  scan groups effect roots\nPASS  scan identifies rigs and asset bundles\nPASS  scan recommends controller-safe rig handling\nPASS  scan fingerprints and deduplicates\nPASS  scan reports disabled effects and asset IDs\nPASS  scan identifies Moon/plugin exports\nPASS  scan catches legacy and modern effects\nPASS  paths with spaces compile\nPASS  read_vfx is root-inclusive\nPASS  read_vfx preserves detailed properties\nPASS  animation paths with spaces compile\nPASS  animation reader handles IDs, keyframes, and curves\nPASS  unsafe roots are rejected\nPASS  exact bundle copy compiles\nPASS  copy verifies source and clone fingerprints\nPASS  copy rejects scripted VFX\nPASS  copy remains replay-safe\nPASS  motion integration compiles\nPASS  runtime reuses effect instances\nPASS  runtime resets sounds instead of layering\nPASS  runtime refuses scripts inside VFX source\nPASS  runtime keeps one actor state\nPASS  actor removal cleanup reason is intact"
+      },
+      {
+        "test": "test-notion-protocol-file.js",
+        "status": "passed",
+        "summary": "ROBLOXSCRIPT tagged: full actual provider stages one exact text file and one short instruction, confirms upload/send, preserves foreign pasted texts, and cleans only its stopped upload.\nROBLOXSCRIPT truncated: full actual provider stages one exact text file and one short instruction, confirms upload/send, preserves foreign pasted texts, and cleans only its stopped upload.\nAGENTSCRIPT tagged: full actual provider stages one exact text file and one short instruction, confirms upload/send, preserves foreign pasted texts, and cleans only its stopped upload.\nAGENTSCRIPT truncated: full actual provider stages one exact text file and one short instruction, confirms upload/send, preserves foreign pasted texts, and cleans only its stopped upload."
+      }
+    ],
+    "rust": {
+      "passed": 144,
+      "failed": 0,
+      "ignored": 1,
+      "platform": "Linux",
+      "windows_webview_verified": false
+    },
+    "windows_packager_fixture": {
+      "status": "passed",
+      "summary": "PASS actual Windows packager fixture: Elio archive/root/exe/extension, every SHA256, canonical/aliased paths, reject wrong executable/arguments/product and invalid PE header. This does not build or execute Windows code."
+    },
+    "generated_luau_runtime_test": {
+      "test": "tools/test_motion_luau.mjs",
+      "status": "not_run_dependency_missing",
+      "detail": "luau-web not installed in sandbox test dependencies; original pinned release-tools lock and GitHub npm ci remain unchanged."
+    }
+  },
+  "limits": [
+    "Text-only Oriveo adapter; automatic file/image upload is explicitly unsupported.",
+    "No live installed extension to Windows native bridge/Roblox/Figma end-to-end test for this provider.",
+    "No Windows executable was built or run here.",
+    "Observed DOM applies to current website and may change."
+  ],
+  "preserved": [
+    "product/version 1.0.1",
+    "GitHub Actions build flow",
+    "project vault and personal memory",
+    "Figma plugin bridge",
+    "existing provider defaults and identity prompts"
+  ]
+}

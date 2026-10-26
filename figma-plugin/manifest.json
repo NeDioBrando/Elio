@@ -1,0 +1,14 @@
+{
+  "name": "Elio Link — UI & Icons",
+  "id": "elio-local-design-link",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["none"],
+    "devAllowedDomains": ["http://127.0.0.1:3000"],
+    "reasoning": "Development plugin connects only to the user's local Elio agent. No Figma or personal API token is needed."
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "builtin-eclipse-animator",
+  "title": "Eclipse Animator",
+  "description": "Built-in Roblox character animation workflow: Eclipse Animator when Blender is not accessible, or the user explicitly requests Eclipse. Authors editable AnimSaves via guarded Luau, then opens, verifies and saves in the real plugin UI only with available authorized desktop control. Does not install the paid plugin. Анимация персонажей: удар, бег, ходьба, эмоции; Eclipse без доступного Blender.",
+  "domain": "roblox",
+  "scope": "",
+  "enabled": true,
+  "confirmed": false,
+  "community": false,
+  "revision": 1,
+  "steps": [
+    "Read elio_skills action read id builtin-eclipse-animator (SKILL.md), then references/craft.md, references/joints.md and scripts/build_sequence.luau; follow next_offset.",
+    "Use for requested character animation when Blender is unavailable or Eclipse explicitly chosen. Respect exclusions/Blender-only requests. Verify Studio Edit mode, exact rig, installed Eclipse and actual desktop-control permissions before UI actions.",
+    "Prepend a complete SPEC to the adapted guarded builder; preserve unrelated AnimSaves and baked sequences. Await the actual receipt. Open/preview/save in Eclipse only through advertised authorized desktop tools; otherwise report manual UI steps pending."
+  ],
+  "pitfalls": [
+    "A local KeyframeSequence receipt is not proof of plugin UI save, playback quality or upload. Never invent a plugin API, install a paid plugin, elevate permissions or access the original reference author’s private place.",
+    "Use scripts/ helpers, not upstream/scripts/: original helper overwrites same-name sequences. Do not overwrite unrelated or Eclipse-baked animations."
+  ],
+  "verification": [
+    "Validate safe helper with simulated Roblox fixtures; actual Eclipse UI and rig acceptance checks remain required on the user machine.",
+    "Inspect keyed and intermediate poses, confirm plugin save, preserve the place; publish only with explicit owner/name approval."
+  ]
+}

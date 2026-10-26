@@ -58,7 +58,8 @@
     "https://app.clickup.com/*",
     "https://vani.ai/*",
     "https://www.vani.ai/*",
-    "https://c.vani.ai/*"
+    "https://c.vani.ai/*",
+    "https://app.oriveoai.com/*"
   ],
   "content_security_policy": {
     "extension_pages": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://* http://* ws://127.0.0.1:* http://127.0.0.1:* http://localhost:* https://ollama.com https://*.ollama.com"
@@ -131,7 +132,8 @@
         "https://app.clickup.com/*",
         "https://vani.ai/*",
         "https://www.vani.ai/*",
-        "https://c.vani.ai/*"
+        "https://c.vani.ai/*",
+        "https://app.oriveoai.com/*"
       ],
       "js": [
         "core/debug-capture.js",
@@ -176,7 +178,8 @@
         "https://app.clickup.com/*",
         "https://vani.ai/*",
         "https://www.vani.ai/*",
-        "https://c.vani.ai/*"
+        "https://c.vani.ai/*",
+        "https://app.oriveoai.com/*"
       ],
       "js": [
         "core/debug-capture-main.js"
@@ -227,6 +230,7 @@
         "providers/media.js",
         "core/chat-view.js",
         "core/theme.js",
+        "core/figma.js",
         "core/main.js"
       ],
       "css": [
@@ -289,6 +293,7 @@
         "providers/media.js",
         "core/chat-view.js",
         "core/theme.js",
+        "core/figma.js",
         "core/main.js"
       ],
       "css": [
@@ -342,6 +347,7 @@
         "providers/media.js",
         "core/chat-view.js",
         "core/theme.js",
+        "core/figma.js",
         "core/main.js"
       ],
       "css": [
@@ -392,6 +398,7 @@
         "providers/media.js",
         "core/chat-view.js",
         "core/theme.js",
+        "core/figma.js",
         "core/main.js"
       ],
       "css": [
@@ -445,6 +452,7 @@
         "providers/media.js",
         "core/chat-view.js",
         "core/theme.js",
+        "core/figma.js",
         "core/main.js"
       ],
       "css": [
@@ -495,6 +503,7 @@
         "providers/media.js",
         "core/chat-view.js",
         "core/theme.js",
+        "core/figma.js",
         "core/main.js"
       ],
       "css": [
@@ -545,6 +554,7 @@
         "providers/media.js",
         "core/chat-view.js",
         "core/theme.js",
+        "core/figma.js",
         "core/main.js"
       ],
       "css": [
@@ -598,6 +608,7 @@
         "providers/media.js",
         "core/chat-view.js",
         "core/theme.js",
+        "core/figma.js",
         "core/main.js"
       ],
       "css": [
@@ -658,6 +669,7 @@
         "providers/media.js",
         "core/chat-view.js",
         "core/theme.js",
+        "core/figma.js",
         "core/main.js"
       ],
       "css": [
@@ -718,6 +730,7 @@
         "providers/media.js",
         "core/chat-view.js",
         "core/theme.js",
+        "core/figma.js",
         "core/main.js"
       ],
       "css": [
@@ -769,6 +782,7 @@
         "providers/media.js",
         "core/chat-view.js",
         "core/theme.js",
+        "core/figma.js",
         "core/main.js"
       ],
       "css": [
@@ -822,6 +836,7 @@
         "providers/media.js",
         "core/chat-view.js",
         "core/theme.js",
+        "core/figma.js",
         "core/main.js"
       ],
       "css": [
@@ -876,6 +891,7 @@
         "providers/media.js",
         "core/chat-view.js",
         "core/theme.js",
+        "core/figma.js",
         "core/main.js"
       ],
       "css": [
@@ -926,6 +942,7 @@
         "providers/media.js",
         "core/chat-view.js",
         "core/theme.js",
+        "core/figma.js",
         "core/main.js"
       ],
       "css": [
@@ -978,6 +995,58 @@
         "providers/media.js",
         "core/chat-view.js",
         "core/theme.js",
+        "core/figma.js",
+        "core/main.js"
+      ],
+      "css": [
+        "overlay.css",
+        "core/theme.css"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://app.oriveoai.com/*"
+      ],
+      "js": [
+        "core/debug-capture.js",
+        "core/input-isolation.js",
+        "core/i18n-catalog.js",
+        "core/i18n.js",
+        "core/motion-interchange.js",
+        "core/motion-preview.js",
+        "core/motion-tools.js",
+        "core/headless-builder.js",
+        "core/creator.js",
+        "core/chat-creators.js",
+        "core/luau-knowledge.js",
+        "core/ultracode-deepseek.js",
+        "core/ultracode.js",
+        "core/config.js",
+        "core/prompt-enhancer.js",
+        "core/parser.js",
+        "core/tool-guard.js",
+        "core/task-center.js",
+        "core/templates.js",
+        "core/animlib.js",
+        "core/studio_skills.js",
+        "core/studio_daily.js",
+        "core/studio_gui.js",
+        "core/studio_plus.js",
+        "core/agent_skills.js",
+        "providers/oriveo.js",
+        "core/activity.js",
+        "core/checklist.js",
+        "core/memory.js",
+        "core/version.js",
+        "core/cowork.js",
+        "core/clarification.js",
+        "core/media.js",
+        "core/reliability.js",
+        "providers/media.js",
+        "core/chat-view.js",
+        "core/theme.js",
+        "core/figma.js",
         "core/main.js"
       ],
       "css": [

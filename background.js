@@ -390,7 +390,7 @@ function engineLabel() { return engine === "local" ? "AgentScript" : "Roblox"; }
 // Chat sites where an elio provider content script runs. Status pushes go
 // to every tab matching these. Add the new provider's URL pattern here (and in
 // manifest.json content_scripts + host_permissions) when integrating another AI.
-const PROVIDER_URLS = ["https://vani.ai/*", "https://www.vani.ai/*", "https://c.vani.ai/*", "https://app.clickup.com/*", "https://chat.deepseek.com/*", "https://deepseek.com/*", "https://chatgpt.com/*", "https://chat.openai.com/*", "https://claude.ai/*", "https://www.claude.ai/*", "https://claude.com/*", "https://www.claude.com/*", "https://gemini.google.com/*", "https://www.kimi.com/*", "https://kimi.com/*", "https://kimi.ai/*", "https://www.kimi.ai/*", "https://chat.z.ai/*", "https://chat.qwen.ai/*", "https://arena.ai/*", "https://www.notion.so/*", "https://app.notion.so/*", "https://www.notion.com/*", "https://notion.com/*", "https://*.notion.com/*", "https://freebuff.ai/*", "https://www.freebuff.ai/*", "https://freebuff.com/*", "https://www.freebuff.com/*", "https://gpt.crax.lol/*", "https://use.ai/*", "https://www.use.ai/*", "https://oxalpha.com/*", "https://www.oxalpha.com/*", "https://oxalpha.org/*", "https://www.oxalpha.org/*", "http://localhost/*", "http://127.0.0.1/*", "https://ollama.com/*", "https://*.ollama.com/*"];
+const PROVIDER_URLS = ["https://app.oriveoai.com/*", "https://vani.ai/*", "https://www.vani.ai/*", "https://c.vani.ai/*", "https://app.clickup.com/*", "https://chat.deepseek.com/*", "https://deepseek.com/*", "https://chatgpt.com/*", "https://chat.openai.com/*", "https://claude.ai/*", "https://www.claude.ai/*", "https://claude.com/*", "https://www.claude.com/*", "https://gemini.google.com/*", "https://www.kimi.com/*", "https://kimi.com/*", "https://kimi.ai/*", "https://www.kimi.ai/*", "https://chat.z.ai/*", "https://chat.qwen.ai/*", "https://arena.ai/*", "https://www.notion.so/*", "https://app.notion.so/*", "https://www.notion.com/*", "https://notion.com/*", "https://*.notion.com/*", "https://freebuff.ai/*", "https://www.freebuff.ai/*", "https://freebuff.com/*", "https://www.freebuff.com/*", "https://gpt.crax.lol/*", "https://use.ai/*", "https://www.use.ai/*", "https://oxalpha.com/*", "https://www.oxalpha.com/*", "https://oxalpha.org/*", "https://www.oxalpha.org/*", "http://localhost/*", "http://127.0.0.1/*", "https://ollama.com/*", "https://*.ollama.com/*"];
 
 const RECONNECT_MIN = 500;
 const RECONNECT_MAX = 500;
@@ -2186,6 +2186,10 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
           const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),60000);try{const response=await bridgeFetch(url,{method:"POST",headers,body,signal:controller.signal});const value=await response.json();sendResponse(response.ok?value:{ok:false,error:value.error || "Template request failed."});}finally{clearTimeout(timer);}
         }catch(error){sendResponse({ok:false,error:error.message || String(error)});}
         break;
+      case "figma": {
+        try {const allowed=['status','read','apply','export','result'];if(!allowed.includes(msg.request?.action))throw Error('Unsupported agent Figma action');const response=await bridgeFetch(RUST_ROBLOX_HTTP+"/api/figma",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(msg.request),signal:AbortSignal.timeout(10000)});sendResponse(await response.json());}
+        catch(error){sendResponse({ok:false,error:error.message||String(error)});}break;
+      }
       case "vault": {
         try {const response=await bridgeFetch(RUST_ROBLOX_HTTP+"/api/vault",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(msg.request||{}),signal:AbortSignal.timeout(15000)});sendResponse(await response.json());}
         catch(error){sendResponse({ok:false,error:error.message||String(error)});}break;

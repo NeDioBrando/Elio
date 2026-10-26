@@ -10,6 +10,7 @@ function applyPopupAppearance(value){
  for(const [key,value]of Object.entries(vars))root.style.setProperty(key,value);
 }
 const SUPPORTED_HOSTS = [
+  "app.oriveoai.com",
   "app.clickup.com",
   "chat.deepseek.com", "deepseek.com", "chatgpt.com", "chat.openai.com",
   "claude.ai", "claude.com",
@@ -192,7 +193,7 @@ if (runHint) {
       "kimi.com": "Kimi", "kimi.ai": "Kimi",
       "chat.z.ai": "GLM", "chat.qwen.ai": "Qwen",
       "arena.ai": "Arena",
-      "freebuff.ai": "Freebuff", "freebuff.com": "Freebuff", "vani.ai": "Vani AI", "www.vani.ai": "Vani AI", "c.vani.ai": "Vani AI", "notion.so": "Notion", "notion.com": "Notion",
+      "app.oriveoai.com": "Oriveo", "freebuff.ai": "Freebuff", "freebuff.com": "Freebuff", "vani.ai": "Vani AI", "www.vani.ai": "Vani AI", "c.vani.ai": "Vani AI", "notion.so": "Notion", "notion.com": "Notion",
       "gpt.crax.lol": "Crax", "localhost": "Ollama", "127.0.0.1": "Ollama",
       "ollama.com": "Ollama",
     };

@@ -35,9 +35,10 @@ function t(source,values){
 }
 function addBinding(node,attr){
  if(excluded(node)&&!(attr&&['placeholder','aria-label'].includes(attr)&&node.matches?.('input,textarea')&&!node.parentElement?.closest('[data-i18n-user-content]')))return;
+ const id=attr||'text';let list=nodeBindings.get(node);
+ if(list?.has(id)){const binding=list.get(id);bindings.add(binding);applyBinding(binding);return;}
  const raw=attr?node.getAttribute(attr):node.nodeValue;if(!raw||!has(raw))return;
- let list=nodeBindings.get(node);if(!list){list=new Map();nodeBindings.set(node,list);}const id=attr||'text';
- if(list.has(id)){applyBinding(list.get(id));return;}
+ if(!list){list=new Map();nodeBindings.set(node,list);}
  const b={node,attr,source:key(raw),raw,last:raw};list.set(id,b);bindings.add(b);applyBinding(b);
 }
 function applyBinding(b){
@@ -74,9 +75,20 @@ function ensureStyles(doc){
  `;(doc.head||doc.documentElement).append(style);
 }
 function applyOwner(root){if(!root.isConnected)return;const lang=languages.find(x=>x.code===language);root.setAttribute('lang',language);root.setAttribute('dir',lang.dir);root.setAttribute('data-pc-locale',language);}
+const documentObservers=new WeakMap();
+function releaseBindings(){
+ for(const b of bindings)if(!b.node.isConnected||![...owners].some(root=>root===b.node||root.contains(b.node))){bindings.delete(b);}
+}
+function stopDocumentWatch(doc){if(![...owners].some(root=>root.ownerDocument===doc)&&![...pickers].some(picker=>picker.host.ownerDocument===doc)){documentObservers.get(doc)?.disconnect();documentObservers.delete(doc);}}
+function watchDocument(doc){
+ if(!doc||documentObservers.has(doc))return;
+ const observer=new MutationObserver(records=>{if(!records.some(record=>record.removedNodes?.length))return;for(const root of [...owners])if(root.ownerDocument===doc&&!root.isConnected)mounts.get(root)?.disconnect();for(const picker of [...pickers])if(picker.host.ownerDocument===doc&&!picker.host.isConnected)picker.destroy();});
+ observer.observe(doc,{subtree:true,childList:true});documentObservers.set(doc,observer);
+}
 function mountStatic(root){
  if(!root)return null;ensureStyles(root.ownerDocument||global.document);owners.add(root);applyOwner(root);scan(root);
  if(mounts.has(root))return mounts.get(root);
+ watchDocument(root.ownerDocument||global.document);
  let busy=false;
  const observer=new MutationObserver(records=>{
   if(busy)return;busy=true;
@@ -97,13 +109,13 @@ function mountStatic(root){
    for(const b of bindings)if(!b.node.isConnected)bindings.delete(b);
   }finally{busy=false;}
  });observer.observe(root,{subtree:true,characterData:true,childList:true,attributes:true,attributeFilter:['title','aria-label','placeholder']});
- const result={refresh:()=>scan(root),disconnect(){observer.disconnect();owners.delete(root);mounts.delete(root);}};mounts.set(root,result);return result;
+ const result={refresh:()=>{if(mounts.get(root)===result)scan(root);},disconnect(){observer.disconnect();owners.delete(root);mounts.delete(root);releaseBindings();const doc=root.ownerDocument||global.document;stopDocumentWatch(doc);}};mounts.set(root,result);return result;
 }
 function setLanguage(value){
  const next=normalize(value);language=next;
- for(const owner of owners){if(owner.isConnected)applyOwner(owner);else owners.delete(owner);}
+ for(const owner of owners){if(owner.isConnected)applyOwner(owner);else mounts.get(owner)?.disconnect();}
  for(const b of bindings){if(b.node.isConnected)applyBinding(b);else bindings.delete(b);}
- for(const picker of pickers){if(picker.host.isConnected)picker.refresh(next);else pickers.delete(picker);}
+ for(const picker of pickers){if(picker.host.isConnected)picker.refresh(next);else picker.destroy();}
  for(const fn of listeners)try{fn(next);}catch{}
  return next;
 }
@@ -111,7 +123,7 @@ function fold(value){return String(value||'').normalize('NFD').replace(/[\u0300-
 let pickerId=0;
 function mountPicker(host,options={}){
  if(!host)return null;if(host._pcLanguagePicker){host._pcLanguagePicker.refresh(options.value||language);return host._pcLanguagePicker;}
- ensureStyles(host.ownerDocument);host.classList.add('pc-language-picker');host.setAttribute('data-pc-language-picker','');
+ ensureStyles(host.ownerDocument);watchDocument(host.ownerDocument);host.classList.add('pc-language-picker');host.setAttribute('data-pc-language-picker','');
  const doc=host.ownerDocument,id='pc-language-'+(++pickerId),searchLabel=doc.createElement('label'),search=doc.createElement('input'),label=doc.createElement('label'),select=doc.createElement('select'),status=doc.createElement('small'),help=doc.createElement('small');
  search.id=id+'-search';search.type='search';search.autocomplete='off';search.dir='auto';searchLabel.htmlFor=search.id;
  select.id=id+'-select';select.setAttribute('data-pc-language-options','');label.htmlFor=select.id;status.setAttribute('role','status');status.setAttribute('aria-live','polite');
@@ -128,7 +140,7 @@ function mountPicker(host,options={}){
  search.addEventListener('input',fill);
  select.addEventListener('change',async()=>{if(saving)return;const prior=value,next=normalize(select.value);saving=true;saveError=false;fill();try{if(options.onChange)await options.onChange(next);value=next;setLanguage(next);}catch{value=prior;select.value=prior;saveError=true;}finally{saving=false;fill();}});
  host.append(searchLabel,search,label,select,status,help);
- const picker={host,refresh(next){value=normalize(next);fill();},get value(){return value;},destroy(){pickers.delete(picker);host.replaceChildren();delete host._pcLanguagePicker;}};
+ const picker={host,refresh(next){value=normalize(next);fill();},get value(){return value;},destroy(){pickers.delete(picker);host.replaceChildren();delete host._pcLanguagePicker;stopDocumentWatch(host.ownerDocument);}};
  host._pcLanguagePicker=picker;pickers.add(picker);fill();return picker;
 }
 const api={languages,normalize,t,setLanguage,getLanguage:()=>language,mountStatic,mountPicker,onChange(fn){listeners.add(fn);return()=>listeners.delete(fn);}};

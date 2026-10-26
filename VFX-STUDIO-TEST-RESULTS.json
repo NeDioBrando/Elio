@@ -1,0 +1,182 @@
+{
+  "feature": "VFX Studio built-in library-first skill",
+  "product_version": "1.0.1",
+  "platform": "Linux; headless local Chromium for browser UI fixtures",
+  "rust": {
+    "library_passed": 3,
+    "binary_passed": 149,
+    "ignored": 1,
+    "failed": 0,
+    "command": "cargo test --locked --manifest-path agent/Cargo.toml"
+  },
+  "build": {
+    "debug_native_agent": "passed",
+    "windows_build": "Not run here; existing GitHub Actions build path preserved"
+  },
+  "focused_checks": [
+    {
+      "command": "node test-vfx-studio.cjs",
+      "passed": true,
+      "output": "PASS VFX Studio integration: 6 mirrored resources, visible card, scoped native/context wiring, packaging/build hooks, JS syntax; no asset library bundled.\nPASS VFX actual skill UI: ordinary-effort visibility, built-in label, read instructions, zero automatic saves or task execution."
+    },
+    {
+      "command": "node tools/test_vfx_studio_luau.mjs",
+      "passed": true,
+      "output": "PASS VFX actual Luau inspector: 31 checks; simulated DataModel, not live plugin UI."
+    }
+  ],
+  "native_api": {
+    "passed": true,
+    "output": "PASS real native VFX Studio skill API: authorization, built-in migration, complete paginated resources from packaged extension, traversal refusal, Russian/English library-first selection regardless of Blender, Eclipse coexistence. No Studio/plugin UI interaction performed.",
+    "isolation": "temporary install and user config; does not terminate another process on port 3000"
+  },
+  "regressions": [
+    {
+      "test": "node test-elio-identity.cjs",
+      "exit_code": 0,
+      "seconds": 0.07
+    },
+    {
+      "test": "node test-elio-rename.cjs",
+      "exit_code": 0,
+      "seconds": 0.12
+    },
+    {
+      "test": "node test-elio-audit.cjs",
+      "exit_code": 0,
+      "seconds": 2.74
+    },
+    {
+      "test": "node test-elio-chat-live.cjs",
+      "exit_code": 0,
+      "seconds": 0.08
+    },
+    {
+      "test": "node test-desktop-chat.cjs",
+      "exit_code": 0,
+      "seconds": 0.1
+    },
+    {
+      "test": "node test-eclipse.cjs",
+      "exit_code": 0,
+      "seconds": 0.77
+    },
+    {
+      "test": "node test-oriveo.cjs",
+      "exit_code": 0,
+      "seconds": 1.41
+    },
+    {
+      "test": "node test-figma.cjs",
+      "exit_code": 0,
+      "seconds": 0.68
+    },
+    {
+      "test": "node test-vault-contract.cjs",
+      "exit_code": 0,
+      "seconds": 0.71
+    },
+    {
+      "test": "node test-elio.cjs",
+      "exit_code": 0,
+      "seconds": 0.13
+    },
+    {
+      "test": "node test-elio-theme.cjs",
+      "exit_code": 0,
+      "seconds": 0.08
+    },
+    {
+      "test": "node test-updates.cjs",
+      "exit_code": 0,
+      "seconds": 0.06
+    },
+    {
+      "test": "node test-live-audit-fixes.cjs",
+      "exit_code": 0,
+      "seconds": 0.07
+    },
+    {
+      "test": "node test-auto-creator-enhancement.js",
+      "exit_code": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "node test-tool-guard-repair.js",
+      "exit_code": 0,
+      "seconds": 0.03
+    },
+    {
+      "test": "node test-motion.js",
+      "exit_code": 0,
+      "seconds": 0.05
+    },
+    {
+      "test": "node test-notion-protocol-file.js",
+      "exit_code": 0,
+      "seconds": 121.8
+    },
+    {
+      "test": "node tools/test_eclipse_luau.mjs",
+      "exit_code": 0,
+      "seconds": 0.29
+    },
+    {
+      "test": "node tools/test_motion_luau.mjs",
+      "exit_code": 0,
+      "seconds": 0.43
+    },
+    {
+      "test": "node test-elio-ui.cjs",
+      "exit_code": 0,
+      "seconds": 0.03,
+      "initial_attempt": "Missing optional Playwright in test environment; rerun with external test-only dependency and local Chromium"
+    },
+    {
+      "test": "node test-desktop-chat-ui.cjs",
+      "exit_code": 0,
+      "seconds": 0.03,
+      "initial_attempt": "Missing optional Playwright in test environment; rerun with external test-only dependency and local Chromium"
+    },
+    {
+      "test": "node test-elio-extension-ui.cjs",
+      "exit_code": 0,
+      "seconds": 0.03,
+      "initial_attempt": "Missing optional Playwright in test environment; rerun with external test-only dependency and local Chromium"
+    },
+    {
+      "test": "node test-elio-theme-ui.cjs",
+      "exit_code": 0,
+      "seconds": 0.03,
+      "initial_attempt": "Missing optional Playwright in test environment; rerun with external test-only dependency and local Chromium"
+    },
+    {
+      "test": "node test-update-ui.cjs",
+      "exit_code": 0,
+      "seconds": 0.03,
+      "initial_attempt": "Missing optional Playwright in test environment; rerun with external test-only dependency and local Chromium"
+    },
+    {
+      "test": "python tools/test_package_windows.py",
+      "exit_code": 0,
+      "seconds": 5.18
+    },
+    {
+      "test": "python tools/test_prepare_engram.py",
+      "exit_code": 0,
+      "seconds": 0.18
+    }
+  ],
+  "live_checks_not_performed": [
+    "Installed VFX Studio identity/version and library UI access",
+    "Selection/insertion of an actual licensed library asset",
+    "Actual exported effect appearance, flipbooks, playback and cleanup in Roblox Studio",
+    "Windows/WebView2 acceptance and GitHub Actions Windows build"
+  ],
+  "distribution": {
+    "plugin_binaries_included": false,
+    "third_party_library_assets_included": false,
+    "invented_private_plugin_api": false,
+    "previous_integrations": "Eclipse Animator, Oriveo, Figma, project memory preserved"
+  }
+}

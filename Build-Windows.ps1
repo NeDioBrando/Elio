@@ -19,6 +19,20 @@ node .\test-elio-chat-live.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Live chat tests failed.' }
 node .\test-desktop-chat.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Desktop chat tests failed.' }
+node .\test-resource-lifecycle.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Resource lifecycle tests failed.' }
+node .\test-vfx-studio.cjs
+if ($LASTEXITCODE -ne 0) { throw 'VFX Studio skill integration tests failed.' }
+node tools/test_vfx_studio_luau.mjs
+if ($LASTEXITCODE -ne 0) { throw 'VFX export inspector tests failed.' }
+node .\test-eclipse.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Eclipse skill integration tests failed.' }
+node tools/test_eclipse_luau.mjs
+if ($LASTEXITCODE -ne 0) { throw 'Eclipse animation helper tests failed.' }
+node .\test-oriveo.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Oriveo provider tests failed.' }
+node .\test-figma.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Figma plugin and bridge contracts failed.' }
 node .\test-vault-contract.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Project memory and paragraph contracts failed.' }
 node .\test-elio.cjs

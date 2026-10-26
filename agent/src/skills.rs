@@ -11,7 +11,7 @@ struct Skill {id:String,#[serde(default)]title:String,description:String,domain:
 #[derive(Clone,Serialize,Deserialize)]
 struct DeletedSkill {#[serde(flatten)]skill:Skill,deleted_at:u64}
 #[derive(Default,Clone,Serialize,Deserialize)]
-struct Catalog {skills:BTreeMap<String,Skill>,#[serde(default)]deleted:BTreeMap<String,DeletedSkill>,#[serde(default)]suppressed:BTreeSet<String>,#[serde(default)]trash_revision:u64,#[serde(default)]starter_pack_version:u64,#[serde(default)]ultragui_pack_version:u64,#[serde(default)]candidate_cleanup_version:u64}
+struct Catalog {skills:BTreeMap<String,Skill>,#[serde(default)]deleted:BTreeMap<String,DeletedSkill>,#[serde(default)]suppressed:BTreeSet<String>,#[serde(default)]trash_revision:u64,#[serde(default)]starter_pack_version:u64,#[serde(default)]eclipse_pack_version:u64,#[serde(default)]vfx_studio_pack_version:u64,#[serde(default)]ultragui_pack_version:u64,#[serde(default)]candidate_cleanup_version:u64}
 struct Store {path:PathBuf,data:Catalog,error:Option<String>}
 impl Store {
  fn load(path:PathBuf)->Self {
@@ -39,6 +39,16 @@ impl Store {
    for id in remove {data.skills.remove(&id);}
    data.candidate_cleanup_version=1;
   }
+  if error.is_none() && data.eclipse_pack_version<1 {
+   let card:Skill=serde_json::from_value(crate::eclipse_skill::catalog()).expect("validated built-in Eclipse skill");
+   if !data.deleted.contains_key(&card.id)&&!data.suppressed.contains(&card.id){data.skills.entry(card.id.clone()).or_insert(card);}
+   data.eclipse_pack_version=1;
+  }
+  if error.is_none() && data.vfx_studio_pack_version<1 {
+   let card:Skill=serde_json::from_value(crate::vfx_studio_skill::catalog()).expect("validated built-in VFX Studio skill");
+   if !data.deleted.contains_key(&card.id)&&!data.suppressed.contains(&card.id){data.skills.entry(card.id.clone()).or_insert(card);}
+   data.vfx_studio_pack_version=1;
+  }
   Self{path,data,error}
  }
 
@@ -61,24 +71,28 @@ impl Store {
   if action=="list_deleted" {return Ok(json!({"ok":true,"skills":self.data.deleted.values().collect::<Vec<_>>(),"trash_revision":self.data.trash_revision}));}
   if action=="match" {
    let query=request["query"].as_str().unwrap_or("").to_lowercase();let domain=request["domain"].as_str().unwrap_or("");let scope=request["scope"].as_str().unwrap_or("");
+   let vfx_due=crate::vfx_studio_skill::should_use(&query,domain);
+   let eclipse_due=crate::eclipse_skill::should_use(&query,domain,request["blender_available"].as_bool());
    let mut terms=query.split(|c:char|!c.is_alphanumeric()).filter(|s|s.len()>2&&!STOPWORDS.contains(s)).take(80).collect::<Vec<_>>();terms.sort_unstable();terms.dedup();
-   let mut hits=self.data.skills.values().filter(|s|request["effort"]=="ultracode"||!s.id.starts_with("bundled-ultragui-")).filter(|s|(s.confirmed||s.enabled||s.favorite)&&(s.scope.is_empty()||s.scope==scope)&&(s.domain=="all"||s.domain==domain||(domain=="roblox"&&matches!(s.domain.as_str(),"model"|"ui"))||(domain=="local"&&s.domain=="blender"))).filter_map(|s|{let title=s.title.to_lowercase();let hay=format!("{} {} {}",title,s.description,s.steps.join(" ")).to_lowercase();let score=terms.iter().filter(|word|hay.contains(**word)).count()+terms.iter().filter(|word|title.contains(**word)).count();(score>0||s.enabled||s.favorite).then_some((score+if s.scope.is_empty(){0}else{3}+if s.enabled{8}else{0}+if s.favorite{6}else{0},s))}).collect::<Vec<_>>();hits.sort_by_key(|(score,_)|std::cmp::Reverse(*score));
+   let mut hits=self.data.skills.values().filter(|s|s.id!=crate::eclipse_skill::ID&&s.id!=crate::vfx_studio_skill::ID).filter(|s|request["effort"]=="ultracode"||!s.id.starts_with("bundled-ultragui-")).filter(|s|(s.confirmed||s.enabled||s.favorite)&&(s.scope.is_empty()||s.scope==scope)&&(s.domain=="all"||s.domain==domain||(domain=="roblox"&&matches!(s.domain.as_str(),"model"|"ui"))||(domain=="local"&&s.domain=="blender"))).filter_map(|s|{let title=s.title.to_lowercase();let hay=format!("{} {} {}",title,s.description,s.steps.join(" ")).to_lowercase();let score=terms.iter().filter(|word|hay.contains(**word)).count()+terms.iter().filter(|word|title.contains(**word)).count();(score>0||s.enabled||s.favorite).then_some((score+if s.scope.is_empty(){0}else{3}+if s.enabled{8}else{0}+if s.favorite{6}else{0},s))}).collect::<Vec<_>>();hits.sort_by_key(|(score,_)|std::cmp::Reverse(*score));
    // 1.24.13: favourites are always used in their project/engine: every starred
    // skill (up to 8) comes first, then the 3 best other matches.
    let (starred,rest):(Vec<_>,Vec<_>)=hits.into_iter().partition(|(_,s)|s.favorite);
-   return Ok(json!({"ok":true,"skills":starred.into_iter().take(8).chain(rest.into_iter().take(3)).map(|(_,skill)|skill).collect::<Vec<_>>() }));
+   return Ok(json!({"ok":true,"skills":self.data.skills.get(crate::vfx_studio_skill::ID).filter(|_|vfx_due).into_iter().chain(self.data.skills.get(crate::eclipse_skill::ID).filter(|_|eclipse_due)).chain(starred.into_iter().take(8).chain(rest.into_iter().take(3)).map(|(_,skill)|skill)).collect::<Vec<_>>() }));
   }
   let id=request["id"].as_str().unwrap_or("");
   if action=="read"&&id.starts_with("bundled-ultra-"){return crate::starter_skills::read_ultra(&crate::platform::installation_root().join("elio-Extension/ultra"),id,request);}
   // Hidden GUI methods remain usable at Ultra even if their old library card was deleted.
   if action=="read"&&id.starts_with("bundled-ultragui-")&&request["effort"]=="ultracode" {let skill=crate::starter_skills::ultragui_catalog().into_iter().find(|s|s["id"]==id).ok_or_else(||anyhow::anyhow!("Unknown built-in Ultra method"))?;let bundle=crate::starter_skills::read_ultragui(&crate::platform::installation_root().join("elio-Extension/ultragui"),id,request)?;return Ok(json!({"ok":true,"skill":skill,"bundle":bundle}));}
   if action=="read"||action=="export" {let skill=self.data.skills.get(id).ok_or_else(||anyhow::anyhow!("Skill not found."))?;let mut result=json!({"ok":true,"skill":if action=="export"{public(skill)}else{serde_json::to_value(skill)?}});
+   if action=="read" && id==crate::vfx_studio_skill::ID {result["bundle"]=crate::vfx_studio_skill::read(&crate::platform::installation_root().join("elio-Extension/starter-skills/vfx-studio"),request)?;}
+   if action=="read" && id==crate::eclipse_skill::ID {result["bundle"]=crate::eclipse_skill::read(&crate::platform::installation_root().join("elio-Extension/starter-skills/eclipse-animator"),request)?;}
    if action=="read" && id.starts_with("starter-syphodev-") {result["bundle"]=crate::starter_skills::read(&crate::platform::installation_root().join("elio-Extension/starter-skills/syphodev"),id,request)?;}
    if action=="read" && id.starts_with("bundled-ultragui-") {result["bundle"]=crate::starter_skills::read_ultragui(&crate::platform::installation_root().join("elio-Extension/ultragui"),id,request)?;}
    return Ok(result);}
   let mut data=self.data.clone();
   match action {
-   "save"=>{let input=&request["skill"];let mut skill:Skill=serde_json::from_value(input.clone())?;if skill.title.trim().is_empty()||matches!(skill.title.trim().to_lowercase().as_str(),"skill"|"untitled"|"new skill"){let text=if skill.description.trim().is_empty(){skill.steps.first().map(String::as_str).unwrap_or("")}else{&skill.description};skill.title=text.split(['\n','.','!','?']).next().unwrap_or("").trim().chars().take(100).collect();}validate(&skill)?;anyhow::ensure!(!skill.id.starts_with("starter-syphodev-")&&!skill.id.starts_with("bundled-ultragui-"),"Starter references are read-only; save your adapted method under a new ID.");anyhow::ensure!(!skill.id.starts_with("global-workflow-"),"Automatic workflow lessons cannot be edited; save an adapted method under a new ID.");anyhow::ensure!(!data.deleted.contains_key(&skill.id),"This skill is in Deleted Skills. Restore it before editing, or save with a new ID.");let previous=data.skills.get(&skill.id);anyhow::ensure!(request["revision"].as_u64().unwrap_or(0)==previous.map_or(0,|s|s.revision),"Skill changed. Reload before saving.");skill.revision=previous.map_or(1,|s|s.revision+1);skill.favorite=previous.map_or(skill.favorite,|s|s.favorite);skill.community=false;data.suppressed.remove(&skill.id);data.skills.insert(skill.id.clone(),skill.clone());self.persist(data)?;return Ok(json!({"ok":true,"skill":skill}));},
+   "save"=>{let input=&request["skill"];let mut skill:Skill=serde_json::from_value(input.clone())?;if skill.title.trim().is_empty()||matches!(skill.title.trim().to_lowercase().as_str(),"skill"|"untitled"|"new skill"){let text=if skill.description.trim().is_empty(){skill.steps.first().map(String::as_str).unwrap_or("")}else{&skill.description};skill.title=text.split(['\n','.','!','?']).next().unwrap_or("").trim().chars().take(100).collect();}validate(&skill)?;anyhow::ensure!(!skill.id.starts_with("builtin-")&&!skill.id.starts_with("starter-syphodev-")&&!skill.id.starts_with("bundled-ultragui-"),"Starter references are read-only; save your adapted method under a new ID.");anyhow::ensure!(!skill.id.starts_with("global-workflow-"),"Automatic workflow lessons cannot be edited; save an adapted method under a new ID.");anyhow::ensure!(!data.deleted.contains_key(&skill.id),"This skill is in Deleted Skills. Restore it before editing, or save with a new ID.");let previous=data.skills.get(&skill.id);anyhow::ensure!(request["revision"].as_u64().unwrap_or(0)==previous.map_or(0,|s|s.revision),"Skill changed. Reload before saving.");skill.revision=previous.map_or(1,|s|s.revision+1);skill.favorite=previous.map_or(skill.favorite,|s|s.favorite);skill.community=false;data.suppressed.remove(&skill.id);data.skills.insert(skill.id.clone(),skill.clone());self.persist(data)?;return Ok(json!({"ok":true,"skill":skill}));},
    "delete"=>{let current=data.skills.get(id).ok_or_else(||anyhow::anyhow!("Skill not found."))?;anyhow::ensure!(request["revision"].as_u64()==Some(current.revision),"Skill changed. Reload before deleting.");move_to_deleted(&mut data,id)?;},
    "restore"=>{let deleted=data.deleted.get(id).ok_or_else(||anyhow::anyhow!("Deleted skill not found."))?;anyhow::ensure!(request["revision"].as_u64()==Some(deleted.skill.revision),"Deleted skill changed. Refresh before restoring.");anyhow::ensure!(!data.skills.contains_key(id),"An active skill already uses this ID; nothing was overwritten.");let mut skill=data.deleted.remove(id).unwrap().skill;skill.revision+=1;data.skills.insert(id.to_owned(),skill.clone());data.suppressed.remove(id);data.trash_revision+=1;self.persist(data)?;return Ok(json!({"ok":true,"skill":skill}));},
    "purge"=>{anyhow::ensure!(request["confirm"]==true,"Confirm permanent deletion; this cannot be undone.");let deleted=data.deleted.get(id).ok_or_else(||anyhow::anyhow!("Deleted skill not found."))?;anyhow::ensure!(request["revision"].as_u64()==Some(deleted.skill.revision),"Deleted skill changed. Refresh before permanently deleting.");data.deleted.remove(id);data.suppressed.insert(id.to_owned());data.trash_revision+=1;self.persist_with_backup(data,true)?;return Ok(json!({"ok":true,"purged":1}));},
@@ -112,7 +126,7 @@ fn normal_title(title:&str)->String{title.to_lowercase().split(|c:char|!c.is_alp
 fn placeholder_title(title:&str)->bool{let t=normal_title(title);t.is_empty()||matches!(t.as_str(),"planning project work"|"task checklist"|"task"|"continue"|"keep going"|"go on"|"proceed"|"yes"|"ok"|"okay"|"next"|"done"|"untitled"|"skill"|"new skill"|"hi"|"hello"|"thanks"|"thank you")}
 /// An automatic candidate the user never edited, tested, enabled or starred.
 fn untouched_auto_candidate(s:&Skill)->bool{s.id.starts_with("task-")&&s.revision<=1&&!s.confirmed&&!s.enabled&&!s.favorite&&!s.community&&s.description==CANDIDATE_TEXT}
-fn kept_by_delete_all(id:&str)->bool{id.starts_with("starter-syphodev-")||id.starts_with("bundled-ultragui-")||id.starts_with("global-workflow-")}
+fn kept_by_delete_all(id:&str)->bool{id.starts_with("builtin-")||id.starts_with("starter-syphodev-")||id.starts_with("bundled-ultragui-")||id.starts_with("global-workflow-")}
 fn public(skill:&Skill)->Value {json!({"id":skill.id,"title":skill.title,"description":skill.description,"domain":skill.domain,"scope":"","steps":skill.steps,"pitfalls":skill.pitfalls,"verification":skill.verification,"confirmed":skill.confirmed,"revision":1,"community":true})}
 static STORE:once_cell::sync::Lazy<tokio::sync::Mutex<Store>>=once_cell::sync::Lazy::new(||{let base=std::env::var_os("LOCALAPPDATA").or_else(||std::env::var_os("XDG_CONFIG_HOME")).map(PathBuf::from).unwrap_or_else(||PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join(".config"));tokio::sync::Mutex::new(Store::load(base.join("elio/skills.json")))});
 fn repository()->anyhow::Result<String>{let value=std::env::var("ELIO_LEARNING_REPOSITORY").unwrap_or_else(|_|"stoveez/elio".into());let parts=value.split('/').collect::<Vec<_>>();anyhow::ensure!(parts.len()==2&&parts.iter().all(|s|!s.is_empty()&&s.len()<=100&&s.bytes().all(|b|b.is_ascii_alphanumeric()||b"_- .".contains(&b))&&!s.contains(' ')),"Learning repository must be owner/repository on GitHub.");Ok(value)}
@@ -169,6 +183,30 @@ pub async fn post(State(state):State<crate::AppState>,Json(request):Json<Value>)
  match result{Ok(value)=>Json(value).into_response(),Err(error)=>(axum::http::StatusCode::BAD_REQUEST,Json(json!({"ok":false,"error":error.to_string()}))).into_response()}
 }
 #[cfg(test)]mod tests{use super::*;
+ #[test]fn vfx_seed_migration_routing_and_deletion() {
+  let path=std::env::temp_dir().join(format!("elio-vfx-store-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
+  std::fs::write(&path,r#"{"skills":{},"starter_pack_version":1,"eclipse_pack_version":1,"ultragui_pack_version":1,"candidate_cleanup_version":1}"#).unwrap();
+  let mut store=Store::load(path.clone());assert!(store.data.skills[crate::vfx_studio_skill::ID].enabled);
+  for blender in [true,false] {let row=store.request(&json!({"action":"match","query":"Сделай эффект удара","domain":"roblox","blender_available":blender})).unwrap();assert_eq!(row["skills"][0]["id"],crate::vfx_studio_skill::ID);}
+  assert!(!store.request(&json!({"action":"match","query":"Fix inventory","domain":"roblox"})).unwrap()["skills"].as_array().unwrap().iter().any(|s|s["id"]==crate::vfx_studio_skill::ID));
+  let mut card=store.data.skills[crate::vfx_studio_skill::ID].clone();card.title="edited".into();assert!(store.request(&json!({"action":"save","skill":card,"revision":1})).is_err());
+  store.request(&json!({"action":"delete_all"})).unwrap();assert!(store.data.skills.contains_key(crate::vfx_studio_skill::ID));
+  store.request(&json!({"action":"delete","id":crate::vfx_studio_skill::ID,"revision":1})).unwrap();
+  let reload=Store::load(path.clone());assert!(!reload.data.skills.contains_key(crate::vfx_studio_skill::ID));assert!(reload.data.deleted.contains_key(crate::vfx_studio_skill::ID));let _=std::fs::remove_file(path);
+ }
+ #[test]fn eclipse_seed_migration_match_and_user_deletion() {
+  let path=std::env::temp_dir().join(format!("elio-eclipse-store-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
+  let catalog=Catalog{starter_pack_version:1,ultragui_pack_version:2,..Default::default()};std::fs::write(&path,serde_json::to_vec(&catalog).unwrap()).unwrap();
+  let mut store=Store::load(path.clone());assert!(store.data.skills[crate::eclipse_skill::ID].enabled);assert!(!store.data.skills[crate::eclipse_skill::ID].confirmed);
+  let row=store.request(&json!({"action":"match","query":"Сделай анимацию удара","domain":"roblox","blender_available":false})).unwrap();assert_eq!(row["skills"][0]["id"],crate::eclipse_skill::ID);
+  for request in [json!({"action":"match","query":"Fix inventory code","domain":"roblox"}),json!({"action":"match","query":"Animate this rig","domain":"roblox","blender_available":true}),json!({"action":"match","query":"Use Eclipse Animator","domain":"local"})] {assert!(!store.request(&request).unwrap()["skills"].as_array().unwrap().iter().any(|s|s["id"]==crate::eclipse_skill::ID));}
+  assert_eq!(store.request(&json!({"action":"match","query":"Use Eclipse Animator","domain":"roblox","blender_available":true})).unwrap()["skills"][0]["id"],crate::eclipse_skill::ID);
+  let mut builtin=store.data.skills[crate::eclipse_skill::ID].clone();builtin.title="changed".into();assert!(store.request(&json!({"action":"save","skill":builtin,"revision":1})).is_err());
+  store.request(&json!({"action":"delete_all"})).unwrap();assert!(store.data.skills.contains_key(crate::eclipse_skill::ID));
+  store.request(&json!({"action":"delete","id":crate::eclipse_skill::ID,"revision":1})).unwrap();
+  let reload=Store::load(path.clone());assert!(!reload.data.skills.contains_key(crate::eclipse_skill::ID));assert!(reload.data.deleted.contains_key(crate::eclipse_skill::ID));
+  let _=std::fs::remove_file(path.with_extension("json.backup"));let _=std::fs::remove_file(path);
+ }
  #[test]fn explicit_saved_guidance_is_matched_without_claiming_verification(){
   let path=std::env::temp_dir().join(format!("elio-enabled-skills-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
   let mut store=Store::load(path.clone());let mut saved=skill();saved.id="guidance".into();saved.confirmed=false;saved.enabled=true;saved.verification.clear();saved.domain="all".into();
@@ -198,7 +236,7 @@ pub async fn post(State(state):State<crate::AppState>,Json(request):Json<Value>)
  }
  #[test]fn starter_seed_preserves_user_data_and_deletions(){
   let path=std::env::temp_dir().join(format!("elio-starter-store-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
-  let mut store=Store::load(path.clone());assert_eq!(store.data.skills.len(),19);
+  let mut store=Store::load(path.clone());assert_eq!(store.data.skills.len(),21);
   let s=skill();store.request(&json!({"action":"save","skill":s,"revision":0})).unwrap();
   store.request(&json!({"action":"delete","id":"starter-syphodev-roblox-code","revision":1})).unwrap();
   store.request(&json!({"action":"delete","id":"bundled-ultragui-expert-gui","revision":1})).unwrap();

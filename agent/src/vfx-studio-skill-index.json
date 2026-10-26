@@ -1,0 +1,24 @@
+{
+  "id": "builtin-vfx-studio",
+  "title": "VFX Studio",
+  "description": "Built-in library-first Roblox VFX workflow: choose textures, meshes and presets through the installed VFX Studio UI, inspect materialized DataModel exports and reuse owned copies with existing guarded motion/VFX tools. Useful for particles, beams, trails, flipbooks, bursts, auras and spell effects regardless of Blender availability. Эффекты, искры, дым, аура; библиотека VFX Studio. No bundled library or invented plugin API.",
+  "domain": "roblox",
+  "scope": "",
+  "enabled": true,
+  "confirmed": false,
+  "community": false,
+  "revision": 1,
+  "steps": [
+    "Read elio_skills action read id builtin-vfx-studio and references/library-workflow.md; follow next_offset. Respect user exclusions.",
+    "Use the installed plugin library through observed, authorized desktop UI; otherwise inspect an existing export or ask the user to insert/select one. DataModel scans do not browse private plugin libraries.",
+    "Read scripts/inspect_asset.luau for a bounded read-only export inventory. Verify full source with motion tools, then reuse an owned copy. Await actual receipts, preview and clean up; preserve originals and selected-asset terms."
+  ],
+  "pitfalls": [
+    "Do not install, publish, redistribute catalogs, execute unknown modules or invent plugin APIs/paths. Game mouse input is not Studio toolbar control.",
+    "Truncated scans and copy receipts are not visual proof; verify attachments, flipbooks, cleanup and performance on the user machine."
+  ],
+  "verification": [
+    "Test routing, migration, resource bounds and the actual Luau inspector with simulated DataModels.",
+    "Real VFX Studio UI/library access, asset rights and visual acceptance remain live checks on the user machine."
+  ]
+}

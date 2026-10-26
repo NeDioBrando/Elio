@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
 use std::process::Stdio;
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader, Lines};
+use tokio::io::AsyncWriteExt;
 use tokio::process::{Child, ChildStdin, ChildStdout, Command};
 
 #[cfg(windows)]
@@ -171,7 +171,7 @@ pub(crate) struct AddonRuntime {
     spec: ServerSpec,
     child: Option<Child>,
     stdin: Option<ChildStdin>,
-    stdout: Option<Lines<BufReader<ChildStdout>>>,
+    stdout: Option<crate::resource_limits::LimitedLines<ChildStdout>>,
     next_id: u64,
     tools: Vec<serde_json::Value>,
     last_error: Option<String>,
@@ -181,6 +181,10 @@ pub(crate) struct AddonRuntime {
     /// Consecutive tools/call timeouts; the server is recycled only at 2.
     call_timeouts: u32,
     request_pending: bool,
+}
+
+impl Drop for AddonRuntime {
+    fn drop(&mut self){if let Some(task)=self.stderr_task.take(){task.abort();}}
 }
 
 impl AddonRuntime {
@@ -351,8 +355,9 @@ impl AddonRuntime {
         if let Some(stderr) = child.stderr.take() {
             let tail = self.stderr.clone();
             self.stderr_task = Some(tokio::spawn(async move {
-                let mut lines = BufReader::new(stderr).lines();
-                while let Ok(Some(line)) = lines.next_line().await {
+                let mut lines = crate::resource_limits::LimitedLines::new(stderr,4000);
+                loop {
+                    let line=match lines.next_line().await{Ok(Some(line))=>line,Ok(None)=>break,Err(error) if error.kind()==std::io::ErrorKind::InvalidData=>"MCP stderr line exceeded its memory limit (discarded)".into(),Err(_)=>break};
                     let mut tail = tail.lock().unwrap_or_else(|error| error.into_inner());
                     if tail.len() == 12 { tail.pop_front(); }
                     tail.push_back(line.chars().take(1000).collect());
@@ -360,7 +365,7 @@ impl AddonRuntime {
             }));
         }
         self.stdin = child.stdin.take();
-        self.stdout = child.stdout.take().map(|s| BufReader::new(s).lines());
+        self.stdout = child.stdout.take().map(|s| crate::resource_limits::LimitedLines::new(s,32*1024*1024));
         self.child = Some(child);
         self.request("initialize", serde_json::json!({
             "protocolVersion": "2025-06-18",
@@ -613,7 +618,7 @@ mod tests {
         let mut runtime=fixture(false);
         let python=if cfg!(windows){"python"}else{"python3"};
         let mut child=Command::new(python).args(["-u","-c","import time;time.sleep(60)"]).kill_on_drop(true).stdin(Stdio::piped()).stdout(Stdio::piped()).spawn().unwrap();
-        runtime.stdin=child.stdin.take();runtime.stdout=child.stdout.take().map(|s|BufReader::new(s).lines());runtime.child=Some(child);
+        runtime.stdin=child.stdin.take();runtime.stdout=child.stdout.take().map(|s|crate::resource_limits::LimitedLines::new(s,32*1024*1024));runtime.child=Some(child);
         let started=std::time::Instant::now();
         let result=runtime.request_with_timeout("tools/call",serde_json::json!({"code":"x".repeat(2*1024*1024)}),std::time::Duration::from_millis(250)).await;
         assert!(result.unwrap_err().to_string().contains("MCP request timed out"));assert!(started.elapsed()<std::time::Duration::from_secs(3));
@@ -756,7 +761,7 @@ fn call_timeout_secs(spec_args: &[String], call_args: &serde_json::Value) -> u64
 /// tools/call timeout recycles it only when two calls in a row timed out.
 fn addon_should_reset(error: &str, consecutive_call_timeouts: u32) -> bool {
     if error.contains("MCP request timed out: tools/call") { return consecutive_call_timeouts >= 2; }
-    error.contains("timed out")
+    error.contains("timed out") || error.contains("MCP response line exceeds its memory limit")
 }
 
 /// Value of the Path entry in `reg query <key> /v Path` output.
@@ -907,3 +912,5 @@ mod uv_default_tests {
         assert_eq!(uv_default_env("uvx", &env), None);
     }
 }
+
+#[cfg(test)]mod drop_resource_tests{use super::*;#[tokio::test]async fn dropped_runtime_aborts_stderr_task(){let mut runtime=AddonRuntime::new("fixture".into(),ServerSpec{command:"unused".into(),args:vec![],env:HashMap::new()});let task=tokio::spawn(std::future::pending::<()>());let handle=task.abort_handle();runtime.stderr_task=Some(task);drop(runtime);tokio::task::yield_now().await;assert!(handle.is_finished());}}

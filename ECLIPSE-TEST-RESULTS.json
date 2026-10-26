@@ -1,0 +1,198 @@
+{
+  "product": "Elio",
+  "version": "1.0.1",
+  "feature": "Built-in Eclipse Animator skill",
+  "checked_at": "2026-10-25T20:26:43.254797+00:00",
+  "source_base": "Elio-v1.0.1-Oriveo-Figma-Memory-SOURCE.zip",
+  "source_skill_zip_sha256": "96e6872b96a0d750a05ec8c003c7786e3d2f85f936393cbb6ddea53959d9e018",
+  "originals": [
+    {
+      "path": "starter-skills/eclipse-animator/references/craft.md",
+      "sha256": "57db409a1e5d26097864abc7802c8e5f44cff262d2f8961aa2b0c5d4b0a03d59",
+      "original_preserved": true
+    },
+    {
+      "path": "starter-skills/eclipse-animator/references/joints.md",
+      "sha256": "706a2e9b15de949dc0f98ff5f0769b1c446c7838f2537e0aa96fcab5f92bf874",
+      "original_preserved": true
+    },
+    {
+      "path": "starter-skills/eclipse-animator/upstream/scripts/build_sequence.luau",
+      "sha256": "e2e5756e2977e985b0f35fc618219cd2ebcc35db6125aa87bfe61e20ddd08a35",
+      "original_preserved": true
+    },
+    {
+      "path": "starter-skills/eclipse-animator/upstream/scripts/inspect_pose.luau",
+      "sha256": "e8056d56664818e67d291e1428b63464c7b208fd1755f817b4546ab9b1fa8ceb",
+      "original_preserved": true
+    },
+    {
+      "path": "starter-skills/eclipse-animator/upstream/SKILL.md",
+      "sha256": "fd7800ecc9787ee1194fcd14877375c59868b8cd25b847e66dc32d01484cc780",
+      "original_preserved": true
+    }
+  ],
+  "routing": {
+    "builtin_id": "builtin-eclipse-animator",
+    "default_enabled": true,
+    "live_plugin_verified": false,
+    "normal_effort_available": true,
+    "rules": [
+      "Roblox character animation and Blender not confirmed available -> Eclipse reference",
+      "Explicit Eclipse request -> Eclipse even with connected Blender",
+      "Connected Blender without explicit Eclipse choice -> existing workflow retained",
+      "Exclusions, Blender-only requests, UI/CSS tasks and test-run commands are not overridden"
+    ],
+    "existing_library_migration": true,
+    "user_deletions_preserved": true,
+    "mid_task_blender_failure_hint": true
+  },
+  "verification": {
+    "javascript_suites": [
+      {
+        "test": "test-eclipse.cjs",
+        "status": "passed",
+        "summary": "PASS Eclipse integration: 9 checks (built-in card, complete resources/parity, Blender routing wiring, actual skill UI list/read, no automatic mutations, GitHub test registration)."
+      },
+      {
+        "test": "test-oriveo.cjs",
+        "status": "passed",
+        "summary": "PASS Oriveo: 23 checks (live-DOM fixture, roles, paragraphs/code, streaming, scoped single send, ambiguity, hooks, registration/parity)"
+      },
+      {
+        "test": "test-elio-identity.cjs",
+        "status": "passed",
+        "summary": "PASS identity: Elio in Roblox/local/compact/Notion prompts; exact ready text; real handshake accepts requested acknowledgement, rejects commands; LF/CRLF prompt-scope hash unchanged; real edits detected; extension parity."
+      },
+      {
+        "test": "test-elio-rename.cjs",
+        "status": "passed",
+        "summary": "PASS complete rename: 1.0.1, Cargo/bin/icons, runtime identifiers, recursive extension parity, one executable, packager/helper/update authority/workflow contracts."
+      },
+      {
+        "test": "test-elio-audit.cjs",
+        "status": "passed",
+        "summary": "PASS elio v1: identity, full version, Vani registration/contracts, own update channel, synced extension, syntax (70 scripts)"
+      },
+      {
+        "test": "test-figma.cjs",
+        "status": "passed",
+        "summary": "PASS Figma contracts: native editable layer mapping, Auto Layout/components/text/SVG, font preflight, staged rollback, user-layer preservation, idempotency, unsafe SVG rejection, bounded reads/export, UI bootstrap, schema/manifest parity, guarded dispatch, Figma available with Studio offline. Plugin API is simulated here; real Figma Desktop still needs acceptance testing."
+      },
+      {
+        "test": "test-vault-contract.cjs",
+        "status": "passed",
+        "summary": "PASS vault contracts: production Notion block boundaries, inline spans, list/BR/code preservation, desktop paragraphs, confirmed-only receipts, compact save replies, bound project scope, conflicts, fresh-chat guard, extension parity, Unicode-safe long-note import and duplicate prevention."
+      },
+      {
+        "test": "test-skills.js",
+        "status": "passed",
+        "summary": "PASS  lighting_set_preset builds Luau\nPASS  lighting_inspect builds Luau\nPASS  lighting_setup_day_night builds Luau\nPASS  ui_create_screen builds Luau\nPASS  ui_create_component builds Luau\nPASS  ui_inspect builds Luau\nPASS  fx_create_emitter builds Luau\nPASS  fx_create_light builds Luau\nPASS  fx_create_vfx builds Luau\nPASS  fx_create_beam builds Luau\nPASS  fx_create_trail builds Luau\nPASS  fx_create_explosion builds Luau\nPASS  audio_setup_sound_hierarchy builds Luau\nPASS  audio_create_sound builds Luau\nPASS  terrain_fill_region builds Luau\nPASS  terrain_clear builds Luau\nPASS  camera_set_style builds Luau\nPASS  diagnostics_audit builds Luau\nPASS  diagnostics_fix_common builds Luau\nPASS  asset_bridge_import builds Luau\nPASS  datastore_setup builds Luau\nPASS  leaderboard_setup builds Luau\nPASS  remote_setup builds Luau\nPASS  npc_spawn_pathfinding builds Luau\nPASS  proximity_setup builds Luau\nPASS  tween_create builds Luau\nPASS  marketplace_setup builds Luau\nPASS  teams_setup builds Luau\nPASS  web_fetch builds Luau\nPASS  web_search builds Luau\nPASS  script_analysis builds Luau\nPASS  plugin_list builds Luau\nPASS  plugin_inspect builds Luau\nPASS  plugin_create builds Luau\nPASS  part_create builds Luau\nPASS  model_group builds Luau\nPASS  weld_assemble builds Luau\nPASS  tool_create builds Luau\nPASS  dummy_spawn builds Luau\nPASS  kill_brick builds Luau\nPASS  spawn_location builds Luau\nPASS  instance_destroy builds Luau\nPASS  instance_clone builds Luau\nPASS  material_set builds Luau\nPASS  click_detector builds Luau\nPASS  billboard builds Luau\nPASS  attribute_set builds Luau\nPASS  tag_add builds Luau\nPASS  selection_info builds Luau\nPASS  sky_set builds Luau\nPASS  health_pack builds Luau\nPASS  sprint_setup builds Luau\nPASS  seat_create builds Luau\nPASS  workspace_list builds Luau\nPASS  instance_rename builds Luau\nPASS  instance_reparent builds Luau\nPASS  selection_set builds Luau\nPASS  script_append builds Luau\nPASS  camera_look_at builds Luau\nPASS  attribute_get builds Luau\nPASS  pivot_set builds Luau\nPASS  highlight_add builds Luau\nPASS  script_set_source builds Luau\nPASS  script_list builds Luau\nPASS  script_disable builds Luau\nPASS  sound_play builds Luau\nPASS  anchored_set builds Luau\nPASS  collision_set builds Luau\nPASS  transparency_set builds Luau\nPASS  humanoid_set builds Luau\nPASS  lighting_set builds Luau\nPASS  folder_create builds Luau\nPASS  value_set builds Luau\nPASS  weld_constraint builds Luau\nPASS  camera_subject builds Luau\nPASS  instance_move builds Luau\nPASS  tag_remove builds Luau\nPASS  ui_build builds Luau\nPASS  ui_set_image builds Luau\nPASS  ui_set_texture builds Luau\nPASS  ui_set_text builds Luau\nPASS  ui_set_color builds Luau\nPASS  ui_set_size builds Luau\nPASS  ui_set_position builds Luau\nPASS  ui_set_font builds Luau\nPASS  ui_set_corner builds Luau\nPASS  ui_set_stroke builds Luau\nPASS  ui_set_gradient builds Luau\nPASS  ui_set_padding builds Luau\nPASS  ui_set_layout builds Luau\nPASS  ui_set_visible builds Luau\nPASS  ui_set_property builds Luau\nPASS  ui_paint builds Luau\nPASS  ui_add_element builds Luau\nPASS  ui_set_scale builds Luau\nPASS  ui_list_tree builds Luau\nPASS  ui_apply_theme builds Luau\nPASS  ui_set_slice builds Luau\nPASS  ui_bind_button builds Luau\nPASS  decal_set builds Luau\nPASS  mesh_set_texture builds Luau\nPASS  surface_gui_create builds Luau\nPASS  ui_clone builds Luau\nPASS  ui_clear_children builds Luau\nPASS  ui_set_anchor builds Luau\nPASS  ui_bring_to_front builds Luau\nPASS  size_set builds Luau\nPASS  color_set builds Luau\nPASS  cframe_set builds Luau\nPASS  rotation_set builds Luau\nPASS  massless_set builds Luau\nPASS  can_touch_set builds Luau\nPASS  can_query_set builds Luau\nPASS  cast_shadow_set builds Luau\nPASS  collision_group_set builds Luau\nPASS  brickcolor_set builds Luau\nPASS  meshpart_create builds Luau\nPASS  wedge_create builds Luau\nPASS  spawn_box builds Luau\nPASS  ladder_create builds Luau\nPASS  trampoline_create builds Luau\nPASS  conveyor_create builds Luau\nPASS  ice_part builds Luau\nPASS  jump_pad builds Luau\nPASS  speed_pad builds Luau\nPASS  attachment_create builds Luau\nPASS  hinge_create builds Luau\nPASS  spring_create builds Luau\nPASS  rope_create builds Luau\nPASS  vector_force_create builds Luau\nPASS  linear_velocity_create builds Luau\nPASS  fire_add builds Luau\nPASS  smoke_add builds Luau\nPASS  sparkles_add builds Luau\nPASS  point_light_add builds Luau\nPASS  spot_light_add builds Luau\nPASS  atmosphere_set builds Luau\nPASS  bloom_set builds Luau\nPASS  blur_set builds Luau\nPASS  color_correction_set builds Luau\nPASS  sunrays_set builds Luau\nPASS  gravity_set builds Luau\nPASS  walkspeed_set builds Luau\nPASS  jumppower_set builds Luau\nPASS  forcefield_add builds Luau\nPASS  explosion_at builds Luau\nPASS  teleport_to builds Luau\nPASS  leaderstats_int builds Luau\nPASS  remote_event_create builds Luau\nPASS  sound_volume builds Luau\nPASS  set_property builds Luau\nPASS  get_property builds Luau\nPASS  scale_model builds Luau\nPASS  ungroup_model builds Luau\nPASS  developer_product_create builds Luau\nPASS  developer_product_list builds Luau\nPASS  lighting_set_preset is dispatched\nPASS  lighting_inspect is dispatched\nPASS  ui_create_component is dispatched\nPASS  fx_create_emitter is dispatched\nPASS  audio_setup_sound_hierarchy is dispatched\nPASS  terrain_fill_region is dispatched\nPASS  camera_set_style is dispatched\nPASS  diagnostics_audit is dispatched\nPASS  diagnostics_fix_common is dispatched\nPASS  datastore_setup is dispatched\nPASS  leaderboard_setup is dispatched\nPASS  remote_setup is dispatched\nPASS  npc_spawn_pathfinding is dispatched\nPASS  proximity_setup is dispatched\nPASS  tween_create is dispatched\nPASS  marketplace_setup is dispatched\nPASS  teams_setup is dispatched\nPASS  fx_create_vfx is dispatched\nPASS  fx_create_beam is dispatched\nPASS  fx_create_trail is dispatched\nPASS  fx_create_explosion is dispatched\nPASS  catalogue description contains skill tools\nPASS  script_analysis is dispatched\nPASS  plugin_list is dispatched\nPASS  plugin_inspect is dispatched\nPASS  plugin_create is dispatched\nPASS  skill count is 34+\nPASS  daily studio commands exist\nPASS  gui mutation tools exist\nPASS  gui skill count 70+\nPASS  agentscript extras exist\nPASS  agentscript describe\nPASS  daily extras rename/reparent\nPASS  daily extras 1.17.28\nPASS  gui extras clone/front\nPASS  agentscript extras 2\nPASS  plus 40 studio commands\nPASS  developer_product_create skill"
+      },
+      {
+        "test": "test-skills-import.js",
+        "status": "passed",
+        "summary": "PASS exported JSON roundtrip, pasted Unicode instructions, file upload, validation errors, unique local candidates and no overwritten skills."
+      },
+      {
+        "test": "test-skills-menu.js",
+        "status": "passed",
+        "summary": "PASS all starter skills, readable names, search, detailed selection, paginated references, Add skill, name fallback and AI creation request."
+      },
+      {
+        "test": "test-skills-simple-editor.js",
+        "status": "passed",
+        "summary": "PASS optional visible name, explicit names, automatic summaries, one-box Save, explicit guidance without false verification, scope, no task dispatch, unchanged records, draft retention, Unicode limits, Import access and read-only reference cloning."
+      },
+      {
+        "test": "test-deleted-skills.js",
+        "status": "passed",
+        "summary": "PASS Deleted Skills tabs, hidden built-ins, soft delete, restore, search, separate confirmed purge and Delete All, active-skill isolation"
+      },
+      {
+        "test": "test-skills-regression.js",
+        "status": "passed",
+        "summary": "PASS skill persistence form, project adaptation, public scope removal, local learning default and explicit sharing review."
+      },
+      {
+        "test": "test-1.24.13-skills.js",
+        "status": "passed",
+        "summary": "1.24.13 skills: favourites, delete, delete all and candidate limits pass"
+      },
+      {
+        "test": "test-elio-chat-live.cjs",
+        "status": "passed",
+        "summary": "PASS live chat: forced provider invalidation, new turns and streamed revisions without observer/reload, activity on unchanged revisions, idle/tool/stop, hidden setup with raw history retained, ordinary prose preserved, 15 locales."
+      },
+      {
+        "test": "test-desktop-chat.cjs",
+        "status": "passed",
+        "summary": "PASS desktop chat: snapshots, streaming revisions, bounds, target guards, request IDs, pin/unpin, source parity"
+      },
+      {
+        "test": "test-elio.cjs",
+        "status": "passed",
+        "summary": "PASS Elio: protocol cards preserve prose, truthful tool states, user delivery ACK, explicit post-Stop resume, retry deduplication, fresh read, 15-language coverage"
+      },
+      {
+        "test": "test-elio-theme.cjs",
+        "status": "passed",
+        "summary": "PASS theme: persisted browser storage, cross-tab updates, SVG/ARIA, delayed save, failed-save rollback, 15 locales, embed/parity, representative AA text pairs\nlight text/canvas 10.74:1; light text/surface 11.65:1; light muted/surface 5.84:1; light on-accent/accent 7.00:1; light green-text/green-bg 5.94:1; light error-text/error-bg 5.68:1; light warn-text/warn-bg 5.32:1; dark text/canvas 11.86:1; dark text/surface 10.66:1; dark muted/surface 7.06:1; dark on-accent/accent 7.57:1; dark green-text/green-bg 7.01:1; dark error-text/error-bg 6.97:1; dark warn-text/warn-bg 6.70:1"
+      },
+      {
+        "test": "test-updates.cjs",
+        "status": "passed",
+        "summary": "PASS updates: shared Outdated/action state, progress, extension reload, no false current, own channel, native/helper guard contracts"
+      },
+      {
+        "test": "test-live-audit-fixes.cjs",
+        "status": "passed",
+        "summary": "PASS live audit fixes: no skill rerouting, read-only schema/example, creator scope gate, correlated rewrites, Russian preview-only, Motion scopes/pagination/returned receipts, read-only visual detection."
+      },
+      {
+        "test": "test-provider-dom-guards.js",
+        "status": "passed",
+        "summary": "PASS 562 guarded query/layout/attribute reads and 13 input-control finally regions."
+      }
+    ],
+    "actual_luau_with_simulated_datamodel": {
+      "status": "passed",
+      "summary": "PASS Eclipse actual Luau helpers: 53 checks on simulated DataModel (R6/R15 Motor6D/AnimationConstraint, keys/markers/easing, replay/conflicts, preservation, malformed input, commit failure, read-only pose inspection). Real Eclipse UI not exercised.",
+      "real_studio_or_plugin": false
+    },
+    "existing_generated_motion_luau": {
+      "status": "passed",
+      "summary": "PASS actual generated Luau returned receipt: read_vfx game.Workspace.Baseplate true\nPASS actual generated Luau returned receipt: read_vfx game.Workspace.Missing false\nPASS actual generated Luau returned receipt: read_animation game.Workspace.Baseplate false\nPASS actual generated Luau on mock DataModel: exact copy/fidelity, duplicate replay, runtime install/replay, generated module syntax, untouched source"
+    },
+    "native_rust": {
+      "passed": 148,
+      "failed": 0,
+      "ignored": 1,
+      "platform": "Linux"
+    },
+    "real_local_agent_skill_api": {
+      "status": "passed",
+      "summary": "PASS real native Eclipse skill API: authorization, seeded built-in, complete paginated guide and helpers from packaged extension, traversal refusal, Russian/English Blender-aware selection. No Studio/plugin UI interaction performed."
+    },
+    "windows_packaging_fixture": {
+      "status": "passed",
+      "summary": "PASS actual Windows packager fixture: Elio archive/root/exe/extension, every SHA256, canonical/aliased paths, reject wrong executable/arguments/product and invalid PE header. This does not build or execute Windows code."
+    }
+  },
+  "not_verified": [
+    "Actual Eclipse plugin installation/opening/scrubbing/saving",
+    "Visual animation quality in real Studio",
+    "Windows/WebView2 application execution",
+    "Roblox asset publication or runtime integration"
+  ],
+  "plugin_not_bundled": true,
+  "no_user_studio_modified": true,
+  "preserved": [
+    "Oriveo provider",
+    "Figma plugin bridge",
+    "project vault and personal memory",
+    "existing default providers",
+    "version 1.0.1",
+    "GitHub Actions build workflow"
+  ]
+}

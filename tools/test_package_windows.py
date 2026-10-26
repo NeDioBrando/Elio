@@ -44,6 +44,8 @@ with tempfile.TemporaryDirectory(prefix='elio-package-test-') as temp:
         assert [n for n in names if n.lower().endswith('.exe')] == ['elio/elio.exe', 'elio/runtime/engram/engram-windows-amd64.exe']
         assert z.read('elio/elio.exe') == exe.read_bytes()
         assert json.loads(z.read('elio/elio-Extension/manifest.json'))['version'] == '1.0.1'
+        for name in ('manifest.json','code.js','ui.html'):
+            assert z.read('elio/figma-plugin/'+name) == (ROOT/'figma-plugin'/name).read_bytes()
         sums = z.read('elio/SHA256SUMS.txt').decode().splitlines()
         assert len(sums) == len(names) - 1
         for line in sums:

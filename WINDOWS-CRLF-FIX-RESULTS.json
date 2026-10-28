@@ -1,0 +1,110 @@
+{
+  "base_source_sha256": "6beadd88a936428ff5d9fa5412f33269219b2e07f3e08feb0cb40232873a7fc0",
+  "reported_failure": "AssertionError at byte-exact SHA256 guard for core/config.js",
+  "reproduced_with_newlines_only": true,
+  "config_hashes": {
+    "LF": "dd12795f341c420c901f0c2c5f7043a0edbdd8c1a72860e94702e5f9302c6448",
+    "CRLF": "aa3d7de08fb15ab565b611468e4eff4e1ff142bd55a2cb478d8d3350c6e88db5",
+    "CRLF_normalized": "dd12795f341c420c901f0c2c5f7043a0edbdd8c1a72860e94702e5f9302c6448"
+  },
+  "checks": {
+    "actual_contract_LF": "passed",
+    "actual_contract_CRLF": "passed",
+    "reject_actual_edit_LF": "passed",
+    "reject_actual_edit_CRLF": "passed",
+    "unchanged_config_and_production_sources": "passed",
+    "cp1252_contract_stamp_package_regression": "passed",
+    "Engram_runtime_verification": "passed",
+    "python_syntax": "passed",
+    "downstream_node_tests": [
+      {
+        "test": "test-tool-error-recovery.js",
+        "ok": true
+      },
+      {
+        "test": "test-stop.js",
+        "ok": true
+      },
+      {
+        "test": "test-message-error-preservation.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-card-ownership.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-tool-status.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-block-transcript.js",
+        "ok": true
+      },
+      {
+        "test": "tools/test_plugin_skills_luau.mjs",
+        "ok": true
+      },
+      {
+        "test": "test-eclipse.cjs",
+        "ok": true
+      },
+      {
+        "test": "tools/test_eclipse_luau.mjs",
+        "ok": true
+      },
+      {
+        "test": "test-oriveo.cjs",
+        "ok": true
+      },
+      {
+        "test": "test-figma.cjs",
+        "ok": true
+      },
+      {
+        "test": "test-vault-contract.cjs",
+        "ok": true
+      },
+      {
+        "test": "test-elio.cjs",
+        "ok": true
+      },
+      {
+        "test": "test-elio-theme.cjs",
+        "ok": true
+      },
+      {
+        "test": "test-updates.cjs",
+        "ok": true
+      },
+      {
+        "test": "test-live-audit-fixes.cjs",
+        "ok": true
+      },
+      {
+        "test": "test-auto-creator-enhancement.js",
+        "ok": true
+      },
+      {
+        "test": "test-tool-guard-repair.js",
+        "ok": true
+      },
+      {
+        "test": "test-motion.js",
+        "ok": true
+      },
+      {
+        "test": "tools/test_motion_luau.mjs",
+        "ok": true
+      }
+    ]
+  },
+  "changed_previous_files": [
+    "Build-Windows.ps1",
+    "tools/test_studio_desktop_contract.py"
+  ],
+  "build": {
+    "build_id": "elio-3f99278aefd04bbfd46b",
+    "protocol": 2
+  }
+}

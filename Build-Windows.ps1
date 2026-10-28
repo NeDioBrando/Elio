@@ -49,6 +49,8 @@ node tools/test_vfx_studio_luau.mjs
 if ($LASTEXITCODE -ne 0) { throw 'VFX export inspector tests failed.' }
 & powershell.exe -NoProfile -NonInteractive -File tools/test_studio_desktop.ps1
 if ($LASTEXITCODE -ne 0) { throw 'Studio desktop PowerShell/C# tests failed.' }
+python tools/test_windows_source_newlines.py
+if ($LASTEXITCODE -ne 0) { throw 'Windows LF/CRLF source regression failed.' }
 python tools/test_studio_desktop_contract.py
 if ($LASTEXITCODE -ne 0) { throw 'Studio desktop routing tests failed.' }
 node tools/test_plugin_skills_luau.mjs

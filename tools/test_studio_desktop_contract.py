@@ -33,7 +33,10 @@ for skill in ['vfx-studio','qwinkles-particles-2','emitter2d','eclipse-animator'
     assert (R/f).read_bytes()==(R/'elio-Extension'/f).read_bytes()
     assert 'studio_ui_snapshot' in (R/f).read_text(encoding="utf-8")
 assert 'STUDIO DESKTOP INPUT' in core and 'Desktop input was not replayed' in core
-assert hashlib.sha256((R/'core/config.js').read_bytes()).hexdigest()=='dd12795f341c420c901f0c2c5f7043a0edbdd8c1a72860e94702e5f9302c6448'
+# Git may check out text as CRLF on Windows. Preserve the exact source guard,
+# ignoring ONLY CRLF -> LF; do not ignore whitespace, BOMs or real edits.
+config_source=(R/'core/config.js').read_bytes().replace(b'\r\n', b'\n')
+assert hashlib.sha256(config_source).hexdigest()=='dd12795f341c420c901f0c2c5f7043a0edbdd8c1a72860e94702e5f9302c6448', 'core/config.js changed beyond LF/CRLF line endings; review the configuration source'
 assert 'test_studio_desktop.ps1' in (R/'Build-Windows.ps1').read_text(encoding="utf-8")
 assert "'.ps1'" in (R/'tools/stamp_build.py').read_text(encoding="utf-8")
 print('PASS Studio desktop native route, polling catalogue, non-replay/checkpoint boundaries, explicit permissions, fixed-script stdin separation, resource/build inclusion, plugin skill mirrors and unchanged config. No live Studio interaction.')

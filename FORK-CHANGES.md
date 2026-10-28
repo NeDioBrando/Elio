@@ -62,3 +62,7 @@ Added the app.oriveoai.com text-chat adapter, supported-AI links, scoped single-
 ## Eclipse Animator built-in skill (1.0.1)
 
 User-provided Eclipse reference with preserved originals, Elio-specific tool/permission adaptation, safe AnimSaves authoring helpers, Blender-aware task selection, paginated read-only resources and a normal-effort Skills card. Original paid plugin is not bundled. No live Eclipse UI success is claimed by the fixture tests. See ECLIPSE-ANIMATOR-RU.md.
+
+## Unpublished 1.0.1 — selected PlazCode 1.24.21–25 recommendations
+
+Added lean startup/on-demand help and budgeted optional context without truncating retained command results; DeepSeek's minimum service-send interval; CSP-safe canvas screenshots; deterministic extension/native build identity and mismatch warnings; native read-only/allowed-folder policy with explicit single-use opaque/destructive command approvals; reused checkpoint history and Undo. Kept Elio's memory backend while adding revisioned evidence verification, stale-context exclusion, observed dependencies/audit, bounded local reference images, Obsidian snapshots, and graph interaction improvements. PowerShell helper fallback uses RemoteSigned. See UPSTREAM-21-25-RU.md and UPSTREAM-21-25-TEST-RESULTS.json for implemented limits and actual tests. No product version bump or Windows executable is included.

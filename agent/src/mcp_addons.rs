@@ -337,7 +337,7 @@ impl AddonRuntime {
                 anyhow::ensure!(script.is_file(), "[{}] Runtime setup script missing: {} ({error})", self.id, script.display());
                 tracing::info!("[{}] Preparing {} runtime for first use; download is cached for later launches", self.id, self.spec.command);
                 let mut setup = Command::new("powershell.exe");
-                setup.args(["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File"])
+                setup.args(["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "RemoteSigned", "-File"])
                     .arg(script).arg("-Runtime").arg(self.spec.command.to_ascii_lowercase())
                     .creation_flags(CREATE_NO_WINDOW).kill_on_drop(true);
                 let output = tokio::time::timeout(std::time::Duration::from_secs(300), setup.output()).await

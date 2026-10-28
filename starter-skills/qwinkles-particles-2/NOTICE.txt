@@ -1,0 +1,6 @@
+Elio-authored Qwinkle's Particles 2 workflow and read-only exported-effect inspector.
+Elio files are under the repository's license. This grants no rights to Qwinkle software/assets.
+Qwinkle's Part-Icles 2 and Part_Icles are third-party products, not Elio components.
+No third-party plugin, runtime, library, private source or license bypass is included.
+Runtime license permits use/modification in one's Roblox game, forbids redistribution as an Elio component and requires visible Qwinkle attribution for commercial games. Consult the current official terms and selected-asset terms.
+No endorsement, live plugin validation or complete UI automation is claimed.

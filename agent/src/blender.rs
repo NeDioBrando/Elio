@@ -48,6 +48,7 @@ pub async fn command(kind: &str, params: Value, limit: Duration) -> anyhow::Resu
 
 pub async fn post(Json(request): Json<Value>) -> Json<Value> {
     let kind = request["type"].as_str().unwrap_or("get_scene_info");
+    if kind!="get_scene_info"{if let Err(error)=crate::safety::mutation(){return Json(json!({"ok":false,"error":error.to_string()}));}}
     let seconds = if kind == "get_scene_info" {8} else {request["timeout_seconds"].as_u64().unwrap_or(120).clamp(1,180)};
     match command(kind, request.get("params").cloned().unwrap_or_else(||json!({})), Duration::from_secs(seconds)).await {
         Ok(value) => Json(json!({"ok":true,"blender":true,"data":value})),

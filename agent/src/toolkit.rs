@@ -41,6 +41,7 @@ fn code(req:&Value)->anyhow::Result<String>{let action=req["action"].as_str().un
 pub async fn post(State(state):State<crate::AppState>,Json(req):Json<Value>)->Response{
  let action_name=req["action"].as_str().unwrap_or("").to_owned();let result: anyhow::Result<Value>=async{
   let action=action_name.as_str();
+  if !matches!(action,"health"|"backups"){crate::safety::mutation()?;}
   if matches!(action,"backups"|"backup"|"restore") {let open=state.roblox_proc.load(Ordering::Relaxed)||state.roblox_editor_connected.load(Ordering::Relaxed);return tokio::task::spawn_blocking(move||{let _guard=BACKUP_LOCK.lock().unwrap_or_else(|e|e.into_inner());let dir=root();match req["action"].as_str().unwrap_or(""){"backups"=>backups(&dir),"backup"=>Ok(json!({"ok":true,"record":backup_at(&dir,Path::new(req["path"].as_str().unwrap_or("")))?,"text":"Saved place backup created. Unsaved Studio edits are not included."})),_=>restore_at(&dir,req["id"].as_str().unwrap_or(""),open)}}).await?;}
   anyhow::ensure!(state.roblox_editor_connected.load(Ordering::Relaxed),"Connect Roblox Studio and open a place first.");
   anyhow::ensure!(state.mcp_in_flight.load(Ordering::Relaxed)==0,"A Studio command is running. Wait for it to finish.");

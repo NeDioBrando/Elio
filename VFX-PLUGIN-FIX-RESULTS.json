@@ -1,0 +1,239 @@
+{
+  "product": "Elio",
+  "version": "1.0.1",
+  "base": "Memory-Performance-Audit-SOURCE",
+  "confirmed_defect": "Production plugin_list reproduces :65 Malformed string in Luau compiler",
+  "causes": [
+    "Literal newline inside Luau short string and JavaScript cooking of Luau escape sequences",
+    "Missing end in warm_night alias block",
+    "Missing end in Forge UI branch of shared library",
+    "Malformed Luau Unicode escapes in separate card inventory builder exposed by full compilation test"
+  ],
+  "fixed_files": [
+    "Build-Windows.ps1",
+    "PERFORMANCE-AUDIT-RU.md",
+    "core/main.js",
+    "core/studio_skills.js",
+    "tools/package_windows.py",
+    "starter-skills/vfx-studio/SKILL.md",
+    "starter-skills/vfx-studio/references/library-workflow.md",
+    "elio-Extension/core/main.js",
+    "elio-Extension/core/studio_skills.js",
+    "elio-Extension/starter-skills/vfx-studio/SKILL.md",
+    "elio-Extension/starter-skills/vfx-studio/references/library-workflow.md"
+  ],
+  "production_generated_compilation": {
+    "commands": 34,
+    "passed": 34,
+    "scope": "Complete generated production chunks, not extracted snippets"
+  },
+  "plugin_runtime_fixtures": {
+    "passed": 16,
+    "scope": "Mock accessible DataModel/UI; no real plugin installation or library"
+  },
+  "vfx_asset_inspector_checks": 31,
+  "final_regression_commands": [
+    {
+      "test": "node test-skills.js",
+      "exit_code": 0,
+      "seconds": 0.05
+    },
+    {
+      "test": "node tools/test_plugin_skills_luau.mjs",
+      "exit_code": 0,
+      "seconds": 0.99
+    },
+    {
+      "test": "node test-resource-lifecycle.cjs",
+      "exit_code": 0,
+      "seconds": 2.11
+    },
+    {
+      "test": "node test-vfx-studio.cjs",
+      "exit_code": 0,
+      "seconds": 0.61
+    },
+    {
+      "test": "node tools/test_vfx_studio_luau.mjs",
+      "exit_code": 0,
+      "seconds": 0.79
+    },
+    {
+      "test": "node test-elio-identity.cjs",
+      "exit_code": 0,
+      "seconds": 0.07
+    },
+    {
+      "test": "node test-elio-rename.cjs",
+      "exit_code": 0,
+      "seconds": 0.07
+    },
+    {
+      "test": "node test-elio-audit.cjs",
+      "exit_code": 0,
+      "seconds": 1.84
+    },
+    {
+      "test": "node test-elio-chat-live.cjs",
+      "exit_code": 0,
+      "seconds": 0.05
+    },
+    {
+      "test": "node test-desktop-chat.cjs",
+      "exit_code": 0,
+      "seconds": 0.05
+    },
+    {
+      "test": "node test-eclipse.cjs",
+      "exit_code": 0,
+      "seconds": 0.48
+    },
+    {
+      "test": "node test-oriveo.cjs",
+      "exit_code": 0,
+      "seconds": 0.81
+    },
+    {
+      "test": "node test-figma.cjs",
+      "exit_code": 0,
+      "seconds": 0.47
+    },
+    {
+      "test": "node test-vault-contract.cjs",
+      "exit_code": 0,
+      "seconds": 0.48
+    },
+    {
+      "test": "node test-elio.cjs",
+      "exit_code": 0,
+      "seconds": 0.12
+    },
+    {
+      "test": "node test-elio-theme.cjs",
+      "exit_code": 0,
+      "seconds": 0.07
+    },
+    {
+      "test": "node test-updates.cjs",
+      "exit_code": 0,
+      "seconds": 0.05
+    },
+    {
+      "test": "node test-live-audit-fixes.cjs",
+      "exit_code": 0,
+      "seconds": 0.05
+    },
+    {
+      "test": "node test-auto-creator-enhancement.js",
+      "exit_code": 0,
+      "seconds": 0.05
+    },
+    {
+      "test": "node test-tool-guard-repair.js",
+      "exit_code": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "node test-motion.js",
+      "exit_code": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "node test-notion-protocol-file.js",
+      "exit_code": 0,
+      "seconds": 121.58
+    },
+    {
+      "test": "node tools/test_eclipse_luau.mjs",
+      "exit_code": 0,
+      "seconds": 0.34
+    },
+    {
+      "test": "node tools/test_motion_luau.mjs",
+      "exit_code": 0,
+      "seconds": 0.31
+    },
+    {
+      "test": "node test-elio-ui.cjs",
+      "exit_code": 0,
+      "seconds": 34.84
+    },
+    {
+      "test": "node test-desktop-chat-ui.cjs",
+      "exit_code": 0,
+      "seconds": 20.42
+    },
+    {
+      "test": "node test-elio-extension-ui.cjs",
+      "exit_code": 0,
+      "seconds": 4.7
+    },
+    {
+      "test": "node test-elio-theme-ui.cjs",
+      "exit_code": 0,
+      "seconds": 24.98
+    },
+    {
+      "test": "node test-update-ui.cjs",
+      "exit_code": 0,
+      "seconds": 2.51
+    },
+    {
+      "test": "python tools/test_package_windows.py",
+      "exit_code": 0,
+      "seconds": 4.79
+    },
+    {
+      "test": "python tools/test_prepare_engram.py",
+      "exit_code": 0,
+      "seconds": 0.15
+    }
+  ],
+  "rust": {
+    "passed": 165,
+    "ignored": 1,
+    "failed": 0
+  },
+  "linux_debug_build": {
+    "passed": true,
+    "warnings": 16,
+    "windows_executable_built": false
+  },
+  "native_skill_api": {
+    "passed": true,
+    "details": "PASS real native VFX Studio skill API: authorization, built-in migration, complete paginated resources from packaged extension, traversal refusal, Russian/English library-first selection regardless of Blender, Eclipse coexistence. No Studio/plugin UI interaction performed."
+  },
+  "syntax_and_extension_parity": {
+    "core_provider_files": 68,
+    "passed": true
+  },
+  "historical_non_gating_test": {
+    "name": "test-v115.js",
+    "baseline_failures": [
+      "FAIL  manifest 1.16+",
+      "FAIL  glass base opacity readable",
+      "FAIL  glass has @supports fallback",
+      "FAIL  overlay brand is elio",
+      "FAIL  popup brand is elio",
+      "FAIL  copilot popup shortcut",
+      "FAIL  copilot in overlay AI_SITES",
+      "FAIL  robux donation links have explicit amounts",
+      "FAIL  elio_screenshot send-to-self",
+      "FAIL  condo lock is condo-topic only",
+      "FAIL  context compression",
+      "FAIL  studio plus 40 commands file",
+      "FAIL  v18 version"
+    ],
+    "current_same_13_failures_in_initial_diagnostic_run": true,
+    "note": "Legacy upstream/version/UI assertions already fail identically in previous source archive; not part of current Windows build. Not reported as a new regression or a successful test."
+  },
+  "initial_diagnostic_rerun_note": "An attempted extra common-prompt documentation edit triggered its identity hash guard; only those two edits made during this fix were removed. The guard and config baseline were not weakened. The stabilized final 31-command run passes. Details live in skill/schema/task routing instead.",
+  "limitations": [
+    "plugin_inspect query filters accessible UI data; does not perform private catalog search",
+    "No click/import/private API/unknown module execution added",
+    "Original user report states import had not been invoked; an import defect cannot be established from it",
+    "No live VFX Studio UI, Windows/WebView2 or visual import acceptance available here",
+    "Existing exported-source motion copy fixtures are not proof of plugin-library import"
+  ],
+  "delivery": "Full source ZIP; update both app and extension from the same build; no dependencies, target outputs, asset catalog or debug executable included"
+}

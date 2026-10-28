@@ -1,3 +1,7 @@
+// Elio build compatibility: distinct source builds may share product version 1.0.1.
+let elioBuild={build_id:"unknown",protocol:0}, elioVersionWarning="";
+const elioBuildReady=Promise.resolve().then(()=>fetch(chrome.runtime.getURL("core/build-info.json"))).then(r=>r.json()).then(v=>{elioBuild=v;}).catch(()=>{});
+function elioStatusUrl(){return RUST_ROBLOX_HTTP+"/api/status?build_id="+encodeURIComponent(elioBuild.build_id)+"&protocol="+elioBuild.protocol;}
 // SPDX-License-Identifier: GPL-3.0-or-later
 // background.js - service worker.
 // Owns ONE resilient WebSocket to the local bridge (ws://127.0.0.1:PORT).
@@ -373,8 +377,10 @@ chrome.tabs.onRemoved?.addListener(tabId=>{tabEngines.delete(tabId);try{chrome.s
 // Probe Rust agent on 3000 at startup — if reachable, use HTTP pipe (CORS bypass) as primary
 (async () => {
   try {
-    const r = await bridgeFetch(`${RUST_ROBLOX_HTTP}/api/status`, { method: "GET", signal: AbortSignal.timeout(5000) });
+    await elioBuildReady;
+    const r = await bridgeFetch(elioStatusUrl(), { method: "GET", signal: AbortSignal.timeout(5000) });
     if (r.ok) {
+      const status=await r.clone().json(); elioVersionWarning=status.compatibility?.warning||"";
       rustMode = true;
       log("Rust agent detected on 3000 — HTTP pipe enabled (CORS bypass via background)");
       await initialDesktopPreferencesSync();
@@ -945,7 +951,7 @@ function localTools() {
 }
 function statusObj(mode = engine) {
   return {
-    type: "rs-status", connected: mode === "local" ? localReady : connected, mcpAlive: mode === "local" ? localReady : mcpAlive, studio: studioConnected, studioApp, studioProc,
+    type: "rs-status", version_warning:elioVersionWarning, build_id:elioBuild.build_id, connected: mode === "local" ? localReady : connected, mcpAlive: mode === "local" ? localReady : mcpAlive, studio: studioConnected, studioApp, studioProc,
     robloxProc, roblox_connected: robloxEditorConnected, studio_checking: studioChecking,
     local_connected: localReady, local_full: localFull,
     local_root: localRoot,
@@ -962,9 +968,11 @@ async function refreshProcStatus() {
   procStatusReading = true;
   try {
     // Bounded by the bridgeFetch default timeout.
-    const r = await bridgeFetch(`${RUST_ROBLOX_HTTP}/api/status`, { method: "GET" });
+    await elioBuildReady;
+    const r = await bridgeFetch(elioStatusUrl(), { method: "GET" });
     if (!r.ok) return;
     const j = await r.json();
+    const nextWarning=j.compatibility?.warning||"";const compatibilityChanged=nextWarning!==elioVersionWarning;elioVersionWarning=nextWarning;
     if (!rustMode) { rustMode = true; await initialDesktopPreferencesSync();  }
     // The desktop's editor probe is authoritative; a browser socket or a
     // process-name scan alone cannot establish Studio readiness.
@@ -976,7 +984,7 @@ async function refreshProcStatus() {
     const nl = j.local_ready === true;
     const nf = j.local_full === true;
     const nrRoot = typeof j.local_root === "string" ? j.local_root : localRoot;
-    const changed = editorChanged || nr !== robloxProc || nl !== localReady || nf !== localFull || nrRoot !== localRoot;
+    const changed = compatibilityChanged || editorChanged || nr !== robloxProc || nl !== localReady || nf !== localFull || nrRoot !== localRoot;
     robloxProc = nr;
     localReady = nl;
     localFull = nf;
@@ -2127,7 +2135,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       }
       case "live-status": {
         try {
-          const response = await bridgeFetch(`${RUST_ROBLOX_HTTP}/api/status`, {method:"GET",signal:AbortSignal.timeout(4000)});
+          const response = await bridgeFetch(elioStatusUrl(), {method:"GET",signal:AbortSignal.timeout(4000)});
           if(!response.ok)throw Error("Bridge status request failed.");
           const live=await response.json();
           sendResponse({ok:true,...statusObj(mode),local_connected:live.local_ready===true,local_root:live.local_root,local_full:live.local_full===true,roblox_connected:live.roblox_connected===true,bridge_reachable:true});

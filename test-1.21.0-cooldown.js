@@ -29,7 +29,7 @@ const read = p => fs.readFileSync(path.join(root, p), 'utf8');
   const a = main.indexOf('  let _lastCommandSendAt = 0;'), b = main.indexOf('  function jitterBeforeSend() {');
   assert(a > 0 && b > a, 'helper source found');
   let now = 1000000; const slept = [];
-  const ctx = { Date: { now: () => now }, Math, Number, diag: () => {}, reliabilitySettings: { rsCommandCooldown: 0 },
+  const ctx = { P: {}, Date: { now: () => now }, Math, Number, diag: () => {}, reliabilitySettings: { rsCommandCooldown: 0 },
     sleep: ms => { slept.push(ms); now += ms; return Promise.resolve(); } };
   vm.createContext(ctx);
   vm.runInContext(main.slice(a, b) + '\nthis.normalizeCooldown=normalizeCooldown;this.waitCommandCooldown=waitCommandCooldown;', ctx);
@@ -47,6 +47,7 @@ const read = p => fs.readFileSync(path.join(root, p), 'utf8');
   await ctx.waitCommandCooldown(false, () => ++polls > 2);
   assert(slept.length === 2, 'Stop interrupts the cooldown wait');
 
+  ctx.P.minSecondsBetweenSends=5;ctx.reliabilitySettings.rsCommandCooldown=0;slept.length=0;await ctx.waitCommandCooldown(true);await ctx.waitCommandCooldown(false);assert(slept.reduce((a,b)=>a+b,0)===5000,'provider minimum five seconds applies even when user cooldown is zero');
   console.log(`\n${passed} passed, ${failed} failed`);
   process.exit(failed ? 1 : 0);
 })();

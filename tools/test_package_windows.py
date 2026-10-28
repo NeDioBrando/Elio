@@ -46,6 +46,10 @@ with tempfile.TemporaryDirectory(prefix='elio-package-test-') as temp:
         assert json.loads(z.read('elio/elio-Extension/manifest.json'))['version'] == '1.0.1'
         for name in ('manifest.json','code.js','ui.html'):
             assert z.read('elio/figma-plugin/'+name) == (ROOT/'figma-plugin'/name).read_bytes()
+        for file in ('SKILL.md','NOTICE.txt','references/workflow.md','references/runtime-contract.md','references/sources.md','scripts/inspect_effect.luau'):
+            assert z.read('elio/elio-Extension/starter-skills/qwinkles-particles-2/'+file) == (ROOT/'starter-skills/qwinkles-particles-2'/file).read_bytes()
+        assert z.read('elio/QP2-RU.md') == (ROOT/'QP2-RU.md').read_bytes()
+        assert z.read('elio/QP2-TEST-RESULTS.json') == (ROOT/'QP2-TEST-RESULTS.json').read_bytes()
         sums = z.read('elio/SHA256SUMS.txt').decode().splitlines()
         assert len(sums) == len(names) - 1
         for line in sums:

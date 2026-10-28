@@ -1,0 +1,252 @@
+{
+  "product": "Elio",
+  "version": "1.0.1",
+  "feature": "Built-in Qwinkle’s Particles 2 skill alongside VFX Studio and Eclipse",
+  "baseline": {
+    "archive": "Elio-v1.0.1-VFX-Plugin-Commands-FIX-SOURCE.zip",
+    "sha256": "9344a44179c1ac9d328c876db17b0b74737ebd57cecde27d9857b13ac5697114"
+  },
+  "implemented": [
+    "Built-in catalog migration with explicit deletion preservation",
+    "Scoped English/Russian QP2 selection, explicit VFX Studio choice, Blender-independent VFX matching",
+    "Six mirrored local resources and standard Skills UI read flow",
+    "Bounded read-only materialized-effect inspector; no Source read, require, mutation, trust or emission",
+    "Runtime version/lifecycle guidance and licensing boundaries",
+    "Existing GitHub/Windows build hooks and package checks"
+  ],
+  "validation": {
+    "regression_commands": [
+      {
+        "command": "node test-skills.js",
+        "exit_code": 0,
+        "seconds": 0.12
+      },
+      {
+        "command": "node test-resource-lifecycle.cjs",
+        "exit_code": 0,
+        "seconds": 4.34
+      },
+      {
+        "command": "node test-vfx-studio.cjs",
+        "exit_code": 0,
+        "seconds": 1.53
+      },
+      {
+        "command": "node test-qp2.cjs",
+        "exit_code": 0,
+        "seconds": 1.42
+      },
+      {
+        "command": "node test-elio-identity.cjs",
+        "exit_code": 0,
+        "seconds": 0.21
+      },
+      {
+        "command": "node test-elio-rename.cjs",
+        "exit_code": 0,
+        "seconds": 0.32
+      },
+      {
+        "command": "node test-elio-audit.cjs",
+        "exit_code": 0,
+        "seconds": 4.19
+      },
+      {
+        "command": "node test-elio-chat-live.cjs",
+        "exit_code": 0,
+        "seconds": 0.16
+      },
+      {
+        "command": "node test-desktop-chat.cjs",
+        "exit_code": 0,
+        "seconds": 0.17
+      },
+      {
+        "command": "node test-eclipse.cjs",
+        "exit_code": 0,
+        "seconds": 1.07
+      },
+      {
+        "command": "node test-oriveo.cjs",
+        "exit_code": 0,
+        "seconds": 2.18
+      },
+      {
+        "command": "node test-figma.cjs",
+        "exit_code": 0,
+        "seconds": 1.07
+      },
+      {
+        "command": "node test-vault-contract.cjs",
+        "exit_code": 0,
+        "seconds": 1.18
+      },
+      {
+        "command": "node test-elio.cjs",
+        "exit_code": 0,
+        "seconds": 0.26
+      },
+      {
+        "command": "node test-elio-theme.cjs",
+        "exit_code": 0,
+        "seconds": 0.12
+      },
+      {
+        "command": "node test-updates.cjs",
+        "exit_code": 0,
+        "seconds": 0.11
+      },
+      {
+        "command": "node test-live-audit-fixes.cjs",
+        "exit_code": 0,
+        "seconds": 0.12
+      },
+      {
+        "command": "node test-auto-creator-enhancement.js",
+        "exit_code": 0,
+        "seconds": 0.12
+      },
+      {
+        "command": "node test-tool-guard-repair.js",
+        "exit_code": 0,
+        "seconds": 0.12
+      },
+      {
+        "command": "node test-motion.js",
+        "exit_code": 0,
+        "seconds": 0.17
+      },
+      {
+        "command": "node test-notion-protocol-file.js",
+        "exit_code": 0,
+        "seconds": 122.53
+      },
+      {
+        "command": "node test-elio-ui.cjs",
+        "exit_code": 0,
+        "seconds": 37.68
+      },
+      {
+        "command": "node test-desktop-chat-ui.cjs",
+        "exit_code": 0,
+        "seconds": 22.92
+      },
+      {
+        "command": "node test-elio-extension-ui.cjs",
+        "exit_code": 0,
+        "seconds": 6.37
+      },
+      {
+        "command": "node test-elio-theme-ui.cjs",
+        "exit_code": 0,
+        "seconds": 27.57
+      },
+      {
+        "command": "node test-update-ui.cjs",
+        "exit_code": 0,
+        "seconds": 3.75
+      },
+      {
+        "command": "node tools/test_plugin_skills_luau.mjs",
+        "exit_code": 0,
+        "seconds": 1.68
+      },
+      {
+        "command": "node tools/test_vfx_studio_luau.mjs",
+        "exit_code": 0,
+        "seconds": 1.14
+      },
+      {
+        "command": "node tools/test_qp2_luau.mjs",
+        "exit_code": 0,
+        "seconds": 1.33
+      },
+      {
+        "command": "node tools/test_eclipse_luau.mjs",
+        "exit_code": 0,
+        "seconds": 0.52
+      },
+      {
+        "command": "node tools/test_motion_luau.mjs",
+        "exit_code": 0,
+        "seconds": 0.43
+      },
+      {
+        "command": "python tools/test_package_windows.py",
+        "exit_code": 0,
+        "seconds": 6.58
+      },
+      {
+        "command": "python tools/test_prepare_engram.py",
+        "exit_code": 0,
+        "seconds": 0.42
+      }
+    ],
+    "regression_command_count": 33,
+    "regression_failed": 0,
+    "rust": {
+      "command": "cargo test --locked --manifest-path agent/Cargo.toml",
+      "passed": 169,
+      "binary_passed": 166,
+      "library_passed": 3,
+      "failed": 0,
+      "ignored": 1
+    },
+    "build": {
+      "command": "cargo build --locked --manifest-path agent/Cargo.toml",
+      "platform": "Linux debug",
+      "exit_code": 0,
+      "warnings": 16,
+      "windows_executable_built": false
+    },
+    "qp2_luau": {
+      "checks": 41,
+      "real_luau_execution": true,
+      "fixture": "simulated DataModel, not installed plugin"
+    },
+    "generated_studio_skills": {
+      "compiled_complete_chunks": 34,
+      "runtime_fixtures": 16,
+      "live_plugin": false
+    },
+    "native_api": {
+      "qp2": "passed",
+      "vfx_studio": "passed",
+      "isolated_config_workspace_and_install": true,
+      "coverage": [
+        "Unauthenticated refusal",
+        "Catalog migration",
+        "Complete paginated resources from installed extension",
+        "Traversal refusal",
+        "Scoped matching and exclusions",
+        "QP2/VFX explicit choice",
+        "Eclipse coexistence"
+      ],
+      "note": "First immediate VFX probe refused a busy port; later isolated rerun passed. No other process was terminated."
+    },
+    "mirrored_core_and_provider_files": 85,
+    "package_fixture": "Real package script with marked fake PE; contents and SHA256 checks passed. Does not build or run Windows code.",
+    "historical_non_gating_test": "test-v115.js is obsolete, with 13 previously documented baseline expectation failures; not rerun or counted as passing."
+  },
+  "not_verified": [
+    "Installed QP2/VFX Studio UI discovery on the user machine",
+    "Private Inventory search or automatic Insert/Transform",
+    "Actual Part_Icles version and dependencies",
+    "Real effect appearance, performance and cleanup in Studio",
+    "Windows EXE/GitHub Actions execution"
+  ],
+  "not_bundled": [
+    "QP2 plugin or runtime",
+    "Private asset catalog",
+    "License keys",
+    "User assets or credentials"
+  ],
+  "source_manifest": "QP2-SOURCE-SHA256SUMS.txt",
+  "references": [
+    "https://www.qwinkleparticles2.com/setup/install/",
+    "https://www.qwinkleparticles2.com/guide/why/",
+    "https://github.com/QwinkleTee/Qwinkles-Particles-2",
+    "https://github.com/QwinkleTee/Qwinkles-Particles-2-Module",
+    "https://github.com/QwinkleTee/Qwinkles-Particles-2-Module/blob/main/LICENSE.md"
+  ]
+}

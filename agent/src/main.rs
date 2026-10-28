@@ -72,6 +72,9 @@ mod security;
 mod preferences;
 mod memory;
 mod vault;
+mod vault_assets;
+mod compatibility;
+mod safety;
 mod figma;
 mod templates;
 mod creations;
@@ -81,6 +84,7 @@ mod shared_learning;
 mod starter_skills;
 mod eclipse_skill;
 mod vfx_studio_skill;
+mod qp2_skill;
 mod creation_export;
 mod toolkit;
 mod blender;
@@ -1296,7 +1300,7 @@ async fn connect_handler(State(state): State<AppState>, Json(req): Json<serde_js
 async fn poll_handler(State(state): State<AppState>, Query(_q): Query<HashMap<String,String>>) -> impl IntoResponse {
     let queue = &state.roblox_queue;
     for _ in 0..50 {
-        { let mut guard = queue.lock().await; if let Some(p) = guard.pop_front() { return Json(serde_json::json!({"ok": true, "payload": p})).into_response(); } }
+        { let mut guard = queue.lock().await; if let Some(p) = guard.pop_front() { if safety::readonly(){let _=state.result_tx.send(ExecResult{id:p.id,ok:false,result:String::new(),error:Some("Read-only mode discarded a pending legacy command.".into())});continue;} return Json(serde_json::json!({"ok": true, "payload": p})).into_response(); } }
         tokio::time::sleep(Duration::from_millis(500)).await;
     }
     Json(serde_json::json!({"ok": true, "payload": null})).into_response()
@@ -1304,6 +1308,7 @@ async fn poll_handler(State(state): State<AppState>, Query(_q): Query<HashMap<St
 async fn push_handler(State(state): State<AppState>, Json(req): Json<serde_json::Value>) -> impl IntoResponse {
     let engine = req.get("engine").and_then(|v| v.as_str()).or(req.get("target").and_then(|v| v.as_str())).unwrap_or("roblox");
     let payload = if let Some(p) = req.get("payload") { serde_json::from_value::<Payload>(p.clone()).unwrap_or(Payload{id: format!("p-{}", chrono::Utc::now().timestamp_millis()), target: engine.to_string(), code: p.to_string(), language: "luau".into(), meta: p.clone()}) } else { Payload{id: req.get("id").and_then(|v| v.as_str()).unwrap_or(&format!("p-{}", chrono::Utc::now().timestamp_millis())).to_string(), target: engine.to_string(), code: req.get("code").and_then(|v| v.as_str()).unwrap_or("").to_string(), language: req.get("language").and_then(|v| v.as_str()).unwrap_or("luau").to_string(), meta: req.clone()} };
+    if let Err(error)=safety::check(&state.workspace,"roblox","execute_luau",&serde_json::json!({"code":payload.code})){return (axum::http::StatusCode::CONFLICT,Json(serde_json::json!({"ok":false,"error":error.to_string()}))).into_response();}
     let size=serde_json::to_vec(&payload).map_or(usize::MAX,|v|v.len());
     let id=payload.id.clone();
     if let Err(error)=state.roblox_queue.lock().await.push(payload,size){return (axum::http::StatusCode::TOO_MANY_REQUESTS,Json(serde_json::json!({"ok":false,"error":error}))).into_response();}
@@ -1332,6 +1337,7 @@ async fn local_full_handler(State(state): State<AppState>, Json(req): Json<Local
 async fn checkpoint_handler(State(state): State<AppState>, Json(req): Json<serde_json::Value>) -> axum::response::Response {
     use axum::response::IntoResponse;
     let result: anyhow::Result<serde_json::Value> = async {
+        if req["action"].as_str().unwrap_or("").starts_with("safety"){return safety::api(&req);}
         let mut journal = checkpoints::STORE.lock().await;
         let id = req["id"].as_str().unwrap_or("");
         match req["action"].as_str().unwrap_or("list") {
@@ -1407,6 +1413,7 @@ async fn checkpoint_tool_bounded(state: &AppState, engine: &str, id: &str, name:
 }
 async fn checkpoint_tool(state: &AppState, engine: &str, id: &str, name: &str, args: serde_json::Value) -> anyhow::Result<McpOutput> {
     let _update_guard=state.updates.begin_tool()?;
+    safety::check(&state.workspace,engine,name,&args)?;
     if id.is_empty(){return checkpoint_tool_inner(state,engine,id,name,args).await;}
     let mut cancellation=state.cancellation.register(id);
     anyhow::ensure!(!*cancellation.borrow(),"Task stopped before tool dispatch.");
@@ -1437,6 +1444,7 @@ async fn checkpoint_tool_inner(state: &AppState, engine: &str, id: &str, name: &
         let task=journal.task_mut(id)?;if task.learning.len()<101{task.learning.push(shared_learning::observation(name,&args,success));}
         journal.save()?;
         if let Err(error)=journal.commit_files(&state.workspace,id,&paths) { journal.warn(id,&format!("Checkpoint verification failed: {error}"));journal.task_mut(id)?.learning.push(shared_learning::observation("checkpoint_verification_failed",&serde_json::Value::Null,false));let _=journal.save(); }
+        if success{let chat=journal.task(id)?.chat.clone();let project=journal.project(&chat);let scope=if project.is_empty(){format!("chat:{chat}")}else{format!("project:{project}")};if let Err(error)=vault::STORE.invalidate(&scope,"file",&paths){journal.warn(id,&format!("Memory dependency review could not be updated: {error}"));let _=journal.save();}}
         return result;
     }
     journal.step(id,name);
@@ -1480,6 +1488,7 @@ async fn checkpoint_tool_inner(state: &AppState, engine: &str, id: &str, name: &
         Err(_)=>journal.warn(id,"Studio checkpoint completion was not confirmed. Automatic revert is disabled."),
     }
     if outcome.is_err(){journal.warn(id,"A Studio mutation failed with an uncertain outcome. Check Studio before attempting a restore.");}
+    if outcome.is_ok(){if let Some(path)=source_path{let chat=journal.task(id)?.chat.clone();let project=journal.project(&chat);let scope=if project.is_empty(){format!("chat:{chat}")}else{format!("project:{project}")};if let Err(error)=vault::STORE.invalidate(&scope,"studio",&[path]){journal.warn(id,&format!("Memory dependency review could not be updated: {error}"));}}}
     journal.save()?;outcome
 }
 
@@ -1573,6 +1582,7 @@ async fn desktop_state_handler(State(state): State<AppState>) -> impl IntoRespon
         "mcp_alive": state.ui.mcp_alive.load(Ordering::Relaxed),
         "workspace_ready": state.ui.workspace_ready.load(Ordering::Relaxed),
         "workspace_root": state.ui.workspace_root.lock().map(|value| value.clone()).unwrap_or_default(),
+        "compatibility": compatibility::snapshot(),
         "blender_connected": blender::connected(),
         "roblox_connected": state.roblox_editor_connected.load(Ordering::Relaxed),
         "roblox_bridge_connected": state.roblox_clients.read().await.len() > 0,
@@ -1745,6 +1755,7 @@ async fn debug_report_handler(State(state): State<AppState>) -> impl IntoRespons
         "studio_running": state.ui.studio_running.load(Ordering::Relaxed),
         "mcp_alive": state.ui.mcp_alive.load(Ordering::Relaxed),
         "roblox_connected": state.roblox_editor_connected.load(Ordering::Relaxed),
+        "compatibility": compatibility::snapshot(),
         "blender_connected": blender::connected(),
         "workspace_ready": state.workspace.ready(),
         "mcp_busy": state.mcp_in_flight.load(Ordering::Relaxed) > 0,
@@ -1841,9 +1852,11 @@ async fn mcp_toggle_handler(State(state): State<AppState>, Json(req): Json<McpTo
     }
 }
 
-async fn status_handler(State(state): State<AppState>) -> impl IntoResponse {
+async fn status_handler(State(state): State<AppState>, axum::extract::Query(query):axum::extract::Query<std::collections::HashMap<String,String>>) -> impl IntoResponse {
+    compatibility::seen(&query);
     state.ui.mark_extension_seen();
     Json(serde_json::json!({
+        "compatibility": compatibility::snapshot(),
         "blender_connected": blender::connected(),
         "roblox_connected": state.roblox_editor_connected.load(Ordering::Relaxed),
         "roblox_bridge_connected": state.roblox_clients.read().await.len() > 0,
@@ -2058,6 +2071,7 @@ async fn handle_ws(socket: axum::extract::ws::WebSocket, state: AppState) {
                 if val.get("code").is_some() && !state.updates.installing.load(Ordering::SeqCst) {
                     let engine = val.get("engine").and_then(|v| v.as_str()).unwrap_or("roblox").to_string();
                     let payload = Payload{ id: val.get("id").and_then(|v| v.as_str()).unwrap_or("p-1").to_string(), target: engine.clone(), code: val.get("code").and_then(|v| v.as_str()).unwrap_or("").to_string(), language: "luau".into(), meta: val.clone()};
+                    if let Err(error)=safety::check(&state.workspace,"roblox","execute_luau",&serde_json::json!({"code":payload.code})){let _=state.result_tx.send(ExecResult{id:payload.id,ok:false,result:String::new(),error:Some(error.to_string())});continue;}
                     let size=serde_json::to_vec(&payload).map_or(usize::MAX,|v|v.len());
                     let id=payload.id.clone();
                     if let Err(error)=state.roblox_queue.lock().await.push(payload,size){let _=state.result_tx.send(ExecResult{id,ok:false,result:String::new(),error:Some(error.into())});}

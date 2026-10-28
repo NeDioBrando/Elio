@@ -334,6 +334,13 @@ impl Vault {
         }
         Ok(())
     }
+    pub fn invalidate(&self,scope:&str,kind:&str,paths:&[String])->anyhow::Result<usize>{
+        if !crate::memory::STORE.snapshot().automatic||paths.is_empty(){return Ok(0);}
+        let normalize=|s:&str|s.replace('\\',"/").trim_start_matches("game.").to_string();
+        let dir=self.directory(scope)?;let mut caches=self.caches.lock().unwrap_or_else(|e|e.into_inner());let cache=caches.entry(scope.into()).or_default();Self::scan(&dir,scope,cache)?;let affected=cache.notes.iter().filter(|n|!matches!(n.status.as_str(),"archived"|"stale")&&n.extra.get("dependencies").and_then(Value::as_array).map_or(false,|deps|deps.iter().any(|d|d["kind"]==kind&&d["path"].as_str().map_or(false,|p|paths.iter().any(|changed|normalize(changed)==normalize(p)))))).map(detail).collect::<Vec<_>>();drop(caches);
+        let mut count=0;for n in affected{let result=self.execute(json!({"action":"save","scope":scope,"id":n["id"],"revision":n["revision"],"etag":n["etag"],"status":"stale","source":if n["source"].as_str().unwrap_or("").is_empty(){json!("Native dependency invalidation")}else{n["source"].clone()}}));if result.is_ok(){count+=1;}}
+        Ok(count)
+    }
     pub fn execute(&self, v: Value) -> anyhow::Result<Value> {
         let action = v["action"].as_str().unwrap_or("context");
         if action == "projects" {
@@ -366,6 +373,8 @@ impl Vault {
         let cache = caches.entry(scope.into()).or_default();
         Self::scan(&dir, scope, cache)?;
         let id = v["id"].as_str().unwrap_or("");
+        if matches!(action,"image_add"|"image_read"|"images"){return crate::vault_assets::execute(&dir,&v);}
+        if matches!(action,"verify"|"manual-verify"){anyhow::ensure!(!strings(&v,"evidence").is_empty(),"Verification requires fresh evidence");let mut request=v.clone();request["action"]=json!(if action=="manual-verify"{"manual-save"}else{"save"});request["status"]=json!("verified");request["verified_at"]=json!(now());drop(caches);return self.execute(request);}
         match action {
             "manual-import" => {
                 let files = v["files"]
@@ -524,6 +533,9 @@ impl Vault {
                         }
                     }
                 }
+                if !v["reference_images"].is_null(){let ids=strings(&v,"reference_images");anyhow::ensure!(v["reference_images"].as_array().map_or(false,|a|a.len()==ids.len()),"Expected image id array");crate::vault_assets::validate_ids(&dir,&ids)?;n.extra.insert("reference_images".into(),json!(ids));}
+                if let Some(time)=v["verified_at"].as_str(){anyhow::ensure!(chrono::DateTime::parse_from_rfc3339(time).is_ok(),"Invalid verification time");n.extra.insert("verified_at".into(),json!(time));}
+                if !v["dependencies"].is_null(){let deps=v["dependencies"].as_array().ok_or_else(||anyhow::anyhow!("Expected dependencies"))?;anyhow::ensure!(deps.len()<=32,"At most 32 dependencies");for d in deps{anyhow::ensure!(matches!(d["kind"].as_str(),Some("file"|"studio"))&&d["path"].as_str().map_or(false,|s|!s.is_empty()&&s.len()<=1000)&&d["fingerprint"].as_str().map_or(false,|s|!s.is_empty()&&s.len()<=200),"Each dependency needs kind, path, fingerprint from observed state");}n.extra.insert("dependencies".into(),json!(deps));}
                 if let Some(b) = v["pinned"].as_bool() {
                     n.pinned = b;
                 }
@@ -627,6 +639,7 @@ impl Vault {
                     if n.status == "archived" && !v["include_archived"].as_bool().unwrap_or(false) {
                         continue;
                     }
+                    if action=="context" && n.status=="stale"{continue;}
                     let title = &cache.title_terms[index];
                     let body = &cache.body_terms[index];
                     let score = terms
@@ -634,6 +647,8 @@ impl Vault {
                         .map(|t| {
                             if title.contains(t) {
                                 8
+                            } else if t.chars().count()>=4 && title.iter().any(|word|word.starts_with(t.as_str())) {
+                                4
                             } else if body.contains(t) {
                                 1
                             } else {
@@ -706,6 +721,7 @@ impl Vault {
                             if let Some(n) = cache.notes.iter().find(|n| {
                                 n.id == link
                                     && n.status != "archived"
+                                    && n.status != "stale"
                                     && !chosen.iter().any(|x| x.id == n.id)
                             }) {
                                 chosen.push(n);
@@ -735,6 +751,27 @@ impl Vault {
                     json!({"ok":true,"scope":scope,"total":scored.len(),"notes":scored.iter().skip(offset).take(limit).map(|(_,n)|summary(n)).collect::<Vec<_>>(),"next_offset":if offset.saturating_add(limit)<scored.len(){Some(offset+limit)}else{None}}),
                 )
             }
+            "audit" => {
+                let observed=v["observed"].as_array().cloned().unwrap_or_default();anyhow::ensure!(observed.len()<=128,"At most 128 observed fingerprints");
+                let mut rows=vec![];
+                for n in &cache.notes{if n.status=="archived"{continue;}let mut reasons=vec![];if n.status!="verified"{reasons.push("not verified".to_string());}if n.source.is_empty()||n.evidence.is_empty(){reasons.push("missing source/evidence".into());}
+                    let at=n.extra.get("verified_at").and_then(Value::as_str).unwrap_or(&n.updated);if chrono::DateTime::parse_from_rfc3339(at).map_or(true,|at|chrono::Utc::now().signed_duration_since(at).num_days()>=30){reasons.push("verification due (30 days)".into());}
+                    for dep in n.extra.get("dependencies").and_then(Value::as_array).into_iter().flatten(){if let Some(current)=observed.iter().find(|o|o["path"]==dep["path"]&&o["kind"]==dep["kind"]){if current["fingerprint"]!=dep["fingerprint"]{reasons.push(format!("dependency changed: {}",dep["path"]));}}}
+                    if !reasons.is_empty(){rows.push(json!({"note":summary(n),"reasons":reasons}));}
+                }
+                Ok(json!({"ok":true,"items":rows,"read_only":true,"warning":"Evidence and observed fingerprints are supplied by the caller; this audit does not inspect Studio or execute note content. Mark changed facts stale before reuse."}))
+            },
+            "obsidian_export"=>{
+                let base=dir.join("Obsidian");if base.exists(){anyhow::ensure!(!std::fs::symlink_metadata(&base)?.file_type().is_symlink(),"Unsafe export directory");}std::fs::create_dir_all(&base)?;
+                // A new owned snapshot per export never overwrites user-edited files.
+                let mut random=[0u8;8];getrandom::getrandom(&mut random).map_err(|e|anyhow::anyhow!("Random export: {e}"))?;let dest=base.join(hash(&format!("{:?}",random))[..16].to_string());std::fs::create_dir(&dest)?;
+                let names=cache.notes.iter().map(|n|{let safe=n.title.chars().map(|c|if c.is_alphanumeric()||c==' '||c=='-' {c}else{'_'}).take(80).collect::<String>();(n.id.clone(),format!("{}--{}",safe,n.id))}).collect::<BTreeMap<_,_>>();
+                let mut targets:BTreeMap<String,Option<String>>=BTreeMap::new();for n in &cache.notes{for alias in std::iter::once(&n.id).chain(std::iter::once(&n.title)).chain(n.aliases.iter()){let k=alias.to_lowercase();let id=n.id.clone();targets.entry(k).and_modify(|old|{if old.as_ref()!=Some(&id){*old=None;}}).or_insert(Some(id));}}
+                let re=regex::Regex::new(r"\[\[([^\]|#]+)(?:\|([^\]]+))?\]\]")?;
+                for n in &cache.notes{let mut exported=n.clone();exported.text=re.replace_all(&n.text,|cap:&regex::Captures|{if let Some(Some(id))=targets.get(&cap[1].to_lowercase()){format!("[[{}|{}]]",names[id],cap.get(2).map(|v|v.as_str()).unwrap_or(&cap[1]))}else{cap[0].to_string()}}).into_owned();
+                    let ids=n.extra.get("reference_images").and_then(Value::as_array).map(|a|a.iter().filter_map(Value::as_str).map(str::to_string).collect::<Vec<_>>()).unwrap_or_default();crate::vault_assets::export(&dir,&dest,&ids)?;for id in ids{exported.text.push_str(&format!("\n\n![](assets/{id}.png)"));}atomic(&dest.join(format!("{}.md",names[&n.id])),&encode(&exported)?)?;}
+                Ok(json!({"ok":true,"path":dest,"notes":cache.notes.len(),"snapshot":true,"warning":"Independent Obsidian snapshot; edits here do not sync back automatically."}))
+            },
             "state" => Ok(
                 json!({"ok":true,"version":hash(&cache.notes.iter().map(|n|format!("{}:{}",n.id,n.etag)).collect::<Vec<_>>().join("|")),"count":cache.notes.len(),"automatic":crate::memory::STORE.snapshot().automatic}),
             ),
@@ -762,7 +799,7 @@ fn detail(n: &Note) -> Value {
     v
 }
 fn summary(n: &Note) -> Value {
-    json!({"id":n.id,"title":n.title,"category":n.category,"tags":n.tags,"aliases":n.aliases,"topic_key":n.topic_key,"status":n.status,"source":n.source,"updated":n.updated,"revision":n.revision,"etag":n.etag,"pinned":n.pinned,"preview":clipped(&n.text,180)})
+    json!({"id":n.id,"title":n.title,"category":n.category,"tags":n.tags,"aliases":n.aliases,"topic_key":n.topic_key,"status":n.status,"source":n.source,"updated":n.updated,"revision":n.revision,"etag":n.etag,"pinned":n.pinned,"evidence":n.evidence.iter().take(3).map(|e|clipped(e,200)).collect::<Vec<_>>(),"verified_at":n.extra.get("verified_at"),"preview":clipped(&n.text,180)})
 }
 fn references(n: &Note) -> Vec<String> {
     static RE: once_cell::sync::Lazy<regex::Regex> =
@@ -800,13 +837,13 @@ pub async fn post(axum::Json(v): axum::Json<Value>) -> axum::response::Response 
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn setup(name: &str) -> (PathBuf, Vault) {
+    pub(super) fn setup(name: &str) -> (PathBuf, Vault) {
         let root = std::env::temp_dir().join(format!("elio-vault-{name}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
         let v = Vault::new(root.clone());
         (root, v)
     }
-    fn save(v: &Vault, title: &str, text: &str) -> Value {
+    pub(super) fn save(v: &Vault, title: &str, text: &str) -> Value {
         v.execute(json!({"action":"manual-save","scope":"project:Test","title":title,"text":text,"source":"unit test"})).unwrap()
     }
     #[test]
@@ -1039,10 +1076,22 @@ mod transfer_tests {
 }
 
 #[cfg(test)]mod resource_tests{
- use super::*;
+ use super::*; use super::tests::{setup,save};
  #[test]fn externally_enlarged_vault_is_rejected_before_reading_note_bodies(){
   let root=std::env::temp_dir().join(format!("elio-vault-limits-{}",std::process::id()));std::fs::create_dir_all(root.join("notes")).unwrap();
   for i in 0..700{std::fs::File::create(root.join("notes").join(format!("{i}.md"))).unwrap().set_len(100000).unwrap();}
   let mut cache=Cache::default();let error=Vault::scan(&root,"project:test",&mut cache).unwrap_err();assert!(error.to_string().contains("64 MB"));assert!(cache.notes.is_empty());assert_eq!(std::fs::read_dir(root.join("notes")).unwrap().count(),700);let _=std::fs::remove_dir_all(root);
  }
+
+    #[test]fn stale_exclusion_verification_and_bounded_review(){
+        let(root,v)=setup("upstream-review");let a=save(&v,"Inventory","Stores verified items");let id=a["note"]["id"].clone();
+        assert!(v.execute(json!({"action":"verify","scope":"project:Test","id":id,"revision":1,"etag":a["note"]["etag"],"evidence":[]})).is_err());
+        let b=v.execute(json!({"action":"verify","scope":"project:Test","id":id,"revision":1,"etag":a["note"]["etag"],"evidence":["Read inventory module"]})).unwrap();assert_eq!(b["note"]["status"],"verified");assert!(b["note"]["verified_at"].is_string());
+        let c=v.execute(json!({"action":"manual-save","scope":"project:Test","id":id,"revision":2,"etag":b["note"]["etag"],"dependencies":[{"kind":"studio","path":"game.ServerScriptService.Inventory","fingerprint":"abc"}]})).unwrap();
+        let audit=v.execute(json!({"action":"audit","scope":"project:Test","observed":[{"kind":"studio","path":"game.ServerScriptService.Inventory","fingerprint":"def"}]})).unwrap();assert!(audit.to_string().contains("dependency changed"));
+        assert_eq!(v.invalidate("project:Test","studio",&["game.ServerScriptService.Inventory".into()]).unwrap(),1);
+        let ctx=v.execute(json!({"action":"context","scope":"project:Test","query":"Inventory"})).unwrap();assert!(ctx["context"].as_array().unwrap().is_empty());let read=v.execute(json!({"action":"read","scope":"project:Test","id":id})).unwrap();assert_eq!(read["note"]["status"],"stale");assert_eq!(read["note"]["revision"],c["note"]["revision"].as_u64().unwrap()+1);
+        assert!(v.execute(json!({"action":"verify","scope":"project:Test","id":id,"revision":2,"etag":b["note"]["etag"],"evidence":["Old"]})).is_err());let _=std::fs::remove_dir_all(root);
+    }
+    #[test]fn obsidian_snapshot_links_and_user_edits_preserved(){let(root,v)=setup("obsidian");let a=save(&v,"Inventory","Data");let id=a["note"]["id"].as_str().unwrap();save(&v,"Decision",&format!("Uses [[{id}|Inventory]] and [[Inventory]]"));let a=v.execute(json!({"action":"obsidian_export","scope":"project:Test"})).unwrap();let path=PathBuf::from(a["path"].as_str().unwrap());let files=std::fs::read_dir(&path).unwrap().map(|f|f.unwrap().path()).collect::<Vec<_>>();assert_eq!(files.len(),2);let decision=files.iter().find(|p|p.file_name().unwrap().to_string_lossy().starts_with("Decision")).unwrap();assert!(std::fs::read_to_string(decision).unwrap().contains(&format!("[[Inventory--{id}|Inventory]]")));std::fs::write(decision,"User edit").unwrap();let b=v.execute(json!({"action":"obsidian_export","scope":"project:Test"})).unwrap();assert_ne!(a["path"],b["path"]);assert_eq!(std::fs::read_to_string(decision).unwrap(),"User edit");let _=std::fs::remove_dir_all(root);}
 }

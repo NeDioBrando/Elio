@@ -87,3 +87,7 @@ Rust: **139 passed, 0 failed, 1 ignored** (3 library + 136 binary). Общий J
 - https://github.com/jrcruciani/obsidian-memory-for-ai
 
 Эти проекты — референсы подхода, не доказательство производительности нашей реализации. Реализация Elio собственная; сторонний код из этих репозиториев не копировался. «Идеальная память» не обещается: описаны реально реализованные свойства и проверенные сценарии.
+
+## 1.0.1 source refresh: selected 1.24.21–25 ideas
+
+The backend remains Elio's existing project-scoped, revision/etag-checked Markdown store. Added `audit`, evidence-backed `verify`, `dependencies`/`observed` fingerprints, conservative invalidation after supported checkpoint writes, stale exclusion from both context seeds and linked context, normalized local reference images and a separate Obsidian snapshot export. Export is not bidirectional sync. Evidence is supplied, not independently proven; opaque/external edits still need a fresh observed check. See UPSTREAM-21-25-RU.md for paths, privacy and limitations, and the matching JSON report for actual validation.

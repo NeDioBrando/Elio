@@ -67,7 +67,7 @@ fn main() {
     println!("cargo:rustc-env=ELIO_EXTENSION_ROOT={}", extension.display());
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed={}", parent.join("figma-plugin").display());
-    for name in ["i18n-catalog.js", "i18n.js", "skills-ui.js", "toolkit-ui.js", "explorer-ui.js", "memory.js", "vault-ui.js", "figma.js", "task-center.js", "templates.js", "version.js", "media.js", "headless-builder.js", "creator.js", "creator-ui.js", "creator-animations.luau"] {
+    for name in ["build-info.json", "i18n-catalog.js", "i18n.js", "skills-ui.js", "toolkit-ui.js", "explorer-ui.js", "memory.js", "vault-ui.js", "figma.js", "task-center.js", "templates.js", "version.js", "media.js", "headless-builder.js", "creator.js", "creator-ui.js", "creator-animations.luau"] {
         println!("cargo:rerun-if-changed={}", extension.join("core").join(name).display());
     }
     println!("cargo:rerun-if-changed={}", parent.join("elio-Extension/manifest.json").display());

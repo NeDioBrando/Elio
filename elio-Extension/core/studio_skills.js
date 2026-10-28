@@ -16,7 +16,7 @@
 //
 // All commands return JSON strings from Luau: {"ok":true,"data":...} or {"ok":false,"error":...}.
 
-const SKILLS_LIB_LUA = `local HttpService = game:GetService("HttpService")
+const SKILLS_LIB_LUA = String.raw`local HttpService = game:GetService("HttpService")
 local Lighting = game:GetService("Lighting")
 local TweenService = game:GetService("TweenService")
 local SoundService = game:GetService("SoundService")
@@ -80,8 +80,7 @@ end
 local function luauUnbalanced(src)
 	local s = src
 	s = s:gsub("%-%-%[%[.-%]%]", " ")
-	s = s:gsub("%-%-[^
-]*", " ")
+	s = s:gsub("%-%-[^\n]*", " ")
 	s = s:gsub("%[%[.-%]%]", " ")
 	s = s:gsub("%b''", " ")
 	s = s:gsub('%b""', " ")
@@ -259,7 +258,7 @@ function api.lighting_set_preset(a)
 	local pName = tostring(a.preset or "realistic_noon"):lower():gsub("[%s%-]+", "_"):gsub("_+", "_")
 	local cfg = LIGHTING_PRESETS[pName]
 	-- alias: "warm night" / "warm-night" with space/dash → warm_night
-	if not cfg and pName:find("warm") and pName:find("night") then cfg = LIGHTING_PRESETS["warm_night"]; if cfg then pName = "warm_night" end
+	if not cfg and pName:find("warm") and pName:find("night") then cfg = LIGHTING_PRESETS["warm_night"]; if cfg then pName = "warm_night" end end
 	if not cfg then
 		local valid = {}
 		for k in pairs(LIGHTING_PRESETS) do valid[#valid + 1] = k end
@@ -1052,9 +1051,10 @@ function api.ui_create_component(a)
 		copy.TextWrapped = true
 		copy.TextXAlignment = Enum.TextXAlignment.Left
 		copy.TextYAlignment = Enum.TextYAlignment.Top
-		copy.Text = "Forge workbench ready.\\nGold hairline, metal rail, inset body.\\nBuild your content here."
+		copy.Text = "Forge workbench ready.\nGold hairline, metal rail, inset body.\nBuild your content here."
 		copy.Parent = card
 		return okdata({ path = pathOf(win), type = kind, forge = true }, "created Forge window at " .. pathOf(win))
+	end
 
 	return fail("unknown component_type '" .. compType .. "' (use health_stamina_hud, dialog_box, notification_toast, card_inventory, forge_panel, forge_hud, forge_button, forge_inventory, forge_shop)")
 end
@@ -2435,50 +2435,127 @@ function api.web_search(a)
 end
 
 
-function api.plugin_list()
-	local items = {}
-	local function collect(where, inst)
-		if not inst then return end
-		for _, c in ipairs(inst:GetChildren()) do
-			items[#items + 1] = { where = where, name = c.Name, className = c.ClassName, path = pathOf(c), children = #c:GetChildren() }
-		end
-	end
-	pcall(function() collect("PluginGuiService", game:GetService("PluginGuiService")) end)
-	pcall(function()
-		local cg = game:GetService("CoreGui")
-		for _, c in ipairs(cg:GetChildren()) do
-			local n = c.ClassName
-			if c:IsA("ScreenGui") or n:find("Plugin") or n:find("DockWidget") then
-				items[#items + 1] = { where = "CoreGui", name = c.Name, className = n, path = pathOf(c), children = #c:GetChildren() }
-			end
-		end
-	end)
-	pcall(function() collect("PluginDebugService", game:GetService("PluginDebugService")) end)
-	local ss = game:GetService("ServerStorage")
-	local rs = ss:FindFirstChild("RobloxScript")
-	if rs then
-		local plugs = rs:FindFirstChild("Plugins")
-		if plugs then collect("ServerStorage.RobloxScript.Plugins", plugs) end
-	end
-	return okdata({ items = items, count = #items }, ("plugin surfaces: %d item(s) — PluginGuiService, CoreGui widgets, ServerStorage.RobloxScript.Plugins"):format(#items))
+local function pluginPathParts(inst)
+ local parts = {} local cur = inst
+ while cur and cur ~= game do table.insert(parts, 1, cur.Name) cur = cur.Parent end
+ return parts
 end
-
+local function pluginRead(inst, property)
+ local good, value = pcall(function() return inst[property] end)
+ if good and (type(value) == "string" or type(value) == "number" or type(value) == "boolean") then
+  if type(value) == "string" then return value:sub(1, 1000) end
+  return value
+ end
+ return nil
+end
+local function pluginRow(inst)
+ local row = {name=inst.Name, className=inst.ClassName, path=pathOf(inst), path_segments=pluginPathParts(inst)}
+ for _, prop in ipairs({"Title", "Text", "Image", "Visible", "Enabled", "Active", "Interactable"}) do
+  row[prop] = pluginRead(inst, prop)
+ end
+ return row
+end
+local function pluginChildren(inst, warnings)
+ local good, children = pcall(function() return inst:GetChildren() end)
+ if good then return children end
+ warnings[#warnings+1] = {path=pathOf(inst), error="Children are not accessible"}
+ return {}
+end
+function api.plugin_list()
+ local items, warnings, surfaces = {}, {}, {}
+ local truncated = false
+ local function collect(where, inst, filtered)
+  for _, c in ipairs(pluginChildren(inst, warnings)) do
+   local n = c.ClassName
+   if not filtered or c:IsA("ScreenGui") or n:find("Plugin") or n:find("DockWidget") then
+    if #items >= 200 then truncated = true break end
+    local row = pluginRow(c) row.where = where
+    row.children = #pluginChildren(c, warnings)
+    items[#items+1] = row
+   end
+  end
+ end
+ for _, name in ipairs({"PluginGuiService", "CoreGui", "PluginDebugService"}) do
+  local good, service = pcall(function() return game:GetService(name) end)
+  surfaces[#surfaces+1] = {service=name, accessible=good and service~=nil}
+  if good and service then collect(name, service, name=="CoreGui")
+  else warnings[#warnings+1] = {path=name, error="Service unavailable or permission denied"} end
+ end
+ local good, err = pcall(function()
+  local rs = game:GetService("ServerStorage"):FindFirstChild("RobloxScript")
+  local plugs = rs and rs:FindFirstChild("Plugins")
+  if plugs then collect("ServerStorage.RobloxScript.Plugins", plugs, false) end
+ end)
+ if not good then warnings[#warnings+1] = {path="ServerStorage.RobloxScript.Plugins", error="Surface unavailable or permission denied"} end
+ return okdata({items=items, count=#items, surfaces=surfaces, warnings=warnings, truncated=truncated,
+  read_only=true, installed_plugin_inventory=false,
+  note="Accessible UI surfaces only, not an installed-plugin or private-library inventory. A missing widget does not prove the plugin is disabled. Inspect fresh paths/path_segments with plugin_inspect; do not reuse stale paths."},
+  ("plugin surfaces: %d item(s) — accessible UI only"):format(#items))
+end
 function api.plugin_inspect(a)
-	local p = tostring(a.path or a.target_path or "")
-	if p == "" then return fail("path is required (from plugin_list)") end
-	local inst = resolvePath(p)
-	if not inst then
-		-- try PluginGuiService / CoreGui by name
-		pcall(function()
-			inst = game:GetService("PluginGuiService"):FindFirstChild(p, true)
-		end)
-	end
-	if not inst then return fail("plugin instance not found: " .. p) end
-	local kids = {}
-	for _, c in ipairs(inst:GetChildren()) do
-		kids[#kids + 1] = { name = c.Name, className = c.ClassName }
-	end
-	return okdata({ path = pathOf(inst), className = inst.ClassName, children = kids }, ("inspected %s (%s, %d children)"):format(pathOf(inst), inst.ClassName, #kids))
+ local parts = a.path_segments
+ local p = tostring(a.path or a.target_path or "")
+ if parts == nil then
+  if p == "" then return fail("path or path_segments is required (from a fresh plugin_list)") end
+  parts = string.split(p, ".")
+ end
+ if type(parts) ~= "table" or #parts == 0 or #parts > 64 then return fail("path_segments must contain 1-64 exact names") end
+ local inst = game
+ for i, name in ipairs(parts) do
+  if type(name) ~= "string" or name == "" then return fail("path_segments must contain non-empty names") end
+  if not (i == 1 and name == "game") then
+   local good, children = pcall(function() return inst:GetChildren() end)
+   if not good then return fail("plugin path is inaccessible; run plugin_list again (not proof the plugin is disabled)") end
+   local found, count = nil, 0
+   for _, child in ipairs(children) do if child.Name == name then found = child count += 1 end end
+   if count > 1 then return fail("ambiguous plugin path: duplicate sibling name; inspect the current UI visually") end
+   if not found and inst == game then
+    local serviceOK, service = pcall(function() return game:GetService(name) end)
+    if serviceOK then found = service end
+   end
+   if not found then return fail("plugin path not found; run plugin_list again (not proof the plugin is disabled)") end
+   inst = found
+  end
+ end
+ local function bounded(value, default, minimum, maximum)
+  local n = tonumber(value) or default
+  if n ~= n or n == math.huge or n == -math.huge then n = default end
+  return math.clamp(math.floor(n), minimum, maximum)
+ end
+ local limit = bounded(a.max_nodes, 200, 1, 400)
+ local depthLimit = bounded(a.max_depth, 6, 0, 12)
+ local query = tostring(a.query or ""):sub(1, 256):lower()
+ local rows, warnings, kids = {}, {}, {}
+ local queue = {{instance=inst, depth=0}} local cursor, visited, bytes = 1, 0, 0
+ local truncated = false
+ while cursor <= #queue and visited < limit do
+  local entry = queue[cursor] queue[cursor] = false cursor += 1 visited += 1
+  local row = pluginRow(entry.instance) row.depth = entry.depth
+  local children = pluginChildren(entry.instance, warnings) row.children = #children
+  if entry.depth == 0 then
+   for i, child in ipairs(children) do
+    if i > limit then truncated = true break end
+    kids[#kids+1] = {name=child.Name, className=child.ClassName}
+   end
+  end
+  local hay = (row.name .. " " .. tostring(row.Title or "") .. " " .. tostring(row.Text or "") .. " " .. tostring(row.Image or "")):lower()
+  if query == "" or hay:find(query, 1, true) then
+   local weight = #jenc(row)
+   if bytes + weight > 48000 then truncated = true break end
+   rows[#rows+1] = row bytes += weight
+  end
+  if entry.depth < depthLimit then
+   for _, child in ipairs(children) do
+    if #queue >= limit then truncated = true break end
+    queue[#queue+1] = {instance=child, depth=entry.depth+1}
+   end
+  elseif #children > 0 then truncated = true end
+ end
+ if cursor <= #queue or #warnings > 0 then truncated = true end
+ return okdata({path=pathOf(inst), path_segments=pluginPathParts(inst), className=inst.ClassName,
+  children=kids, nodes=rows, visited=visited, matches=#rows, query=query, truncated=truncated,
+  warnings=warnings, read_only=true, scope="Accessible live UI tree only; query does not search the private VFX Studio catalog. No click, import, script execution or property change occurred."},
+  ("inspected %s (%s, %d node(s), %d match(es))"):format(pathOf(inst), inst.ClassName, visited, #rows))
 end
 
 function api.plugin_create(a)
@@ -2899,14 +2976,18 @@ const SKILL_COMMANDS = [
   },
   {
     name: "plugin_list",
-    description: "List Studio plugin surfaces: PluginGuiService, CoreGui plugin/DockWidget GUIs, PluginDebugService, and ServerStorage.RobloxScript.Plugins skeletons created by plugin_create.",
+    description: "Read accessible Studio plugin UI surfaces with fresh exact paths, titles and access warnings. Not an installed-plugin/private-library inventory; missing UI does not prove a plugin is disabled.",
     params: {}
   },
   {
     name: "plugin_inspect",
-    description: "Inspect one plugin instance (name, class, children) by dotted path from plugin_list.",
+    description: "Read a bounded live plugin UI subtree, including labels, images and control state. Optional query filters visible tree data, NOT the private catalog; no clicks or imports. Use fresh plugin_list paths.",
     params: {
-      path: { type: "string", req: true, desc: "dotted path, e.g. PluginGuiService.MyWidget" }
+      path: { type: "string", req: false, desc: "fresh dotted path from plugin_list; or use exact path_segments for names containing dots" },
+      path_segments: { type: "array", req: false, desc: "exact name segments from plugin_list, preferred over dotted path" },
+      query: { type: "string", req: false, desc: "literal substring in name/title/text/image of the accessible UI tree, not a private catalog search" },
+      max_nodes: { type: "number", req: false, desc: "scan budget 1-400, default 200; truncated means incomplete" },
+      max_depth: { type: "number", req: false, desc: "depth 0-12, default 6; inspect a deeper exact path if truncated" }
     }
   },
   {
@@ -3015,7 +3096,7 @@ for i,cd in ipairs(cards) do
   local btn=Instance.new("TextButton") btn.Name="ClickTarget" btn.Size=UDim2.new(1,0,1,0) btn.BackgroundTransparency=1 btn.Text="" btn.Parent=card
 end
 ${dropup ? `local drop=Instance.new("Frame") drop.Name="DropupPicker" drop.Size=UDim2.new(0,120,0,44) drop.Position=UDim2.new(0,8,0,-50) drop.BackgroundColor3=Color3.fromRGB(28,30,38) drop.BackgroundTransparency=0.05 drop.Parent=root corner(drop,10) stroke(drop)
-local hint=Instance.new("TextLabel") hint.Size=UDim2.new(1,-8,1,0) hint.Position=UDim2.new(0,4,0,0) hint.BackgroundTransparency=1 hint.Font=Enum.Font.Gotham hint.TextSize=9 hint.TextColor3=Color3.fromRGB(170,175,190) hint.TextWrapped=true hint.Text="Drop a card \\u25b2 or describe a mechanic\\u2026" hint.Parent=drop` : ""}
+local hint=Instance.new("TextLabel") hint.Size=UDim2.new(1,-8,1,0) hint.Position=UDim2.new(0,4,0,0) hint.BackgroundTransparency=1 hint.Font=Enum.Font.Gotham hint.TextSize=9 hint.TextColor3=Color3.fromRGB(170,175,190) hint.TextWrapped=true hint.Text="Drop a card ▲ or describe a mechanic…" hint.Parent=drop` : ""}
 return HttpService:JSONEncode({ok=true,data={path=root:GetFullName(),cards=${count},dropup=${dropup}},text="created card inventory '${title}' with ${count} collectible cards${dropup ? " + dropup picker" : ""}"})`;
   return { code: lua };
 }
@@ -3034,6 +3115,11 @@ function validateStudioSkill(op, args) {
       if (t === "boolean" && typeof val !== "boolean") return `'${k}' must be a boolean for ${op}`;
       if (t === "array" && !Array.isArray(val)) return `'${k}' must be an array for ${op}`;
     }
+  }
+  if (op === "plugin_inspect") {
+    if (!args.path && !args.target_path && !args.path_segments) return "path or path_segments is required for plugin_inspect";
+    if (args.path_segments && (args.path_segments.length < 1 || args.path_segments.length > 64 || args.path_segments.some(x => typeof x !== "string" || !x))) return "path_segments must contain 1-64 exact names";
+    for (const key of ["max_nodes", "max_depth"]) if (args[key] !== undefined && !Number.isFinite(args[key])) return `${key} must be finite`;
   }
   if (op === "lighting_set_preset") {
     let p = String(args.preset || "").toLowerCase().replace(/[\s-]+/g, "_").replace(/_+/g, "_");
@@ -3065,11 +3151,11 @@ function buildLuau(op, args) {
   if (op === "ui_create_component" && ["card_inventory","cards","card_dropup"].includes(String(args.component_type||"").toLowerCase())) {
     return buildCardInventoryLuau(args);
   }
-  const base = Object.assign({ op }, args);
+  const base = Object.assign({}, args, { op });
   try {
     const json = JSON.stringify(base);
     if (json.includes("]==]")) return { err: "ERROR: internal serialization conflict." };
-    const code = SKILLS_LIB_LUA.replace("__ARGS_JSON__", json);
+    const code = SKILLS_LIB_LUA.replace("__ARGS_JSON__", () => json);
     return { code };
   } catch (e) {
     return { err: `ERROR building studio skill command: ${e}` };

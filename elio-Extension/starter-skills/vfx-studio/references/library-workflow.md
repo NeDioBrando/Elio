@@ -4,6 +4,10 @@ Read the exact user goal: texture/mesh selection, full preset, flipbook, preview
 
 Use fresh screenshots/desktop inspection to locate the installed VFX Studio library. Tutorial chapter names are feature evidence, not guaranteed current UI labels. No toolbar coordinates are supplied here. A paid control, login, permission prompt, asset license or publishing action requires the relevant user authorization; do not bypass it.
 
+## Discover current surfaces, not old paths
+Run plugin_list and inspect its surfaces/warnings. Call plugin_inspect using exact returned path_segments; optional query matches current names, titles, labels and image IDs, not private catalog items. Re-discover after a reload or missing path. A missing/denied UI tree is not proof that VFX Studio is disabled. Hidden controls can appear in the read tree; inspect Visible/Enabled and real screenshots before UI input. When truncated, inspect a narrower exact subtree; do not report a complete search.
+These commands are read-only: they do not activate search, click buttons, import effects, or invoke internal plugin modules. Library acquisition still requires observed authorized Studio UI tools or the user's explicit insert/select step. Do not replace Studio UI input with in-game mouse input.
+
 ## Acquisition evidence
 Before inserting through UI, inventory the intended destination. Observe the selection and any selected object properties that may be changed in place. Insert only a bounded selection under the requested scope. Compare exact roots, asset properties and attachments after the UI action. If the plugin modifies an unrelated selected object, stop and report it rather than attempting broad cleanup. Do not delete user objects based merely on timestamps or similar names.
 

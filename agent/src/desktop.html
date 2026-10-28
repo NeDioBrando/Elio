@@ -350,7 +350,7 @@ __ELIO_THEME_CSS__
       <div class="title-label"><span class="title-label-dot"></span>Elio</div><div class="title-spacer"></div><button id="elio-theme-native" type="button"></button><div id="notificationCenter" dir="auto"></div><div class="desktop-version-stack"><div class="title-version" id="titleVersion">Elio</div><div class="desktop-effort" id="titleEffort">Effort: <span data-effort-value>Default</span></div></div>
       <button class="winbtn" data-ipc="minimize" aria-label="Minimize"><span class="winicon min"></span></button><button class="winbtn" data-ipc="maximize" aria-label="Maximize"><span class="winicon max"></span></button><button class="winbtn close" data-ipc="hide" aria-label="Close"><span class="winicon close"></span></button>
     </div>
-    <div id="nativeUpdateNotice" data-i18n-user-content></div>
+    <div id="nativeUpdateNotice" data-i18n-user-content></div><div id="elioBuildWarning" role="status" data-i18n-user-content hidden style="padding:12px 18px;border:1px solid var(--elio-line,#665b48);border-radius:12px;color:var(--elio-text,#e4ddcf)"></div>
     <div class="content" id="content">
       <div id="fatal" data-i18n-user-content dir="auto" class="fatal"></div>
       <section class="page" id="page-figma"><div id="figmaWorkspace"></div></section>
@@ -997,6 +997,7 @@ __ELIO_DESKTOP_CHAT_JS__
     Refreshing = true;
 
     return Api("/api/desktop/state").then(function (Nextstate) {
+      var Buildwarning=Byid("elioBuildWarning");if(Buildwarning){Buildwarning.textContent=Nextstate.compatibility&&Nextstate.compatibility.warning||"";Buildwarning.hidden=!Buildwarning.textContent;}
       State = Nextstate;
       Render();
       return Loadcatalog();

@@ -3,12 +3,16 @@ Set-Location $PSScriptRoot
 foreach ($Tool in @('cargo', 'python', 'node')) {
   if (-not (Get-Command $Tool -ErrorAction SilentlyContinue)) { throw "Install $Tool first. See README-RU.md." }
 }
+python tools/stamp_build.py
+if ($LASTEXITCODE -ne 0) { throw 'Build identity generation failed.' }
 npm ci --prefix release-tools --include=dev --ignore-scripts
 if ($LASTEXITCODE -ne 0) { throw 'Pinned test dependencies could not be installed.' }
 $env:NODE_PATH = (Join-Path $PSScriptRoot 'release-tools/node_modules') + [IO.Path]::PathSeparator + $env:NODE_PATH
 # Compile .NET Framework fixture EXEs under Windows PowerShell 5.1, not pwsh 7.
 & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -File .\test-updater-helper.ps1
 if ($LASTEXITCODE -ne 0) { throw 'Windows updater helper tests failed.' }
+node .\test-upstream-merge.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Upstream port regression failed.' }
 node .\test-elio-identity.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Elio identity tests failed.' }
 node .\test-elio-rename.cjs
@@ -21,10 +25,16 @@ node .\test-desktop-chat.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Desktop chat tests failed.' }
 node .\test-resource-lifecycle.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Resource lifecycle tests failed.' }
+node .\test-qp2.cjs
+if ($LASTEXITCODE -ne 0) { throw 'QP2 integration tests failed.' }
+node tools/test_qp2_luau.mjs
+if ($LASTEXITCODE -ne 0) { throw 'QP2 export inspector tests failed.' }
 node .\test-vfx-studio.cjs
 if ($LASTEXITCODE -ne 0) { throw 'VFX Studio skill integration tests failed.' }
 node tools/test_vfx_studio_luau.mjs
 if ($LASTEXITCODE -ne 0) { throw 'VFX export inspector tests failed.' }
+node tools/test_plugin_skills_luau.mjs
+if ($LASTEXITCODE -ne 0) { throw 'Generated Studio/plugin Luau tests failed.' }
 node .\test-eclipse.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Eclipse skill integration tests failed.' }
 node tools/test_eclipse_luau.mjs

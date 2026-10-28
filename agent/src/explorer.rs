@@ -33,6 +33,7 @@ fn payload(text:&str)->anyhow::Result<Value> {
 }
 pub async fn post(State(state):State<crate::AppState>,Json(request):Json<Value>)->Response {
     let result:anyhow::Result<Value>=async {
+        if request["action"]=="write"{crate::safety::mutation()?;}
         let script=code(&request)?;
         let mut arguments=json!({"code":script,"datamodel_type":"Edit"});
         if let Some(id)=request.get("studio_id").filter(|v| !v.is_null()) {arguments["studio_id"]=id.clone();}

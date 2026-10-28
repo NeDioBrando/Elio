@@ -1,0 +1,24 @@
+{
+  "id": "builtin-qwinkles-particles-2",
+  "title": "Qwinkle’s Particles 2 (QP2)",
+  "description": "Built-in QP2 workflow for graph-driven mesh/model particles, nested VFX, beams, trails, lights, native emitters and texture/flipbook Inventory. Uses the installed plugin, preserves PartIcleProperties/RenderTemplate and verifies the actual Part_Icles runtime. Qwinkle / QP2 / Квинкл: эффекты и частицы. No bundled engine/catalog or private API.",
+  "domain": "roblox",
+  "scope": "",
+  "enabled": true,
+  "confirmed": false,
+  "community": false,
+  "revision": 1,
+  "steps": [
+    "Read elio_skills action read id builtin-qwinkles-particles-2, then references/workflow.md and runtime-contract.md. Respect user choice, exclusions and removed skills.",
+    "Discover current plugin UI through plugin_list/plugin_inspect fresh path_segments. Actual Inventory search/Transform/insertion requires observed authorized Studio UI or a manual insert/select step; read-only query is not catalog search.",
+    "Read scripts/inspect_effect.luau to inspect exported structure and event/reference hazards. Review actual runtime before require; preserve graphs, templates and flipbooks. Bound preview and stop owned effects without deactivating a shared engine."
+  ],
+  "pitfalls": [
+    "No silent install/update/purchase/upload/publish or trust grant. Imported event modules may execute with plugin privileges. Do not bypass copy guards or require unknown modules.",
+    "A missing UI in Play is normal. A copy/scan receipt is not a plugin import or visual result. Do not redistribute QP2 engine/catalog; commercial runtime use requires author attribution."
+  ],
+  "verification": [
+    "Verify migration/routing/resources, UI visibility and actual inspector behavior in Luau fixtures.",
+    "Live QP2 UI, license state, Inventory acquisition, runtime compatibility and visuals require user-PC acceptance."
+  ]
+}

@@ -266,7 +266,7 @@ impl Session {
             "poll" => {
                 self.writable = v["writable"].as_bool().unwrap_or(false);
                 if let Some(j) = self.jobs.values_mut().find(|j| j.state == "queued") {
-                    if j.payload["action"] == "apply" && !self.writable {
+                    if j.payload["action"] == "apply" && (!self.writable || crate::safety::readonly()) {
                         j.state = "failed".into();
                         j.result = json!({"error":"Edits were disabled before execution"});
                         return Ok(json!({"ok":true,"command":null}));
@@ -323,6 +323,7 @@ fn response(r: anyhow::Result<Value>) -> Response {
     }
 }
 pub async fn post(Json(v): Json<Value>) -> Response {
+    if v["action"]=="apply"{if let Err(e)=crate::safety::mutation(){return response(Err(e));}}
     response(STORE.lock().unwrap_or_else(|e| e.into_inner()).api(v))
 }
 pub async fn plugin(headers: HeaderMap, Json(v): Json<Value>) -> Response {

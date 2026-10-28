@@ -1081,6 +1081,8 @@ const RSProvider = (() => {
     startupReplyAsCode: true,
     settleStartupReply: true,
     displayName: "DeepSeek",
+    minSecondsBetweenSends: 5,
+    startNotice: {title:"DeepSeek automation notice",text:"Automated use may be restricted by DeepSeek. Elio waits at least five seconds between its automated sends; this does not guarantee account safety or remove the service’s limits. Check the service’s current terms before continuing."},
     // DYNAMIC. Since the 2026-09 unification there is ONE model and no picker, so
     // images are allowed on every DeepSeek chat and this is true (see
     // detectVision). It stays a getter so a conversation still pinned to the old

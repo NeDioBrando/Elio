@@ -9,6 +9,15 @@
     if (cls) n.className = cls;
     return n;
   }
+  function decodeReference(blob) {
+    let expired=false,timer;
+    return new Promise((resolve,reject)=>{
+      timer=setTimeout(()=>{expired=true;reject(Error("Image decode timed out."));},15000);
+      Promise.resolve().then(()=>createImageBitmap(blob)).then(bitmap=>{
+        clearTimeout(timer);if(expired){bitmap.close();return;}resolve(bitmap);
+      },error=>{clearTimeout(timer);if(!expired)reject(error);});
+    });
+  }
   function markdown(root, text, open) {
     root.replaceChildren();
     let code = false,
@@ -78,7 +87,7 @@
   function mount(root, request, options = {}) {
     root.classList.add("ev");
     root.setAttribute("data-i18n-user-content", "");
-    root.innerHTML = `<style>${css}</style><header class="ev-head"><div><div class="ev-kicker">Elio • project memory</div><h1>Memory, with connections.</h1><p>A quiet place for everything worth remembering.</p></div><div class="ev-controls"><select data-project aria-label="Project"></select><label><input type="checkbox" data-auto> Auto memory</label><button data-active-project>Active project</button><button data-project-new>New project</button><button data-refresh>↻ Refresh</button></div></header><div class="ev-shell"><aside class="ev-side"><div class="ev-controls"><button data-new>＋ New note</button></div><input data-search type="search" placeholder="Find a memory…" aria-label="Search project memory"><div data-count class="ev-muted"></div><div class="ev-tree" data-tree></div><hr><button data-import>Import old notes</button><button data-import-file>Import file</button><input type="file" data-file accept=".md,.markdown,.json" hidden><button data-export>Export</button><button data-location>Vault location</button></aside><main class="ev-main"><nav class="ev-tabs" aria-label="Memory views"><button data-view="notes">Notes</button><button data-view="graph">Connections</button><button data-view="context">Agent context</button></nav><div data-content></div></main></div><p class="ev-status" data-status role="status" aria-live="polite"></p>`;
+    root.innerHTML = `<style>${css}</style><header class="ev-head"><div><div class="ev-kicker">Elio • project memory</div><h1>Memory, with connections.</h1><p>A quiet place for everything worth remembering.</p></div><div class="ev-controls"><select data-project aria-label="Project"></select><label><input type="checkbox" data-auto> Auto memory</label><button data-active-project>Active project</button><button data-project-new>New project</button><button data-refresh>↻ Refresh</button></div></header><div class="ev-shell"><aside class="ev-side"><div class="ev-controls"><button data-new>＋ New note</button></div><input data-search type="search" placeholder="Find a memory…" aria-label="Search project memory"><div data-count class="ev-muted"></div><div class="ev-tree" data-tree></div><hr><button data-import>Import old notes</button><button data-import-file>Import file</button><input type="file" data-file accept=".md,.markdown,.json" hidden><button data-export>Export</button><button data-location>Vault location</button><button data-obsidian>Obsidian snapshot</button></aside><main class="ev-main"><nav class="ev-tabs" aria-label="Memory views"><button data-view="notes">Notes</button><button data-view="graph">Connections</button><button data-view="context">Agent context</button><button data-view="audit">Review memory</button></nav><div data-content></div></main></div><p class="ev-status" data-status role="status" aria-live="polite"></p>`;
     const q = (s) => root.querySelector("[data-" + s + "]");
     let scope = "",
       notes = [],
@@ -317,6 +326,12 @@
           b.setAttribute("aria-pressed", String(b.dataset.view === view)),
         );
       if (view === "graph") return graph();
+      if(view==="audit"){
+        const selected=scope,gen=generation,r=await call("audit");if(!alive||scope!==selected||generation!==gen||view!=="audit")return;
+        q("content").append(el("h2","Memory review"),el("p","Evidence is recorded, not magically proven. Check the actual project before verifying a fact. Changed dependencies need fresh fingerprints from read-only checks.","ev-muted"));
+        for(const item of r.items){const row=el("section",undefined,"ev-source");row.append(button(item.note.title,()=>open(item.note.id)),el("p",item.reasons.join(" · ")));q("content").append(row);}
+        if(!r.items.length)q("content").append(el("p","No notes currently due for review. This is not proof that every fact is still correct."));return;
+      }
       if (view === "context") {
         const r = await call("context", {
           query: q("search").value,
@@ -328,7 +343,7 @@
           h,
           el(
             "p",
-            "A bounded context capsule, not the entire vault. Search to change the topic. Stale and unreviewed notes remain labelled.",
+            "A bounded context capsule, not the entire vault. Search to change the topic. Stale notes are excluded; unreviewed notes remain labelled.",
             "ev-muted",
           ),
         );
@@ -407,10 +422,46 @@
           }
         }),
       );
+      toolbar.append(button("Mark stale",()=>save({...n,status:"stale"})),button("Record verification",async()=>{
+        const evidence=g.prompt("Fresh evidence from your actual check (not a guess):","");if(!evidence?.trim())return;
+        const selected=scope,gen=generation;try{const r=await call("manual-verify",{id:n.id,revision:n.revision,etag:n.etag,source:n.source||"User verification",evidence:[evidence.trim()]});if(!alive||scope!==selected||generation!==gen||active?.id!==n.id)return;active=r.note;await refresh();status("Verification recorded. Evidence was supplied by you, not independently checked by Elio.");}catch(e){if(alive&&scope===selected)status(e.message,true);}
+      }));
+      const imageInput=el("input");imageInput.type="file";imageInput.accept="image/png,image/jpeg,image/webp";imageInput.hidden=true;
+      toolbar.append(button("Add reference image",()=>imageInput.click()),imageInput);
+      imageInput.onchange=async()=>{const file=imageInput.files?.[0];imageInput.value="";if(!file)return;const selected=scope,gen=generation;let bitmap;
+        try{if(file.size>8*1024*1024||!/^image\/(png|jpeg|webp)$/.test(file.type))throw Error("Choose PNG/JPEG/WebP up to 8 MB.");bitmap=await decodeReference(file);if(!alive||selected!==scope||gen!==generation)return;const ratio=Math.min(1,1600/Math.max(bitmap.width,bitmap.height)),canvas=el("canvas");canvas.width=Math.max(1,Math.round(bitmap.width*ratio));canvas.height=Math.max(1,Math.round(bitmap.height*ratio));canvas.getContext("2d").drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();bitmap=null;
+          const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));if(!blob||blob.size>1000000)throw Error("Normalized PNG exceeds 1 MB; resize the image first.");const raw=new Uint8Array(await blob.arrayBuffer()),png_hex=Array.from(raw,b=>b.toString(16).padStart(2,"0")).join("");if(!alive||selected!==scope||gen!==generation)return;
+          const added=await call("image_add",{png_hex,manual:true});if(!alive||selected!==scope||gen!==generation)return;
+          if(!await save({...n,reference_images:[...new Set([...(n.reference_images||[]),added.image_id])]}))return;status("Reference saved locally. It is not automatically sent to the AI.");
+        }catch(e){if(alive&&scope===selected)status(e.message,true);}finally{bitmap?.close();}};
       box.append(toolbar);
       const prose = el("div", undefined, "ev-prose");
       markdown(prose, n.text, open);
       box.append(prose);
+      if(n.reference_images?.length){
+        const gallery=el("section",undefined,"ev-controls");
+        for(const image_id of n.reference_images){
+          const item=el("div");let shown=false;
+          const show=button("Show reference · "+image_id.slice(0,8),async()=>{
+            if(shown||show.disabled)return;show.disabled=true;const selected=scope,gen=generation;
+            try{
+              const r=await call("image_read",{image_id});
+              if(!alive||scope!==selected||generation!==gen||active?.id!==n.id||view!=="notes")return;
+              const raw=Uint8Array.from(r.png_hex.match(/../g),x=>parseInt(x,16));
+              const bitmap=await decodeReference(new Blob([raw],{type:"image/png"}));
+              try{
+                if(!alive||scope!==selected||generation!==gen||active?.id!==n.id||view!=="notes")return;
+                const canvas=el("canvas");canvas.width=bitmap.width;canvas.height=bitmap.height;
+                canvas.style.cssText="max-width:100%;height:auto;border-radius:12px";
+                canvas.setAttribute("aria-label","Local project reference image");
+                canvas.getContext("2d").drawImage(bitmap,0,0);item.append(canvas);shown=true;show.textContent="Reference loaded";
+              }finally{bitmap.close();}
+            }catch(e){if(alive&&scope===selected)status(e.message,true);}
+            finally{if(!shown)show.disabled=false;}
+          });item.append(show);gallery.append(item);
+        }box.append(gallery);
+      }
+
       const source = el("div", undefined, "ev-source");
       source.append(
         el("strong", "Source & confidence"),
@@ -605,7 +656,7 @@
         "aria-label",
         "Memory connections. Each node opens a note. Use buttons or scroll to zoom.",
       );
-      let isolated = false;
+      let isolated = false, suppressClick=false;
       const update = () =>
         svg.setAttribute(
           "viewBox",
@@ -623,6 +674,7 @@
           pan = { x: 0, y: 0 };
           update();
         }),
+        button("Grid",()=>{const on=host.dataset.grid!=="true";host.dataset.grid=String(on);host.style.backgroundImage=on?"linear-gradient(#b8ac9610 1px,transparent 1px),linear-gradient(90deg,#b8ac9610 1px,transparent 1px)":"";host.style.backgroundSize="32px 32px";}),
         button("Hide / show isolated", () => {
           isolated = !isolated;
           draw();
@@ -667,6 +719,7 @@
             y2: b.y,
           }))
             l.setAttribute(k, v);
+          l.dataset.source=e.source;l.dataset.target=e.target;
           svg.append(l);
         }
         for (const n of r.nodes) {
@@ -686,7 +739,10 @@
           const title = document.createElementNS(ns, "title");
           title.textContent = n.title + " · " + n.category + " · " + n.status;
           c.append(title);
-          c.onclick = () => open(n.id);
+          c.dataset.node=n.id;
+          c.onclick = () => {if(suppressClick){suppressClick=false;return;}open(n.id);};
+          c.onmouseenter=()=>{for(const line of svg.querySelectorAll("line")){const related=line.dataset.source===n.id||line.dataset.target===n.id;line.style.strokeOpacity=related?".9":".08";line.style.strokeWidth=related?"2":"1";}};
+          c.onmouseleave=()=>{for(const line of svg.querySelectorAll("line")){line.style.strokeOpacity="";line.style.strokeWidth="";}};
           c.onkeydown = (e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
@@ -713,6 +769,7 @@
       svg.onpointermove = (e) => {
         if (!drag) return;
         const box = svg.getBoundingClientRect();
+        if(drag.node){const point=position.get(drag.node);point.x=drag.px+((e.clientX-drag.x)*1000)/(Math.max(1,box.width)*zoom);point.y=drag.py+((e.clientY-drag.y)*560)/(Math.max(1,box.height)*zoom);suppressClick=Math.abs(e.clientX-drag.x)+Math.abs(e.clientY-drag.y)>4;draw();return;}
         pan = {
           x:
             drag.px +
@@ -724,13 +781,12 @@
         update();
       };
       svg.onpointerdown = (e) => {
-        if (e.target.tagName.toLowerCase() === "circle") return;
+        if (e.target.tagName.toLowerCase() === "circle"){const node=e.target.dataset.node,p=position.get(node);drag={node,x:e.clientX,y:e.clientY,px:p.x,py:p.y};suppressClick=false;svg.setPointerCapture?.(e.pointerId);e.preventDefault();return;}
         drag = { x: e.clientX, y: e.clientY, px: pan.x, py: pan.y };
         svg.setPointerCapture?.(e.pointerId);
       };
-      svg.onpointerup = svg.onpointercancel = () => {
-        drag = null;
-      };
+      svg.onpointerup = () => {const node=drag?.node,moved=suppressClick;drag=null;if(node&&!moved){suppressClick=true;open(node);}};
+      svg.onpointercancel=()=>{drag=null;suppressClick=true;};
       const legend = el("div", undefined, "ev-legend");
       categories.forEach((c, k) => {
         const item = el("span", "● " + c);
@@ -844,6 +900,7 @@
         status(e.message, true);
       }
     };
+    q("obsidian").onclick=async()=>{if(!g.confirm("Create an independent Obsidian-compatible snapshot? Original notes stay unchanged; snapshot edits do not sync back."))return;try{const r=await call("obsidian_export");status("Obsidian snapshot: "+r.path+"\nOpen this folder as a vault in Obsidian. Original Elio memory is unchanged.");}catch(e){status(e.message,true);}};
     q("export").onclick = async () => {
       try {
         const r = await call("export");

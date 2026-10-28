@@ -1,0 +1,273 @@
+{
+  "product": "Elio",
+  "product_version": "1.0.1",
+  "build": {
+    "build_id": "elio-b4b2d9b85304cd7d819c",
+    "protocol": 2
+  },
+  "scope": "Selected PlazCode 1.24.21–25 recommendations; complete source, not Windows executable",
+  "rust": {
+    "platform": "Linux",
+    "no_default_features": true,
+    "locked": true,
+    "library_passed": 3,
+    "binary_passed": 173,
+    "failed": 0,
+    "ignored_fixture": 1,
+    "build": "debug successful",
+    "warnings": 16
+  },
+  "regression_commands": [
+    {
+      "test": "test-skills.js",
+      "exit": 0,
+      "seconds": 0.12
+    },
+    {
+      "test": "test-resource-lifecycle.cjs",
+      "exit": 0,
+      "seconds": 5.4
+    },
+    {
+      "test": "test-vfx-studio.cjs",
+      "exit": 0,
+      "seconds": 1.38
+    },
+    {
+      "test": "test-qp2.cjs",
+      "exit": 0,
+      "seconds": 1.34
+    },
+    {
+      "test": "test-elio-identity.cjs",
+      "exit": 0,
+      "seconds": 0.11
+    },
+    {
+      "test": "test-elio-rename.cjs",
+      "exit": 0,
+      "seconds": 0.16
+    },
+    {
+      "test": "test-elio-audit.cjs",
+      "exit": 0,
+      "seconds": 4.29
+    },
+    {
+      "test": "test-elio-chat-live.cjs",
+      "exit": 0,
+      "seconds": 0.17
+    },
+    {
+      "test": "test-desktop-chat.cjs",
+      "exit": 0,
+      "seconds": 0.11
+    },
+    {
+      "test": "test-eclipse.cjs",
+      "exit": 0,
+      "seconds": 1.22
+    },
+    {
+      "test": "test-oriveo.cjs",
+      "exit": 0,
+      "seconds": 2.19
+    },
+    {
+      "test": "test-figma.cjs",
+      "exit": 0,
+      "seconds": 1.13
+    },
+    {
+      "test": "test-vault-contract.cjs",
+      "exit": 0,
+      "seconds": 1.38
+    },
+    {
+      "test": "test-elio.cjs",
+      "exit": 0,
+      "seconds": 0.27
+    },
+    {
+      "test": "test-elio-theme.cjs",
+      "exit": 0,
+      "seconds": 0.17
+    },
+    {
+      "test": "test-updates.cjs",
+      "exit": 0,
+      "seconds": 0.12
+    },
+    {
+      "test": "test-live-audit-fixes.cjs",
+      "exit": 0,
+      "seconds": 0.17
+    },
+    {
+      "test": "test-auto-creator-enhancement.js",
+      "exit": 0,
+      "seconds": 0.22
+    },
+    {
+      "test": "test-tool-guard-repair.js",
+      "exit": 0,
+      "seconds": 0.13
+    },
+    {
+      "test": "test-motion.js",
+      "exit": 0,
+      "seconds": 0.17
+    },
+    {
+      "test": "test-notion-protocol-file.js",
+      "exit": 0,
+      "seconds": 123.53
+    },
+    {
+      "test": "test-elio-ui.cjs",
+      "exit": 0,
+      "seconds": 38.34
+    },
+    {
+      "test": "test-desktop-chat-ui.cjs",
+      "exit": 0,
+      "seconds": 22.57
+    },
+    {
+      "test": "test-elio-extension-ui.cjs",
+      "exit": 0,
+      "seconds": 8.81
+    },
+    {
+      "test": "test-elio-theme-ui.cjs",
+      "exit": 0,
+      "seconds": 31.54
+    },
+    {
+      "test": "test-update-ui.cjs",
+      "exit": 0,
+      "seconds": 4.67
+    },
+    {
+      "test": "tools/test_plugin_skills_luau.mjs",
+      "exit": 0,
+      "seconds": 1.84
+    },
+    {
+      "test": "tools/test_vfx_studio_luau.mjs",
+      "exit": 0,
+      "seconds": 1.68
+    },
+    {
+      "test": "tools/test_qp2_luau.mjs",
+      "exit": 0,
+      "seconds": 1.78
+    },
+    {
+      "test": "tools/test_eclipse_luau.mjs",
+      "exit": 0,
+      "seconds": 0.62
+    },
+    {
+      "test": "tools/test_motion_luau.mjs",
+      "exit": 0,
+      "seconds": 0.78
+    },
+    {
+      "test": "tools/test_package_windows.py",
+      "exit": 0,
+      "seconds": 8.19
+    },
+    {
+      "test": "tools/test_prepare_engram.py",
+      "exit": 0,
+      "seconds": 0.47
+    }
+  ],
+  "additional_tests": [
+    {
+      "test": "test-upstream-merge.cjs",
+      "exit": 0,
+      "summary": "PASS upstream merge: 7 runtime scenarios; full result paging, final message budgets, continued loop/image delivery, memory review/graph lifecycle and mirrored source."
+    },
+    {
+      "test": "test-tool-result-send.js",
+      "exit": 0,
+      "summary": "PASS actual feedback send: success/errors/images, changed memory context, continued loop after repeated failures, no recurring quick-request reminder."
+    },
+    {
+      "test": "test-capture-viewer.js",
+      "exit": 0,
+      "summary": "PASS screenshot expiry, enlarged dialog, focus/keyboard, copy/feedback and capture replacement cleanup."
+    },
+    {
+      "test": "test-1.21.0-cooldown.js",
+      "exit": 0,
+      "summary": "PASS root and extension main.js match\nPASS main.js compiles\nPASS root and extension background.js match\nPASS background.js compiles\nPASS cooldown syncs with the desktop app\nPASS existing sync order kept\nPASS default cooldown is 0 (unchanged pacing)\nPASS bar settings has the cooldown input wired to storage\nPASS cooldown loaded and live-updated from storage\nPASS send loop waits before each send\nPASS desktop settings has the cooldown input\nPASS desktop preferences store the cooldown with default 0\nPASS helper source found\nPASS cooldown value is clamped to 0..120 s\nPASS cooldown 0 never waits (previous behaviour)\nPASS command waits the remaining 2 s of a 3 s cooldown\nPASS user prompts are never delayed\nPASS Stop interrupts the cooldown wait\nPASS provider minimum five seconds applies even when user cooldown is zero\n\n19 passed, 0 failed"
+    },
+    {
+      "test": "test-upstream-live.cjs",
+      "exit": 0,
+      "summary": "PASS actual native API + Chromium: single-use approvals, read-only across five routes, settings, build mismatch, strict-CSP screenshot pixels, PNG normalization/isolation, revisioned image links, manual verification with auto-memory off, dependency audit, stale exclusion, Obsidian assets, actual memory review and safety UI. No Windows/Studio/plugin live test."
+    }
+  ],
+  "native_browser_fixture": {
+    "isolated_temporary_profile": true,
+    "browser": "real Chromium",
+    "external_user_projects_touched": false,
+    "reference_image_repeated_click": "one canvas, button disabled",
+    "readonly_routes": [
+      "explorer",
+      "toolkit",
+      "blender",
+      "figma",
+      "legacy push"
+    ],
+    "verification": "supplied evidence, not independent proof"
+  },
+  "source_integrity": {
+    "root_extension_core_providers_background": "byte-identical",
+    "config_unchanged_from_baseline": true,
+    "config_sha256": "dd12795f341c420c901f0c2c5f7043a0edbdd8c1a72860e94702e5f9302c6448",
+    "baseline_file_count": 2188,
+    "baseline_paths_removed_only": [
+      "QP2-SOURCE-SHA256SUMS.txt"
+    ],
+    "new_files": [
+      "UPSTREAM-21-25-RU.md",
+      "UPSTREAM-21-25-TEST-RESULTS.json",
+      "agent/src/compatibility.rs",
+      "agent/src/safety.rs",
+      "agent/src/vault_assets.rs",
+      "core/build-info.json",
+      "elio-Extension/core/build-info.json",
+      "test-upstream-live.cjs",
+      "test-upstream-merge.cjs",
+      "tools/stamp_build.py"
+    ],
+    "archive_file_count_including_new_manifest": 2198
+  },
+  "not_run": [
+    "GitHub Windows Actions",
+    "Windows release build and native GUI",
+    "Live Roblox Studio / installed Eclipse, VFX Studio, QP2",
+    "Live Figma/Blender/user AI provider accounts",
+    "Long-duration production soak / proof of zero leaks"
+  ],
+  "limits": [
+    "Tool-level protection, not OS sandbox",
+    "Opaque commands require explicit approval when confirmations enabled",
+    "Restricted-folder mode blocks workspace-wide glob/grep; use explicit paths",
+    "Dependency invalidation covers supported observed checkpoint edits, not every external/opaque edit",
+    "Obsidian export is a separate snapshot, not bidirectional sync",
+    "Build warning requires extension-reported identity; active-build TTL 120 seconds",
+    "Images are local until explicitly attached to AI provider"
+  ],
+  "sources": [
+    "https://github.com/stoveez/PlazCode/releases/tag/v1.24.21",
+    "https://github.com/stoveez/PlazCode/releases/tag/v1.24.22",
+    "https://github.com/stoveez/PlazCode/releases/tag/v1.24.23",
+    "https://github.com/stoveez/PlazCode/releases/tag/v1.24.24",
+    "https://github.com/stoveez/PlazCode/releases/tag/v1.24.25"
+  ]
+}

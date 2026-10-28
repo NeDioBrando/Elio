@@ -3,7 +3,7 @@ from pathlib import Path
 import json, os, shutil, socket, subprocess, tempfile, time, urllib.request, urllib.error
 ROOT=Path(__file__).resolve().parents[1]
 BINARY=Path(os.environ.get('ELIO_TEST_BINARY',str(ROOT/'agent/target/debug'/('elio.exe' if os.name=='nt' else 'elio'))))
-probe=socket.socket()
+probe=socket.socket();probe.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
 try:probe.bind(('127.0.0.1',3000))
 except OSError:raise SystemExit('Port 3000 busy: refusing to stop another program')
 finally:probe.close()

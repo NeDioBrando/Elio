@@ -85,6 +85,7 @@ mod starter_skills;
 mod eclipse_skill;
 mod vfx_studio_skill;
 mod qp2_skill;
+mod emitter2d_skill;
 mod creation_export;
 mod toolkit;
 mod blender;

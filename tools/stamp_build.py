@@ -5,8 +5,8 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 def stamp(root=ROOT):
     files=[]
-    for prefix in ('core','providers','desktop','agent/src','figma-plugin'):
-        files += [p for p in (root/prefix).rglob('*') if p.is_file() and p.suffix in ('.js','.rs','.html','.css','.json','.luau') and p.name!='build-info.json']
+    for prefix in ('core','providers','desktop','agent/src','figma-plugin','starter-skills'):
+        files += [p for p in (root/prefix).rglob('*') if p.is_file() and p.suffix in ('.js','.rs','.html','.css','.json','.luau','.md','.txt') and p.name!='build-info.json']
     files += [root/n for n in ('background.js','manifest.json','overlay.css','popup.js','popup.html')]
     h=hashlib.sha256()
     for p in sorted(files):

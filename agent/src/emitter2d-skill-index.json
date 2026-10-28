@@ -1,0 +1,25 @@
+{
+  "id": "builtin-emitter2d",
+  "title": "Emitter2D · GUI Particles",
+  "description": "Built-in Emitter2D workflow for Roblox UI particles, bursts, flipbooks and 3D-to-2D conversion. Uses the installed dogwarrior24 plugin (9544897050), observed attribute encoding, real client BindableEvents and a bounded read-only inspector. UI/GUI/2D частицы и конфетти. No bundled plugin/runtime or private API.",
+  "domain": "roblox",
+  "scope": "",
+  "enabled": true,
+  "confirmed": false,
+  "community": false,
+  "revision": 1,
+  "steps": [
+    "Read elio_skills action read id builtin-emitter2d, then references/workflow.md and runtime-contract.md. Respect exclusions and explicit alternative-plugin choices.",
+    "Inspect Studio mode, exact GUI/export and installed runtime using the documented helper; use plugin_list/plugin_inspect only when listed. Read-only UI filtering is not a plugin click, library search or import.",
+    "Read scripts/inspect_emitter.luau. Preserve ClassName/Version, actual attribute types, ancestor UI and controllers. Author only documented settings on owned/approved copies; runtime changes require a reviewed actual client contract.",
+    "Play-test on Client, measure bounded particles and cleanup/respawn, preserve the camera/UI and report pending live checks. Never install/update/enable permissions or change Server Authority settings silently."
+  ],
+  "pitfalls": [
+    "Install Client is required for in-game playback and after plugin updates; a Studio preview does not prove client installation. Do not invent runtime paths, require unknown code, or redistribute plugin/client source.",
+    "Author reports Next Generation Replication / Server Authority incompatibility. UI particles are slower than native 3D particles. Size is NumberRange, Scale is NumberSequence, LifeTime spelling is significant; actual stored attribute encoding must be inspected."
+  ],
+  "verification": [
+    "Run routing/migration/resource-boundary tests and actual Luau inspector fixtures. These do not prove the installed plugin or in-game appearance.",
+    "Live plugin create/convert, actual Client runtime, sizing/clipping/ZIndex, mobile load, cleanup and visual acceptance require the user PC."
+  ]
+}

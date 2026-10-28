@@ -1,0 +1,4 @@
+Elio Emitter2D reference and read-only inspector: GPL-3.0-or-later, same as the Elio fork.
+Emitter2D is the independent work of dogwarrior24 (Creator Store 9544897050).
+This bundle does not include, install, modify, license or redistribute that plugin, its client or assets.
+Public documentation is linked in references/sources.md. Respect the actual plugin and selected-asset terms.

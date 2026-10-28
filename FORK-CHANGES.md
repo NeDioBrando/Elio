@@ -1,3 +1,7 @@
+# Дополнение: Emitter2D и отмена новых разовых подтверждений
+
+См. EMITTER2D-RU.md и EMITTER2D-TEST-RESULTS.json. Разовые подтверждения Luau/shell/удаления, описанные ниже как часть предыдущего переноса, удалены по запросу владельца; read-only, ограничения папок и защищённые пути сохранены. Добавлен базовый навык Emitter2D и исправлена реклама plugin_list/plugin_inspect. Более ранние отчёты ниже являются историческими.
+
 # elio v1 — modified distribution
 
 Modified for boneka on 2026-10-18. Original source and authorship are recorded in UPSTREAM-SOURCE.txt.

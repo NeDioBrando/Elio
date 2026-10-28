@@ -25,6 +25,10 @@ node .\test-desktop-chat.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Desktop chat tests failed.' }
 node .\test-resource-lifecycle.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Resource lifecycle tests failed.' }
+node .\test-emitter2d.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Emitter2D integration failed.' }
+node tools/test_emitter2d_luau.mjs
+if ($LASTEXITCODE -ne 0) { throw 'Emitter2D inspector failed.' }
 node .\test-qp2.cjs
 if ($LASTEXITCODE -ne 0) { throw 'QP2 integration tests failed.' }
 node tools/test_qp2_luau.mjs

@@ -1,0 +1,194 @@
+{
+  "scope": "Source integration: remove the newly added per-command approval gate; add Emitter2D built-in skill; advertise plugin discovery helpers. No live user Studio mutation.",
+  "product_version": "1.0.1",
+  "build": {
+    "build_id": "elio-7a6ff04a80e6747c489f",
+    "protocol": 2
+  },
+  "platform_tested": "Linux x64; actual headless native agent and Chromium with disposable profiles; simulated Roblox Luau fixtures",
+  "rust": {
+    "passed": 180,
+    "failed": 0,
+    "ignored": 1,
+    "ignored_note": "Existing stdio fixture; not counted as a pass."
+  },
+  "release_regressions": [
+    {
+      "command": "node test-upstream-merge.cjs",
+      "exit_code": 0,
+      "seconds": 1.44
+    },
+    {
+      "command": "node test-elio-identity.cjs",
+      "exit_code": 0,
+      "seconds": 0.1
+    },
+    {
+      "command": "node test-elio-rename.cjs",
+      "exit_code": 0,
+      "seconds": 0.12
+    },
+    {
+      "command": "node test-elio-audit.cjs",
+      "exit_code": 0,
+      "seconds": 2.94
+    },
+    {
+      "command": "node test-elio-chat-live.cjs",
+      "exit_code": 0,
+      "seconds": 0.08
+    },
+    {
+      "command": "node test-desktop-chat.cjs",
+      "exit_code": 0,
+      "seconds": 0.08
+    },
+    {
+      "command": "node test-resource-lifecycle.cjs",
+      "exit_code": 0,
+      "seconds": 3.59
+    },
+    {
+      "command": "node test-emitter2d.cjs",
+      "exit_code": 0,
+      "seconds": 1.15
+    },
+    {
+      "command": "node tools/test_emitter2d_luau.mjs",
+      "exit_code": 0,
+      "seconds": 0.98
+    },
+    {
+      "command": "node test-qp2.cjs",
+      "exit_code": 0,
+      "seconds": 1.09
+    },
+    {
+      "command": "node tools/test_qp2_luau.mjs",
+      "exit_code": 0,
+      "seconds": 1.36
+    },
+    {
+      "command": "node test-vfx-studio.cjs",
+      "exit_code": 0,
+      "seconds": 0.93
+    },
+    {
+      "command": "node tools/test_vfx_studio_luau.mjs",
+      "exit_code": 0,
+      "seconds": 1.23
+    },
+    {
+      "command": "node tools/test_plugin_skills_luau.mjs",
+      "exit_code": 0,
+      "seconds": 1.62
+    },
+    {
+      "command": "node test-eclipse.cjs",
+      "exit_code": 0,
+      "seconds": 0.75
+    },
+    {
+      "command": "node tools/test_eclipse_luau.mjs",
+      "exit_code": 0,
+      "seconds": 0.37
+    },
+    {
+      "command": "node test-oriveo.cjs",
+      "exit_code": 0,
+      "seconds": 1.43
+    },
+    {
+      "command": "node test-figma.cjs",
+      "exit_code": 0,
+      "seconds": 0.91
+    },
+    {
+      "command": "node test-vault-contract.cjs",
+      "exit_code": 0,
+      "seconds": 1.1
+    },
+    {
+      "command": "node test-elio.cjs",
+      "exit_code": 0,
+      "seconds": 0.12
+    },
+    {
+      "command": "node test-elio-theme.cjs",
+      "exit_code": 0,
+      "seconds": 0.08
+    },
+    {
+      "command": "node test-updates.cjs",
+      "exit_code": 0,
+      "seconds": 0.05
+    },
+    {
+      "command": "node test-live-audit-fixes.cjs",
+      "exit_code": 0,
+      "seconds": 0.06
+    },
+    {
+      "command": "node tools/test_motion_luau.mjs",
+      "exit_code": 0,
+      "seconds": 0.7
+    },
+    {
+      "command": "node test-auto-creator-enhancement.js",
+      "exit_code": 0,
+      "seconds": 0.1
+    },
+    {
+      "command": "node test-tool-guard-repair.js",
+      "exit_code": 0,
+      "seconds": 0.07
+    },
+    {
+      "command": "node test-motion.js",
+      "exit_code": 0,
+      "seconds": 0.12
+    },
+    {
+      "command": "node test-notion-protocol-file.js",
+      "exit_code": 0,
+      "seconds": 122.51
+    },
+    {
+      "command": "python tools/test_package_windows.py",
+      "exit_code": 0,
+      "seconds": 6.65
+    },
+    {
+      "command": "python tools/test_prepare_engram.py",
+      "exit_code": 0,
+      "seconds": 0.32
+    }
+  ],
+  "native_and_ui_checks": {
+    "native_api_chromium": "PASS actual native API + Chromium: legacy confirmation migration, repeated writes/deletes/shell without approval, read-only across five routes, settings, build mismatch, strict-CSP screenshot pixels, PNG normalization/isolation, revisioned image links, manual verification with auto-memory off, dependency audit, stale exclusion, Obsidian assets, actual memory review and safety UI. No Windows/Studio/plugin live test.\n",
+    "emitter2d_api": "PASS real native Emitter2D skill API: authorization, built-in migration, complete paginated resources from packaged extension, traversal refusal, scoped Russian/English GUI selection and explicit plugin choices regardless of Blender. No Studio/plugin UI interaction performed.\n",
+    "qp2_api": "PASS real native QP2 skill API: authorization, built-in migration, complete paginated resources from packaged extension, traversal refusal, Russian/English library-first selection regardless of Blender, Eclipse coexistence. No Studio/plugin UI interaction performed.\n",
+    "vfx_studio_api": "PASS real native VFX Studio skill API: authorization, built-in migration, complete paginated resources from packaged extension, traversal refusal, Russian/English library-first selection regardless of Blender, Eclipse coexistence. No Studio/plugin UI interaction performed.\n",
+    "eclipse_api": "PASS real native Eclipse skill API: authorization, seeded built-in, complete paginated guide and helpers from packaged extension, traversal refusal, Russian/English Blender-aware selection. No Studio/plugin UI interaction performed.\n",
+    "emitter2d_integration": "PASS Emitter2D integration: 6 mirrored resources, visible card, scoped native/context wiring, packaging/build hooks, JS syntax; no asset library bundled.\nPASS actual plugin catalogue, engine scope, generated helper dispatch/studio targeting, access-policy error classification.\nPASS Emitter2D actual skill UI: ordinary-effort visibility, built-in label, read instructions, zero automatic saves or task execution.\n"
+  },
+  "luau": {
+    "emitter2d_inspector_checks": 29,
+    "complete_generated_studio_chunks_compiled": 34,
+    "plugin_runtime_fixtures": 16,
+    "note": "Fixtures are not a live plugin import or client visual proof."
+  },
+  "preservation": {
+    "core_config_sha256": "dd12795f341c420c901f0c2c5f7043a0edbdd8c1a72860e94702e5f9302c6448",
+    "config_unchanged_from_previous_archive": true,
+    "root_extension_mirrors_identical": true,
+    "existing_read_only_folder_protected_path_checkpoint_guards_retained": true,
+    "legacy_confirm_deletions_true_ignored": true
+  },
+  "not_verified": [
+    "Windows build/executable and GitHub Actions run not executed here.",
+    "User PC actual Emitter2D/VFX Studio/QP2 UI, plugin identity, library search, import, client installation, visuals and runtime performance.",
+    "Emitter2D current release compatibility/attribute serialization must be inspected on the installed plugin."
+  ],
+  "warning": "Updating source does not modify the installed app. Rebuild via existing GitHub workflow, update matching app/extension, restart and refresh AI tabs. Bundled references do not install/trust/publish third-party code."
+}

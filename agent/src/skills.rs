@@ -11,7 +11,7 @@ struct Skill {id:String,#[serde(default)]title:String,description:String,domain:
 #[derive(Clone,Serialize,Deserialize)]
 struct DeletedSkill {#[serde(flatten)]skill:Skill,deleted_at:u64}
 #[derive(Default,Clone,Serialize,Deserialize)]
-struct Catalog {skills:BTreeMap<String,Skill>,#[serde(default)]deleted:BTreeMap<String,DeletedSkill>,#[serde(default)]suppressed:BTreeSet<String>,#[serde(default)]trash_revision:u64,#[serde(default)]starter_pack_version:u64,#[serde(default)]eclipse_pack_version:u64,#[serde(default)]vfx_studio_pack_version:u64,#[serde(default)]qp2_pack_version:u64,#[serde(default)]ultragui_pack_version:u64,#[serde(default)]candidate_cleanup_version:u64}
+struct Catalog {skills:BTreeMap<String,Skill>,#[serde(default)]deleted:BTreeMap<String,DeletedSkill>,#[serde(default)]suppressed:BTreeSet<String>,#[serde(default)]trash_revision:u64,#[serde(default)]starter_pack_version:u64,#[serde(default)]eclipse_pack_version:u64,#[serde(default)]vfx_studio_pack_version:u64,#[serde(default)]qp2_pack_version:u64,#[serde(default)]emitter2d_pack_version:u64,#[serde(default)]ultragui_pack_version:u64,#[serde(default)]candidate_cleanup_version:u64}
 struct Store {path:PathBuf,data:Catalog,error:Option<String>}
 impl Store {
  fn load(path:PathBuf)->Self {
@@ -54,6 +54,11 @@ impl Store {
    if !data.deleted.contains_key(&card.id)&&!data.suppressed.contains(&card.id){data.skills.entry(card.id.clone()).or_insert(card);}
    data.qp2_pack_version=1;
   }
+  if error.is_none() && data.emitter2d_pack_version<1 {
+   let card:Skill=serde_json::from_value(crate::emitter2d_skill::catalog()).expect("validated built-in Emitter2D skill");
+   if !data.deleted.contains_key(&card.id)&&!data.suppressed.contains(&card.id){data.skills.entry(card.id.clone()).or_insert(card);}
+   data.emitter2d_pack_version=1;
+  }
   Self{path,data,error}
  }
 
@@ -76,22 +81,24 @@ impl Store {
   if action=="list_deleted" {return Ok(json!({"ok":true,"skills":self.data.deleted.values().collect::<Vec<_>>(),"trash_revision":self.data.trash_revision}));}
   if action=="match" {
    let query=request["query"].as_str().unwrap_or("").to_lowercase();let domain=request["domain"].as_str().unwrap_or("");let scope=request["scope"].as_str().unwrap_or("");
-   let qp2_due=crate::qp2_skill::should_use(&query,domain);
+   let emitter2d_due=crate::emitter2d_skill::should_use(&query,domain);
+   let qp2_due=crate::qp2_skill::should_use(&query,domain)&&!emitter2d_due;
    let vfx_named=query.contains("vfx studio")||query.contains("вфх студи");
-   let vfx_due=crate::vfx_studio_skill::should_use(&query,domain)&&(!qp2_due||!crate::qp2_skill::explicit_request(&query)||vfx_named);
+   let vfx_due=!emitter2d_due&&crate::vfx_studio_skill::should_use(&query,domain)&&(!qp2_due||!crate::qp2_skill::explicit_request(&query)||vfx_named);
    let eclipse_due=crate::eclipse_skill::should_use(&query,domain,request["blender_available"].as_bool());
    let mut terms=query.split(|c:char|!c.is_alphanumeric()).filter(|s|s.len()>2&&!STOPWORDS.contains(s)).take(80).collect::<Vec<_>>();terms.sort_unstable();terms.dedup();
-   let mut hits=self.data.skills.values().filter(|s|s.id!=crate::eclipse_skill::ID&&s.id!=crate::vfx_studio_skill::ID&&s.id!=crate::qp2_skill::ID).filter(|s|request["effort"]=="ultracode"||!s.id.starts_with("bundled-ultragui-")).filter(|s|(s.confirmed||s.enabled||s.favorite)&&(s.scope.is_empty()||s.scope==scope)&&(s.domain=="all"||s.domain==domain||(domain=="roblox"&&matches!(s.domain.as_str(),"model"|"ui"))||(domain=="local"&&s.domain=="blender"))).filter_map(|s|{let title=s.title.to_lowercase();let hay=format!("{} {} {}",title,s.description,s.steps.join(" ")).to_lowercase();let score=terms.iter().filter(|word|hay.contains(**word)).count()+terms.iter().filter(|word|title.contains(**word)).count();(score>0||s.enabled||s.favorite).then_some((score+if s.scope.is_empty(){0}else{3}+if s.enabled{8}else{0}+if s.favorite{6}else{0},s))}).collect::<Vec<_>>();hits.sort_by_key(|(score,_)|std::cmp::Reverse(*score));
+   let mut hits=self.data.skills.values().filter(|s|s.id!=crate::emitter2d_skill::ID&&s.id!=crate::eclipse_skill::ID&&s.id!=crate::vfx_studio_skill::ID&&s.id!=crate::qp2_skill::ID).filter(|s|request["effort"]=="ultracode"||!s.id.starts_with("bundled-ultragui-")).filter(|s|(s.confirmed||s.enabled||s.favorite)&&(s.scope.is_empty()||s.scope==scope)&&(s.domain=="all"||s.domain==domain||(domain=="roblox"&&matches!(s.domain.as_str(),"model"|"ui"))||(domain=="local"&&s.domain=="blender"))).filter_map(|s|{let title=s.title.to_lowercase();let hay=format!("{} {} {}",title,s.description,s.steps.join(" ")).to_lowercase();let score=terms.iter().filter(|word|hay.contains(**word)).count()+terms.iter().filter(|word|title.contains(**word)).count();(score>0||s.enabled||s.favorite).then_some((score+if s.scope.is_empty(){0}else{3}+if s.enabled{8}else{0}+if s.favorite{6}else{0},s))}).collect::<Vec<_>>();hits.sort_by_key(|(score,_)|std::cmp::Reverse(*score));
    // 1.24.13: favourites are always used in their project/engine: every starred
    // skill (up to 8) comes first, then the 3 best other matches.
    let (starred,rest):(Vec<_>,Vec<_>)=hits.into_iter().partition(|(_,s)|s.favorite);
-   return Ok(json!({"ok":true,"skills":self.data.skills.get(crate::vfx_studio_skill::ID).filter(|_|vfx_due).into_iter().chain(self.data.skills.get(crate::qp2_skill::ID).filter(|_|qp2_due)).chain(self.data.skills.get(crate::eclipse_skill::ID).filter(|_|eclipse_due)).chain(starred.into_iter().take(8).chain(rest.into_iter().take(3)).map(|(_,skill)|skill)).collect::<Vec<_>>() }));
+   return Ok(json!({"ok":true,"skills":self.data.skills.get(crate::emitter2d_skill::ID).filter(|s|emitter2d_due&&(s.enabled||s.favorite)).into_iter().chain(self.data.skills.get(crate::vfx_studio_skill::ID).filter(|_|vfx_due)).chain(self.data.skills.get(crate::qp2_skill::ID).filter(|_|qp2_due)).chain(self.data.skills.get(crate::eclipse_skill::ID).filter(|_|eclipse_due)).chain(starred.into_iter().take(8).chain(rest.into_iter().take(3)).map(|(_,skill)|skill)).collect::<Vec<_>>() }));
   }
   let id=request["id"].as_str().unwrap_or("");
   if action=="read"&&id.starts_with("bundled-ultra-"){return crate::starter_skills::read_ultra(&crate::platform::installation_root().join("elio-Extension/ultra"),id,request);}
   // Hidden GUI methods remain usable at Ultra even if their old library card was deleted.
   if action=="read"&&id.starts_with("bundled-ultragui-")&&request["effort"]=="ultracode" {let skill=crate::starter_skills::ultragui_catalog().into_iter().find(|s|s["id"]==id).ok_or_else(||anyhow::anyhow!("Unknown built-in Ultra method"))?;let bundle=crate::starter_skills::read_ultragui(&crate::platform::installation_root().join("elio-Extension/ultragui"),id,request)?;return Ok(json!({"ok":true,"skill":skill,"bundle":bundle}));}
   if action=="read"||action=="export" {let skill=self.data.skills.get(id).ok_or_else(||anyhow::anyhow!("Skill not found."))?;let mut result=json!({"ok":true,"skill":if action=="export"{public(skill)}else{serde_json::to_value(skill)?}});
+   if action=="read" && id==crate::emitter2d_skill::ID {result["bundle"]=crate::emitter2d_skill::read(&crate::platform::installation_root().join("elio-Extension/starter-skills/emitter2d"),request)?;}
    if action=="read" && id==crate::qp2_skill::ID {result["bundle"]=crate::qp2_skill::read(&crate::platform::installation_root().join("elio-Extension/starter-skills/qwinkles-particles-2"),request)?;}
    if action=="read" && id==crate::vfx_studio_skill::ID {result["bundle"]=crate::vfx_studio_skill::read(&crate::platform::installation_root().join("elio-Extension/starter-skills/vfx-studio"),request)?;}
    if action=="read" && id==crate::eclipse_skill::ID {result["bundle"]=crate::eclipse_skill::read(&crate::platform::installation_root().join("elio-Extension/starter-skills/eclipse-animator"),request)?;}
@@ -244,7 +251,7 @@ pub async fn post(State(state):State<crate::AppState>,Json(request):Json<Value>)
  }
  #[test]fn starter_seed_preserves_user_data_and_deletions(){
   let path=std::env::temp_dir().join(format!("elio-starter-store-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
-  let mut store=Store::load(path.clone());assert_eq!(store.data.skills.len(),22);
+  let mut store=Store::load(path.clone());assert_eq!(store.data.skills.len(),23);
   let s=skill();store.request(&json!({"action":"save","skill":s,"revision":0})).unwrap();
   store.request(&json!({"action":"delete","id":"starter-syphodev-roblox-code","revision":1})).unwrap();
   store.request(&json!({"action":"delete","id":"bundled-ultragui-expert-gui","revision":1})).unwrap();
@@ -356,4 +363,17 @@ pub async fn post(State(state):State<crate::AppState>,Json(request):Json<Value>)
  for blender in [true,false]{let row=store.request(&json!({"action":"match","query":"Use QP2 to make mesh particles","domain":"roblox","blender_available":blender})).unwrap();let ids=row["skills"].as_array().unwrap();assert_eq!(ids[0]["id"],crate::qp2_skill::ID);assert!(!ids.iter().any(|s|s["id"]==crate::vfx_studio_skill::ID));}
  for(query,qp,vfx)in[("Create smoke and sparks",true,true),("Use VFX Studio for smoke",false,true),("Use QP2 and VFX Studio",true,true),("Without QP2 create particles",false,true),("Animate character walking",false,false)]{let row=store.request(&json!({"action":"match","query":query,"domain":"roblox"})).unwrap();let ids=row["skills"].as_array().unwrap();assert_eq!(ids.iter().any(|s|s["id"]==crate::qp2_skill::ID),qp,"{query}");assert_eq!(ids.iter().any(|s|s["id"]==crate::vfx_studio_skill::ID),vfx,"{query}");}
  let card=store.data.skills[crate::qp2_skill::ID].clone();assert!(store.request(&json!({"action":"save","skill":card,"revision":1})).is_err());store.request(&json!({"action":"delete_all"})).unwrap();assert!(store.data.skills.contains_key(crate::qp2_skill::ID));store.request(&json!({"action":"delete","id":crate::qp2_skill::ID,"revision":1})).unwrap();let reload=Store::load(path.clone());assert!(!reload.data.skills.contains_key(crate::qp2_skill::ID));assert!(reload.data.deleted.contains_key(crate::qp2_skill::ID));let _=std::fs::remove_file(path);}
+}
+
+#[cfg(test)]mod emitter2d_tests{
+ use super::*;
+ #[test]fn migration_routing_disabled_and_deleted(){
+ let path=std::env::temp_dir().join(format!("elio-emitter2d-store-{}.json",std::process::id()));let _=std::fs::remove_file(&path);
+ let mut store=Store::load(path.clone());let id=crate::emitter2d_skill::ID;
+ assert!(store.data.skills.contains_key(id));
+ for query in ["Use Emitter2D","Сделай частицы на кнопке","UI confetti"]{let r=store.request(&json!({"action":"match","query":query,"domain":"roblox"})).unwrap();let skills=r["skills"].as_array().unwrap();assert_eq!(skills[0]["id"],id);assert!(!skills.iter().any(|s|s["id"]==crate::qp2_skill::ID||s["id"]==crate::vfx_studio_skill::ID));}
+ for query in ["Use QP2","Use VFX Studio","Animate character walking","Без Emitter2D"]{let r=store.request(&json!({"action":"match","query":query,"domain":"roblox"})).unwrap();assert!(!r["skills"].as_array().unwrap().iter().any(|s|s["id"]==id));}
+ store.data.skills.get_mut(id).unwrap().enabled=false;store.persist(store.data.clone()).unwrap();let mut store=Store::load(path.clone());assert!(!store.data.skills[id].enabled);let r=store.request(&json!({"action":"match","query":"Use Emitter2D","domain":"roblox"})).unwrap();assert!(!r["skills"].as_array().unwrap().iter().any(|s|s["id"]==id));
+ store.request(&json!({"action":"delete","id":id,"revision":1})).unwrap();let reload=Store::load(path.clone());assert!(!reload.data.skills.contains_key(id));assert!(reload.data.deleted.contains_key(id));let _=std::fs::remove_file(path);
+ }
 }

@@ -71,6 +71,26 @@ try{
  await run('plugin_list',{},`assert(captured.ok and captured.data.count==200 and captured.data.truncated)`, `for i=1,300 do instance('Widget'..i,'DockWidgetPluginGui',services.PluginGuiService)end`);
  assert(skills.buildLuau('plugin_inspect',{path_segments:exact,query:']==]'}).err);
 
+
+ // Regression from the real Studio: several windows share Name=PluginGui.
+ const duplicateName=`local other,od=instance('Dock.42','DockWidgetPluginGui',services.PluginGuiService)od.Title='Render Booth Capture'od.Enabled=false`;
+ await run('plugin_list',{},`assert(captured.ok and captured.data.count==3)assert(captured.data.items[1].surface_title=='VFX Studio')assert(captured.data.items[2].surface_title=='Render Booth Capture')`,duplicateName);
+ await run('plugin_inspect',{path_segments:exact,surface_title:'VFX Studio'},`assert(captured.ok and captured.data.surface_title=='VFX Studio')assert(captured.data.nodes[1].Title=='VFX Studio')assert(captured.data.visited==6)`,duplicateName);
+ await run('plugin_inspect',{path_segments:exact,surface_title:'Render Booth Capture'},`assert(captured.ok and captured.data.nodes[1].Title=='Render Booth Capture')assert(captured.data.visited==1)`,duplicateName);
+ await run('plugin_inspect',{path_segments:[...exact,'Library'],surface_title:'VFX Studio',query:'fire'},`assert(captured.ok and captured.data.matches==1)assert(captured.data.nodes[1].surface_title=='VFX Studio')`,duplicateName);
+ await run('plugin_inspect',{path_segments:exact,surface_title:'Old title'},`assert(not captured.ok)`,duplicateName);
+ await run('plugin_inspect',{path_segments:exact,surface_title:'vfx studio'},`assert(not captured.ok)`,duplicateName);
+ await run('plugin_inspect',{path_segments:exact,surface_title:'VFX Studio'},`assert(not captured.ok)assert(string.find(captured.error,'ambiguous',1,true))`,duplicateName+` od.Title='VFX Studio'`);
+ await run('plugin_inspect',{path_segments:exact,surface_title:'VFX Studio'},`assert(not captured.ok)`, `wd.Title='Changed after listing'`);
+ await run('plugin_inspect',{path_segments:['CoreGui','OtherWidget'],surface_title:'VFX Studio'},`assert(not captured.ok)assert(string.find(captured.error,'did not match',1,true))`);
+ await run('plugin_inspect',{path_segments:exact,surface_title:'VFX Studio'},`assert(not captured.ok)`, `local old=getmetatable(widget).__index getmetatable(widget).__index=function(self,key)if key=='Title'then error('Title denied')end return old(self,key)end`);
+ await run('plugin_inspect',{path_segments:exact,surface_title:'Effects "🐔" . UI'},`assert(captured.ok and captured.data.surface_title=='Effects "🐔" . UI')`, `wd.Title='Effects "🐔" . UI'`);
+ await run('plugin_inspect',{path_segments:[...exact,'Library','Fire "🐔"'],surface_title:'VFX Studio'},`assert(not captured.ok)assert(string.find(captured.error,'ambiguous',1,true))`, `instance('Fire "🐔"','TextButton',frame)`);
+ await run('plugin_list',{},`assert(captured.ok and captured.data.items[1].surface_title==nil)`, `wd.Title=string.rep('x',1001)`);
+ await run('plugin_inspect',{path_segments:exact,surface_title:'x'.repeat(1000)},`assert(not captured.ok)`, `wd.Title=string.rep('x',1001)`);
+ assert(skills.buildLuau('plugin_inspect',{path_segments:exact,surface_title:''}).err);
+ assert(skills.buildLuau('plugin_inspect',{path_segments:exact,surface_title:5}).err);
+ assert(skills.buildLuau('plugin_inspect',{path_segments:exact,surface_title:'x'.repeat(1001)}).err);
  assert(skills.buildLuau('plugin_inspect',{}).err);assert(skills.buildLuau('plugin_inspect',{path_segments:[]}).err);assert(skills.buildLuau('plugin_inspect',{path_segments:exact,max_nodes:Infinity}).err);
  console.log(`PASS ${compiled} COMPLETE generated Studio skill chunks compiled; ${runtime} plugin runtime fixtures; read-only invariants, fresh paths, dotted names, access errors, search scope, truncation, argument/operation integrity, mirror parity. Not live VFX Studio UI/import verification.`);
 }finally{state.destroy();}

@@ -12,3 +12,7 @@ Inventory has textures, flipbooks and effect assets; their insertion has differe
 Events inside PartIcleProperties can call ModuleScripts. Inventory events may arrive untrusted/off and the plugin can ask to allow scripts for the place. Those are security controls, not bugs to toggle around. The inspector flags scripts/events/external references but does not prove that their absence means safe execution. Even an existing runtime module must be reviewed with normal source-reading tools.
 
 For joint QP2/VFX Studio debugging, keep separate evidence rows: live state; discovery warnings; exact UI/library action; resulting source path; structure/script/reference hazards; runtime/module version; preview result; cleanup. Failure in one row is not proof all later operations failed. Test one bounded item per plugin on separate owned sources; never run destructive Forces/Reactors as a generic smoke test.
+
+
+## Same-name plugin windows
+Read fresh plugin_list output. Pass both exact path_segments and its surface_title to plugin_inspect when provided. Several widgets can share Name=PluginGui; name segments alone do not distinguish them. Titles are exact and case-sensitive, not fuzzy search. Stale or still-duplicate titles must fail closed: rediscover, never choose the first sibling, rename user/plugin objects, or assume a missing path means uninstalled. Nested same-name controls remain ambiguous; use a narrower unambiguous parent. No click/import is performed.

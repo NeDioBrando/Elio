@@ -7,3 +7,7 @@
 6. Tune only owned objects after observing actual attribute types and installed version. Use plugin UI where serialization is unknown. For a requested new complete Roblox UI, retain the normal creation_preview/saved-revision insertion workflow; do not rebuild it independently in Luau.
 7. Inspect actual existing BindableEvents and client runtime. With authorized preview, invoke only the documented emitter child events in the Client context, with small bounded counts/duration. Preview does not grant permission to run unknown event code. Stop and clean owned preview objects; do not Clear another user's active emitter or disable shared clients.
 8. Check mobile size, clipping, ZIndex, burst rate, lifetime, cancellation and fresh errors. No visual/runtime success claim from inventory alone. Save verified reusable paths/version/evidence only when memory is enabled; avoid entire catalogs.
+
+
+## Same-name plugin windows
+Read fresh plugin_list output. Pass both exact path_segments and its surface_title to plugin_inspect when provided. Several widgets can share Name=PluginGui; name segments alone do not distinguish them. Titles are exact and case-sensitive, not fuzzy search. Stale or still-duplicate titles must fail closed: rediscover, never choose the first sibling, rename user/plugin objects, or assume a missing path means uninstalled. Nested same-name controls remain ambiguous; use a narrower unambiguous parent. No click/import is performed.

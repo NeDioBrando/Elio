@@ -1,0 +1,204 @@
+{
+  "product_version": "1.0.1",
+  "build": {
+    "build_id": "elio-6b0762606965719cee95",
+    "protocol": 2
+  },
+  "scope": "Exact title-qualified read-only plugin UI addressing after a live duplicate-name reproduction. No GUI clicking/search/import automation added.",
+  "live_evidence": {
+    "studio_project": "Anime Frontline, placeId 73124605042068",
+    "mode_before_and_after": "Edit",
+    "plugin_list": "18 accessible UI surfaces; several DockWidgetPluginGui children share Name=PluginGui.",
+    "reproduction": "plugin_inspect with path_segments=[PluginGuiService,PluginGui] returned ok=false, ambiguous plugin path.",
+    "title_selected_read": "Standalone read-only Luau selecting exactly one Title=VFX Studio succeeded, Enabled=true. Current visible grid had two materialized texture items; no search or import attempted.",
+    "eclipse": "Unique CoreGui editor surface read successfully; Enabled=false at inspection; successful loading messages observed, not playback/save proof.",
+    "qp2": "ReplicatedStorage.Part_Icles ModuleScript metadata/structure present. Not required or activated.",
+    "emitter2d": "Built-in skill readable/enabled. No installation inference from absent accessible UI; bounded export scan truncated.",
+    "project_mutations": "None performed by the live audit.",
+    "new_installed_helper_live_acceptance": "Pending rebuild/update; existing installed plugin_inspect has no surface_title yet."
+  },
+  "automatic_tests": {
+    "environment": "Linux native agent, actual headless Chromium, disposable profiles and simulated Roblox Luau fixtures. Not Windows or user Studio.",
+    "rust_passed": 180,
+    "rust_failed": 0,
+    "rust_ignored": 1,
+    "release_suites": [
+      {
+        "command": "node test-upstream-merge.cjs",
+        "exit_code": 0,
+        "seconds": 1.31
+      },
+      {
+        "command": "node test-elio-identity.cjs",
+        "exit_code": 0,
+        "seconds": 0.16
+      },
+      {
+        "command": "node test-elio-rename.cjs",
+        "exit_code": 0,
+        "seconds": 0.13
+      },
+      {
+        "command": "node test-elio-audit.cjs",
+        "exit_code": 0,
+        "seconds": 2.57
+      },
+      {
+        "command": "node test-elio-chat-live.cjs",
+        "exit_code": 0,
+        "seconds": 0.07
+      },
+      {
+        "command": "node test-desktop-chat.cjs",
+        "exit_code": 0,
+        "seconds": 0.06
+      },
+      {
+        "command": "node test-resource-lifecycle.cjs",
+        "exit_code": 0,
+        "seconds": 3.54
+      },
+      {
+        "command": "node test-emitter2d.cjs",
+        "exit_code": 0,
+        "seconds": 1.12
+      },
+      {
+        "command": "node tools/test_emitter2d_luau.mjs",
+        "exit_code": 0,
+        "seconds": 0.97
+      },
+      {
+        "command": "node test-qp2.cjs",
+        "exit_code": 0,
+        "seconds": 1.0
+      },
+      {
+        "command": "node tools/test_qp2_luau.mjs",
+        "exit_code": 0,
+        "seconds": 1.22
+      },
+      {
+        "command": "node test-vfx-studio.cjs",
+        "exit_code": 0,
+        "seconds": 0.96
+      },
+      {
+        "command": "node tools/test_vfx_studio_luau.mjs",
+        "exit_code": 0,
+        "seconds": 1.19
+      },
+      {
+        "command": "node tools/test_plugin_skills_luau.mjs",
+        "exit_code": 0,
+        "seconds": 1.85
+      },
+      {
+        "command": "node test-eclipse.cjs",
+        "exit_code": 0,
+        "seconds": 0.71
+      },
+      {
+        "command": "node tools/test_eclipse_luau.mjs",
+        "exit_code": 0,
+        "seconds": 0.49
+      },
+      {
+        "command": "node test-oriveo.cjs",
+        "exit_code": 0,
+        "seconds": 1.27
+      },
+      {
+        "command": "node test-figma.cjs",
+        "exit_code": 0,
+        "seconds": 0.61
+      },
+      {
+        "command": "node test-vault-contract.cjs",
+        "exit_code": 0,
+        "seconds": 0.67
+      },
+      {
+        "command": "node test-elio.cjs",
+        "exit_code": 0,
+        "seconds": 0.11
+      },
+      {
+        "command": "node test-elio-theme.cjs",
+        "exit_code": 0,
+        "seconds": 0.07
+      },
+      {
+        "command": "node test-updates.cjs",
+        "exit_code": 0,
+        "seconds": 0.05
+      },
+      {
+        "command": "node test-live-audit-fixes.cjs",
+        "exit_code": 0,
+        "seconds": 0.07
+      },
+      {
+        "command": "node tools/test_motion_luau.mjs",
+        "exit_code": 0,
+        "seconds": 0.59
+      },
+      {
+        "command": "node test-auto-creator-enhancement.js",
+        "exit_code": 0,
+        "seconds": 0.1
+      },
+      {
+        "command": "node test-tool-guard-repair.js",
+        "exit_code": 0,
+        "seconds": 0.09
+      },
+      {
+        "command": "node test-motion.js",
+        "exit_code": 0,
+        "seconds": 0.09
+      },
+      {
+        "command": "node test-notion-protocol-file.js",
+        "exit_code": 0,
+        "seconds": 122.47
+      },
+      {
+        "command": "python tools/test_package_windows.py",
+        "exit_code": 0,
+        "seconds": 6.93
+      },
+      {
+        "command": "python tools/test_prepare_engram.py",
+        "exit_code": 0,
+        "seconds": 0.3
+      }
+    ],
+    "generated_luau_chunks_compiled": 34,
+    "plugin_runtime_fixtures": 30,
+    "fixture_scope": "Exact/duplicate/stale/denied/case-sensitive/Unicode/oversized titles; descendant selectors; duplicates without title; remaining ambiguous child names; output bounds; no property writes/Source reads.",
+    "native_and_ui": {
+      "native_chromium": "PASS actual native API + Chromium: legacy confirmation migration, repeated writes/deletes/shell without approval, read-only across five routes, settings, build mismatch, strict-CSP screenshot pixels, PNG normalization/isolation, revisioned image links, manual verification with auto-memory off, dependency audit, stale exclusion, Obsidian assets, actual memory review and safety UI. No Windows/Studio/plugin live test.\n",
+      "emitter2d_api": "PASS real native Emitter2D skill API: authorization, built-in migration, complete paginated resources from packaged extension, traversal refusal, scoped Russian/English GUI selection and explicit plugin choices regardless of Blender. No Studio/plugin UI interaction performed.\n",
+      "qp2_api": "PASS real native QP2 skill API: authorization, built-in migration, complete paginated resources from packaged extension, traversal refusal, Russian/English library-first selection regardless of Blender, Eclipse coexistence. No Studio/plugin UI interaction performed.\n",
+      "vfx_studio_api": "PASS real native VFX Studio skill API: authorization, built-in migration, complete paginated resources from packaged extension, traversal refusal, Russian/English library-first selection regardless of Blender, Eclipse coexistence. No Studio/plugin UI interaction performed.\n",
+      "eclipse_api": "PASS real native Eclipse skill API: authorization, seeded built-in, complete paginated guide and helpers from packaged extension, traversal refusal, Russian/English Blender-aware selection. No Studio/plugin UI interaction performed.\n",
+      "catalogue_and_dispatch": "PASS Emitter2D integration: 6 mirrored resources, visible card, scoped native/context wiring, packaging/build hooks, JS syntax; no asset library bundled.\nPASS actual plugin catalogue, engine scope, generated helper dispatch/studio targeting, access-policy error classification.\nPASS Emitter2D actual skill UI: ordinary-effort visibility, built-in label, read instructions, zero automatic saves or task execution.\n",
+      "windows_packager_fixture": "PASS actual Windows packager fixture: Elio archive/root/exe/extension, every SHA256, canonical/aliased paths, reject wrong executable/arguments/product and invalid PE header. This does not build or execute Windows code.\n"
+    }
+  },
+  "preservation": {
+    "full_prior_source_paths_retained_except_replaced_manifest": true,
+    "core_config_unchanged": true,
+    "core_config_sha256": "dd12795f341c420c901f0c2c5f7043a0edbdd8c1a72860e94702e5f9302c6448",
+    "extension_mirrors_identical": true,
+    "previous_no_confirmation_gate_fix_retained": true,
+    "no_third_party_runtime_copied": true
+  },
+  "pending": [
+    "GitHub/Windows rebuild and actual installation of matching application/extension.",
+    "Open already-installed QP2 and Emitter2D panels for live discovery.",
+    "Real plugin searches, explicit isolated export/import, reviewed client playback, visual/mobile/performance/cleanup tests."
+  ],
+  "important": "Old reports are historical. UI inspection, a skill card and fixture success are not plugin search/import/runtime success. No arbitrary first-sibling fallback or trust/install grant."
+}

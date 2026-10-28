@@ -2448,8 +2448,21 @@ local function pluginRead(inst, property)
  end
  return nil
 end
+local function pluginExactTitle(inst)
+ local good,title=pcall(function() return inst.Title end)
+ if good and type(title)=="string" and #title>0 and #title<=1000 then return title end
+ return nil
+end
+local function pluginSurfaceTitle(inst)
+ local current=inst local depth=0
+ while current and current~=game and depth<64 do
+  if current:IsA("DockWidgetPluginGui") then return pluginExactTitle(current) end
+  current=current.Parent depth+=1
+ end
+ return nil
+end
 local function pluginRow(inst)
- local row = {name=inst.Name, className=inst.ClassName, path=pathOf(inst), path_segments=pluginPathParts(inst)}
+ local row = {name=inst.Name, className=inst.ClassName, path=pathOf(inst), path_segments=pluginPathParts(inst), surface_title=pluginSurfaceTitle(inst)}
  for _, prop in ipairs({"Title", "Text", "Image", "Visible", "Enabled", "Active", "Interactable"}) do
   row[prop] = pluginRead(inst, prop)
  end
@@ -2489,7 +2502,7 @@ function api.plugin_list()
  if not good then warnings[#warnings+1] = {path="ServerStorage.RobloxScript.Plugins", error="Surface unavailable or permission denied"} end
  return okdata({items=items, count=#items, surfaces=surfaces, warnings=warnings, truncated=truncated,
   read_only=true, installed_plugin_inventory=false,
-  note="Accessible UI surfaces only, not an installed-plugin or private-library inventory. A missing widget does not prove the plugin is disabled. Inspect fresh paths/path_segments with plugin_inspect; do not reuse stale paths."},
+  note="Accessible UI surfaces only, not an installed-plugin or private-library inventory. A missing widget does not prove the plugin is disabled. Inspect fresh path_segments with plugin_inspect and copy surface_title when supplied. Duplicate names without an exact unique title are rejected; never reuse stale selectors."},
   ("plugin surfaces: %d item(s) — accessible UI only"):format(#items))
 end
 function api.plugin_inspect(a)
@@ -2500,6 +2513,9 @@ function api.plugin_inspect(a)
   parts = string.split(p, ".")
  end
  if type(parts) ~= "table" or #parts == 0 or #parts > 64 then return fail("path_segments must contain 1-64 exact names") end
+ local title=a.surface_title
+ if title~=nil and (type(title)~="string" or title=="" or #title>1000) then return fail("surface_title must be a non-empty exact title up to 1000 bytes from fresh plugin_list") end
+ local titleUsed=false
  local inst = game
  for i, name in ipairs(parts) do
   if type(name) ~= "string" or name == "" then return fail("path_segments must contain non-empty names") end
@@ -2507,8 +2523,14 @@ function api.plugin_inspect(a)
    local good, children = pcall(function() return inst:GetChildren() end)
    if not good then return fail("plugin path is inaccessible; run plugin_list again (not proof the plugin is disabled)") end
    local found, count = nil, 0
-   for _, child in ipairs(children) do if child.Name == name then found = child count += 1 end end
-   if count > 1 then return fail("ambiguous plugin path: duplicate sibling name; inspect the current UI visually") end
+   for _, child in ipairs(children) do
+    if child.Name == name then
+     if title~=nil and child:IsA("DockWidgetPluginGui") then
+      if pluginExactTitle(child)==title then found=child count+=1 titleUsed=true end
+     else found=child count+=1 end
+    end
+   end
+   if count > 1 then return fail("ambiguous plugin path: duplicate sibling name/title; use fresh path_segments and surface_title from plugin_list; no arbitrary window was selected") end
    if not found and inst == game then
     local serviceOK, service = pcall(function() return game:GetService(name) end)
     if serviceOK then found = service end
@@ -2517,6 +2539,7 @@ function api.plugin_inspect(a)
    inst = found
   end
  end
+ if title~=nil and not titleUsed then return fail("surface_title did not match a DockWidgetPluginGui on this exact path; run plugin_list again") end
  local function bounded(value, default, minimum, maximum)
   local n = tonumber(value) or default
   if n ~= n or n == math.huge or n == -math.huge then n = default end
@@ -2552,7 +2575,7 @@ function api.plugin_inspect(a)
   elseif #children > 0 then truncated = true end
  end
  if cursor <= #queue or #warnings > 0 then truncated = true end
- return okdata({path=pathOf(inst), path_segments=pluginPathParts(inst), className=inst.ClassName,
+ return okdata({path=pathOf(inst), path_segments=pluginPathParts(inst), surface_title=pluginSurfaceTitle(inst), className=inst.ClassName,
   children=kids, nodes=rows, visited=visited, matches=#rows, query=query, truncated=truncated,
   warnings=warnings, read_only=true, scope="Accessible live UI tree only; query does not search the private VFX Studio catalog. No click, import, script execution or property change occurred."},
   ("inspected %s (%s, %d node(s), %d match(es))"):format(pathOf(inst), inst.ClassName, visited, #rows))
@@ -2985,6 +3008,7 @@ const SKILL_COMMANDS = [
     params: {
       path: { type: "string", req: false, desc: "fresh dotted path from plugin_list; or use exact path_segments for names containing dots" },
       path_segments: { type: "array", req: false, desc: "exact name segments from plugin_list, preferred over dotted path" },
+      surface_title: { type: "string", req: false, desc: "exact fresh DockWidgetPluginGui title from plugin_list; required to distinguish same-name plugin windows; stale/duplicate titles are rejected" },
       query: { type: "string", req: false, desc: "literal substring in name/title/text/image of the accessible UI tree, not a private catalog search" },
       max_nodes: { type: "number", req: false, desc: "scan budget 1-400, default 200; truncated means incomplete" },
       max_depth: { type: "number", req: false, desc: "depth 0-12, default 6; inspect a deeper exact path if truncated" }
@@ -3117,6 +3141,7 @@ function validateStudioSkill(op, args) {
     }
   }
   if (op === "plugin_inspect") {
+    if (args.surface_title !== undefined && (typeof args.surface_title !== "string" || !args.surface_title || args.surface_title.length > 1000)) return "surface_title must be a non-empty exact title up to 1000 UTF-8 bytes";
     if (!args.path && !args.target_path && !args.path_segments) return "path or path_segments is required for plugin_inspect";
     if (args.path_segments && (args.path_segments.length < 1 || args.path_segments.length > 64 || args.path_segments.some(x => typeof x !== "string" || !x))) return "path_segments must contain 1-64 exact names";
     for (const key of ["max_nodes", "max_depth"]) if (args[key] !== undefined && !Number.isFinite(args[key])) return `${key} must be finite`;

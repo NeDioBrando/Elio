@@ -22,3 +22,7 @@ Then use motion_scan action read_vfx or motion_bundle_scan action read_vfx with 
 motion_bundle_copy kind vfx copies a verified source_path, not a marketplace asset_id. Let the existing guard enforce allowed destinations and script safety. Stable ownership and unique action receipts prevent accidental replacement/replay. Preserve originals. Read before revision-checked changes. Use vfx_build for native template edits; do not introduce an alternate copy engine.
 
 Preview and runtime changes need their own verification. Check spawn direction, scale, attachments, delayed emission, flipbook layout, cleanup and cancellation. Attributes named EmitCount/EmitDelay/EmitDuration are only hints until a real controller proves semantics. Do not label a successful receipt as a successful visual result. Do not publish raw catalog assets or include them in exported Elio distributions.
+
+
+## Same-name plugin windows
+Read fresh plugin_list output. Pass both exact path_segments and its surface_title to plugin_inspect when provided. Several widgets can share Name=PluginGui; name segments alone do not distinguish them. Titles are exact and case-sensitive, not fuzzy search. Stale or still-duplicate titles must fail closed: rediscover, never choose the first sibling, rename user/plugin objects, or assume a missing path means uninstalled. Nested same-name controls remain ambiguous; use a narrower unambiguous parent. No click/import is performed.

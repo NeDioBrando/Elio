@@ -2,10 +2,10 @@
 from pathlib import Path
 import hashlib
 R=Path(__file__).resolve().parents[1]
-main=(R/'agent/src/main.rs').read_text()
-rust=(R/'agent/src/studio_desktop.rs').read_text()
-ps=(R/'agent/src/studio_desktop.ps1').read_text()
-core=(R/'core/main.js').read_text()
+main=(R/'agent/src/main.rs').read_text(encoding="utf-8")
+rust=(R/'agent/src/studio_desktop.rs').read_text(encoding="utf-8")
+ps=(R/'agent/src/studio_desktop.ps1').read_text(encoding="utf-8")
+core=(R/'core/main.js').read_text(encoding="utf-8")
 assert main.count('public.extend(studio_desktop::tools())')==1
 assert 'public_tools(&self.tools)' in main
 route=main[main.index('async fn roblox_tool('):main.index('async fn handle_ws(')]
@@ -31,9 +31,9 @@ for f in ['core/main.js','core/studio_skills.js']:
 for skill in ['vfx-studio','qwinkles-particles-2','emitter2d','eclipse-animator']:
     f=Path('starter-skills')/skill/'SKILL.md'
     assert (R/f).read_bytes()==(R/'elio-Extension'/f).read_bytes()
-    assert 'studio_ui_snapshot' in (R/f).read_text()
+    assert 'studio_ui_snapshot' in (R/f).read_text(encoding="utf-8")
 assert 'STUDIO DESKTOP INPUT' in core and 'Desktop input was not replayed' in core
 assert hashlib.sha256((R/'core/config.js').read_bytes()).hexdigest()=='dd12795f341c420c901f0c2c5f7043a0edbdd8c1a72860e94702e5f9302c6448'
-assert 'test_studio_desktop.ps1' in (R/'Build-Windows.ps1').read_text()
-assert "'.ps1'" in (R/'tools/stamp_build.py').read_text()
+assert 'test_studio_desktop.ps1' in (R/'Build-Windows.ps1').read_text(encoding="utf-8")
+assert "'.ps1'" in (R/'tools/stamp_build.py').read_text(encoding="utf-8")
 print('PASS Studio desktop native route, polling catalogue, non-replay/checkpoint boundaries, explicit permissions, fixed-script stdin separation, resource/build inclusion, plugin skill mirrors and unchanged config. No live Studio interaction.')

@@ -1,5 +1,7 @@
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
+# Source/resources are UTF-8 regardless of the Windows system code page.
+$env:PYTHONUTF8 = "1"
 foreach ($Tool in @('cargo', 'python', 'node')) {
   if (-not (Get-Command $Tool -ErrorAction SilentlyContinue)) { throw "Install $Tool first. See README-RU.md." }
 }
@@ -71,6 +73,8 @@ python tools/prepare_engram.py
 if ($LASTEXITCODE -ne 0) { throw 'Verified Engram runtime preparation failed.' }
 python tools/test_prepare_engram.py
 if ($LASTEXITCODE -ne 0) { throw 'Engram runtime contract tests failed.' }
+python tools/test_windows_text_encoding.py
+if ($LASTEXITCODE -ne 0) { throw 'Windows UTF-8 source regression failed.' }
 node .\test-live-audit-fixes.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Live audit regression tests failed.' }
 foreach ($Test in @('test-auto-creator-enhancement.js','test-tool-guard-repair.js','test-motion.js','test-notion-protocol-file.js')) {

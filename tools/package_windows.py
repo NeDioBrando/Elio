@@ -3,8 +3,8 @@ from pathlib import Path
 import argparse,shutil,zipfile,hashlib,json,subprocess,tomllib,runpy
 engram = runpy.run_path(str(Path(__file__).with_name("prepare_engram.py")))
 ROOT=Path(__file__).resolve().parents[1]
-version=tomllib.loads((ROOT/'agent/Cargo.toml').read_text())['package']['version']
-manifest=json.loads((ROOT/'elio-Extension/manifest.json').read_text())
+version=tomllib.loads((ROOT/'agent/Cargo.toml').read_text(encoding="utf-8"))['package']['version']
+manifest=json.loads((ROOT/'elio-Extension/manifest.json').read_text(encoding="utf-8"))
 if manifest['version']!=version:raise SystemExit('Native and extension versions must match.')
 p=argparse.ArgumentParser();p.add_argument('--exe',type=Path,default=ROOT/'agent/target/release/elio.exe');p.add_argument('--output',type=Path,default=ROOT/'dist');a=p.parse_args()
 exe=a.exe.resolve()
@@ -30,7 +30,7 @@ shutil.copy2(ROOT/'windows-runtime/NOTICE.txt',stage/'WINDOWS-RUNTIME-NOTICE.txt
 lines=[]
 for f in sorted(stage.rglob('*')):
  if f.is_file():lines.append(hashlib.sha256(f.read_bytes()).hexdigest()+'  '+f.relative_to(stage).as_posix())
-(stage/'SHA256SUMS.txt').write_text('\n'.join(lines)+'\n')
+(stage/'SHA256SUMS.txt').write_text('\n'.join(lines)+'\n', encoding="utf-8")
 archive=a.output/f'elio-v{version}-Windows-x64.zip'
 with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
  for f in sorted(stage.rglob('*')):

@@ -15,6 +15,6 @@ def stamp(root=ROOT):
     raw=json.dumps(info,indent=2)+'\n'
     for folder in ('core','elio-Extension/core'):
         p=root/folder/'build-info.json'
-        if not p.exists() or p.read_text()!=raw:p.write_text(raw)
+        if not p.exists() or p.read_text(encoding="utf-8")!=raw:p.write_text(raw, encoding="utf-8")
     return info
 if __name__=='__main__': print(json.dumps(stamp()))

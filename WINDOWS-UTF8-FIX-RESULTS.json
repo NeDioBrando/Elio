@@ -1,0 +1,24 @@
+{
+  "reported_failure": "UnicodeDecodeError cp1252 byte 0x81 reading agent/src/main.rs in tools/test_studio_desktop_contract.py",
+  "reproduced_before_fix": true,
+  "checks": {
+    "forced_cp1252_real_contract_stamp_and_package_fixture": "passed",
+    "studio_desktop_contract": "passed",
+    "python_syntax": "passed",
+    "tool_error_recovery": "passed",
+    "notion_card_ownership": {
+      "passed": 11
+    },
+    "runtime_core_and_provider_unchanged_from_error_history_fix": true
+  },
+  "changed_previous_files": [
+    "Build-Windows.ps1",
+    "tools/package_windows.py",
+    "tools/stamp_build.py",
+    "tools/test_studio_desktop_contract.py"
+  ],
+  "build": {
+    "build_id": "elio-3f99278aefd04bbfd46b",
+    "protocol": 2
+  }
+}

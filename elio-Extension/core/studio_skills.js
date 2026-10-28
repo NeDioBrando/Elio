@@ -2463,6 +2463,17 @@ local function pluginSurfaceTitle(inst)
 end
 local function pluginRow(inst)
  local row = {name=inst.Name, className=inst.ClassName, path=pathOf(inst), path_segments=pluginPathParts(inst), surface_title=pluginSurfaceTitle(inst)}
+ -- Local Visible is not effective visibility, and UI-tree coordinates are not desktop pixels.
+ row.desktop_visibility = "unverified; use studio_ui_snapshot when available"
+ local ancestor = inst local depth = 0
+ row.ancestor_hidden = false
+ while ancestor and ancestor ~= game and depth < 64 do
+  if pluginRead(ancestor, "Visible") == false or pluginRead(ancestor, "Enabled") == false then
+   row.ancestor_hidden = true row.hidden_by = pathOf(ancestor) break
+  end
+  ancestor = ancestor.Parent depth += 1
+ end
+ if ancestor and ancestor ~= game and depth >= 64 then row.visibility_ancestry_truncated = true end
  for _, prop in ipairs({"Title", "Text", "Image", "Visible", "Enabled", "Active", "Interactable"}) do
   row[prop] = pluginRead(inst, prop)
  end

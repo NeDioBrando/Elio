@@ -63,3 +63,8 @@ Export Animation / Save to Roblox uploads to the user's account. Ask permission 
 ## Finish
 
 Report name/path, duration, observed saved revision, beats, and actual checks performed. Separate authored draft / Eclipse-reviewed / Eclipse-saved / published / runtime-integrated states. If something is blocked (plugin, permissions, desktop access, vision, Blender), state it briefly and do not fake a fallback success. Save only confirmed durable project conventions to memory, not guessed plugin capabilities or temporary diagnostics.
+
+
+## Real Windows Studio input (when advertised)
+Use `studio_ui_snapshot` with the explicit current `studio_id` and, if needed, `focus=true`. This captures the real Studio client-window pixels, not a hidden plugin UI backing tree. `studio_ui_action` can click, type, press an allowlisted key or scroll using a single-use snapshot valid 45 seconds. Take a NEW snapshot after every input; verify actual DataModel/UI effects. Accessibility coverage may be absent: observed screenshot coordinates are the fallback. Never derive desktop coordinates from Roblox AbsolutePosition. Floating widgets must be docked; multiple Studio processes/sessions fail closed.
+The user must already have enabled Full PC access. Do not toggle it, override read-only/folder restrictions, install/update/trust scripts, upload or publish without explicit authorization. A successful input receipt is not a successful import or visual result. If unavailable, ask for one precise manual action rather than repeat an audit. No private plugin APIs, signal spoofing or guessed toolbar controls.

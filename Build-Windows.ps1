@@ -11,6 +11,14 @@ $env:NODE_PATH = (Join-Path $PSScriptRoot 'release-tools/node_modules') + [IO.Pa
 # Compile .NET Framework fixture EXEs under Windows PowerShell 5.1, not pwsh 7.
 & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -File .\test-updater-helper.ps1
 if ($LASTEXITCODE -ne 0) { throw 'Windows updater helper tests failed.' }
+node .\test-tool-error-recovery.js
+if ($LASTEXITCODE -ne 0) { throw 'Tool error recovery regression failed.' }
+node .\test-stop.js
+if ($LASTEXITCODE -ne 0) { throw 'Stop preservation regression failed.' }
+foreach ($Test in @('test-message-error-preservation.js','test-notion-card-ownership.js','test-notion-tool-status.js','test-notion-block-transcript.js')) {
+  node $Test
+  if ($LASTEXITCODE -ne 0) { throw "Message card ownership regression failed: $Test" }
+}
 node .\test-upstream-merge.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Upstream port regression failed.' }
 node .\test-elio-identity.cjs
@@ -37,6 +45,10 @@ node .\test-vfx-studio.cjs
 if ($LASTEXITCODE -ne 0) { throw 'VFX Studio skill integration tests failed.' }
 node tools/test_vfx_studio_luau.mjs
 if ($LASTEXITCODE -ne 0) { throw 'VFX export inspector tests failed.' }
+& powershell.exe -NoProfile -NonInteractive -File tools/test_studio_desktop.ps1
+if ($LASTEXITCODE -ne 0) { throw 'Studio desktop PowerShell/C# tests failed.' }
+python tools/test_studio_desktop_contract.py
+if ($LASTEXITCODE -ne 0) { throw 'Studio desktop routing tests failed.' }
 node tools/test_plugin_skills_luau.mjs
 if ($LASTEXITCODE -ne 0) { throw 'Generated Studio/plugin Luau tests failed.' }
 node .\test-eclipse.cjs
@@ -73,6 +85,9 @@ cargo test --locked --manifest-path agent/Cargo.toml
 if ($LASTEXITCODE -ne 0) { throw 'Native security tests failed.' }
 cargo build --release --locked --manifest-path agent/Cargo.toml
 if ($LASTEXITCODE -ne 0) { throw 'Windows build failed. No EXE package was created.' }
+$env:ELIO_TEST_BINARY = Join-Path $PSScriptRoot 'agent/target/release/elio.exe'
+node .\test-studio-desktop-native.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Studio desktop authenticated native route tests failed.' }
 python tools/package_windows.py
 if ($LASTEXITCODE -ne 0) { throw 'Packaging failed.' }
 Write-Host 'Created versioned Windows ZIP in dist. Upload it unchanged to the matching GitHub Release.'

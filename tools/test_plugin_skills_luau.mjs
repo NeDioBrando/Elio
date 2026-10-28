@@ -91,6 +91,8 @@ try{
  assert(skills.buildLuau('plugin_inspect',{path_segments:exact,surface_title:''}).err);
  assert(skills.buildLuau('plugin_inspect',{path_segments:exact,surface_title:5}).err);
  assert(skills.buildLuau('plugin_inspect',{path_segments:exact,surface_title:'x'.repeat(1001)}).err);
+ await run('plugin_inspect',{path_segments:[...exact,'Library','Fire "🐔"']},`assert(captured.ok)assert(captured.data.nodes[1].Visible==true)assert(captured.data.nodes[1].ancestor_hidden==true)assert(captured.data.nodes[1].hidden_by=='PluginGuiService.Dock.42')assert(string.find(captured.data.nodes[1].desktop_visibility,'unverified',1,true))`, `wd.Enabled=false`);
+ await run('plugin_inspect',{path_segments:[...exact,'Library']},`assert(captured.ok)assert(captured.data.nodes[1].ancestor_hidden==false)assert(captured.data.nodes[2].Visible==true)assert(captured.data.nodes[2].ancestor_hidden==false)assert(string.find(captured.data.nodes[2].desktop_visibility,'unverified',1,true))`);
  assert(skills.buildLuau('plugin_inspect',{}).err);assert(skills.buildLuau('plugin_inspect',{path_segments:[]}).err);assert(skills.buildLuau('plugin_inspect',{path_segments:exact,max_nodes:Infinity}).err);
  console.log(`PASS ${compiled} COMPLETE generated Studio skill chunks compiled; ${runtime} plugin runtime fixtures; read-only invariants, fresh paths, dotted names, access errors, search scope, truncation, argument/operation integrity, mirror parity. Not live VFX Studio UI/import verification.`);
 }finally{state.destroy();}

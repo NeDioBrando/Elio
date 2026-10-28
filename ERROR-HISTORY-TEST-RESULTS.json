@@ -1,0 +1,232 @@
+{
+  "build": {
+    "build_id": "elio-3f99278aefd04bbfd46b",
+    "protocol": 2
+  },
+  "base_source_sha256": "b8bc0e286b9a67cae2058aae1eb22abdc3c458089dc711bd29da004ee757b061",
+  "reproduced_before_fix": [
+    "Unhandled tool exception rejects runTool and exits the loop",
+    "Old error migrates to a new turn after React reuses its root",
+    "Lookup/sync transfers ownership to another turn",
+    "Recent same-name orphan is reowned by another turn",
+    "Status leaks across chats"
+  ],
+  "targeted_checks": {
+    "tool_exception_recovery": "passed",
+    "safe_and_immediate_stop": "passed",
+    "notion_ownership_scenarios": 11,
+    "chromium_actual_css": "passed",
+    "unchanged_existing_functions": 566,
+    "production_js_syntax": "passed",
+    "mirrors": "passed",
+    "config_sha256": "dd12795f341c420c901f0c2c5f7043a0edbdd8c1a72860e94702e5f9302c6448",
+    "plugin_luau_full_chunks": 34,
+    "plugin_runtime_fixtures": 32,
+    "studio_desktop_contract": "passed"
+  },
+  "extended_suite": {
+    "passed": 45,
+    "total": 48,
+    "results": [
+      {
+        "test": "test-1.22.1-notion-leaf-composer.js",
+        "ok": true
+      },
+      {
+        "test": "test-1.24.14-fixes.js",
+        "ok": true
+      },
+      {
+        "test": "test-approach-summary.js",
+        "ok": false
+      },
+      {
+        "test": "test-cowork-notion-plain-text.js",
+        "ok": true
+      },
+      {
+        "test": "test-creator-response-recovery.js",
+        "ok": true
+      },
+      {
+        "test": "test-eclipse.cjs",
+        "ok": true
+      },
+      {
+        "test": "test-elio-notion-live.cjs",
+        "ok": true
+      },
+      {
+        "test": "test-elio.cjs",
+        "ok": true
+      },
+      {
+        "test": "test-emitter2d.cjs",
+        "ok": true
+      },
+      {
+        "test": "test-live-audit-fixes.cjs",
+        "ok": true
+      },
+      {
+        "test": "test-motion.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-bar-follow.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-bar-seat.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-block-transcript.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-card-ownership.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-localized-completion.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-localized-composer.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-native-write.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-paste-model.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-pending-start.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-protocol-file.js",
+        "ok": false,
+        "timeout": true
+      },
+      {
+        "test": "test-notion-protocol-retry.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-results.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-routes.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-send-flow.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-send-inference.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-send-receipts.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-send-recovery.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-settings-visibility.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-slow-composer.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-slow-render.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-startup-fast.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-startup-lock.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-startup-recovery.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-startup-small-paste.js",
+        "ok": false,
+        "timeout": true
+      },
+      {
+        "test": "test-notion-startup.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-tool-status.js",
+        "ok": true
+      },
+      {
+        "test": "test-notion-turn-key.js",
+        "ok": true
+      },
+      {
+        "test": "test-qp2.cjs",
+        "ok": true
+      },
+      {
+        "test": "test-response-body-deadlines.js",
+        "ok": true
+      },
+      {
+        "test": "test-response-dispatch.js",
+        "ok": true
+      },
+      {
+        "test": "test-response-owner.js",
+        "ok": true
+      },
+      {
+        "test": "test-response-sweep.js",
+        "ok": true
+      },
+      {
+        "test": "test-response-turn-identity.js",
+        "ok": true
+      },
+      {
+        "test": "test-stop.js",
+        "ok": true
+      },
+      {
+        "test": "test-tool-error-recovery.js",
+        "ok": true
+      },
+      {
+        "test": "test-tool-guard-repair.js",
+        "ok": true
+      },
+      {
+        "test": "test-vfx-studio.cjs",
+        "ok": true
+      }
+    ],
+    "notes": [
+      "test-approach-summary.js fails with elioVersion.mount is not a function; the same failure was reproduced against the previous delivered core/main.js and Notion provider.",
+      "test-notion-protocol-file.js and test-notion-startup-small-paste.js exceeded the 60-second per-file limit. They are not counted as passed."
+    ]
+  },
+  "scope": "Source fixes with local regression and Chromium checks. User-specific provider/error log has not yet been supplied."
+}

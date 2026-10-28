@@ -719,7 +719,11 @@ const RSProvider = (() => {
   }
   function immutableKey(item) {
     if (!item) return "";
-    const cached = _immutableItemKey.get(item) || "";
+    let cached = _immutableItemKey.get(item) || "";
+    const remembered = _immutableItemCard.get(item);
+    if (cached.startsWith("bubble:") && remembered && safeRead(() => item.isConnected, false) && !immutableSameTurn(remembered, item, cached)) {
+      forgetImmutableItem(item, remembered); cached = "";
+    }
     if (cached.startsWith("bubble:") && safeRead(() => item.getAttribute("data-elio-notion-card"), null) === cached.slice(7)) return cached;
     if (cached.startsWith("row:")) {
       const anchor = safeRead(() => item.getAttribute("data-agent-service-scroll-anchor"), null);
@@ -745,7 +749,7 @@ const RSProvider = (() => {
     const current = blockId || (rowId ? "row:" + rowId : "");
     if (block) _immutableItemBlock.set(item, block);
     if (current && current !== cached) _immutableItemKey.set(item, current);
-    return current || cached;
+    return current;
   }
   function ensureImmutableStyle() {
     if (_immutableStyle && safeRead(() => _immutableStyle.isConnected, false)) return _immutableStyle;
@@ -910,8 +914,63 @@ const RSProvider = (() => {
     if (_immutableCompactTimer) clearTimeout(_immutableCompactTimer);
     _immutableCompactTimer = setTimeout(compactImmutableStyles, delay);
   }
+  // React can recycle an outer response element for ANOTHER turn. DOM identity,
+  // tool name and recency do not identify a message. Bind cards to the thread and
+  // semantic row; block-only layouts additionally need the preceding user turn.
+  const _immutableBoundaryIds = new WeakMap();
+  let _immutableBoundarySeq = 0;
+  function immutableTurnIdentity(item) {
+    const chat = conversationKey() || location.pathname || "";
+    const row = safeClosest(item, AGENT_ROW_SEL);
+    const anchor = row && safeRead(() => row.getAttribute("data-agent-service-scroll-anchor"), "");
+    const user = isUserItem(item);
+    if (anchor) return { chat, anchor, user, boundary: "", command: "" };
+    let boundary = "";
+    let items = allItems();
+    let index = items.indexOf(item);
+    if (index < 0) { items = collectItems(); index = items.indexOf(item); }
+    for (let i = index - 1; i >= 0; i--) {
+      if (!isUserItem(items[i])) continue;
+      const previous = items[i];
+      const block = safeQuery(previous, "[data-block-id]");
+      boundary = safeRead(() => previous.getAttribute("data-agent-service-scroll-anchor"), "") ||
+        (block && safeRead(() => block.getAttribute("data-block-id"), "")) || "";
+      if (!boundary) {
+        if (!_immutableBoundaryIds.has(previous)) _immutableBoundaryIds.set(previous, "node:" + (++_immutableBoundarySeq));
+        boundary = _immutableBoundaryIds.get(previous);
+      }
+      break;
+    }
+    const block = immutableCommandBlock(item);
+    const command = safeRead(() => (block || item).textContent, "").slice(0, 256).trim();
+    return { chat, anchor: "", user, boundary, command };
+  }
+  function immutableSameTurn(card, item, key) {
+    if (!card || !card.identity) return false;
+    const before = card.identity, after = immutableTurnIdentity(item);
+    if (before.chat !== after.chat || before.user !== after.user) return false;
+    if (before.anchor || after.anchor) return !!before.anchor && before.anchor === after.anchor;
+    // Stable block IDs survive ordinary remounts. A fresh ID needs evidence of
+    // the same user boundary AND command; ambiguous orphan spinners stay put.
+    if (before.boundary !== after.boundary) return false;
+    const sameCommand = !!before.command && !!after.command &&
+      (before.command.startsWith(after.command) || after.command.startsWith(before.command));
+    if (card.key === key) return !key.startsWith("bubble:") || sameCommand;
+    return !!before.boundary && sameCommand;
+  }
+  function forgetImmutableItem(item, card) {
+    // Remove only extension-owned references/attributes, never transcript content.
+    if (card && card.key.startsWith("bubble:") && safeRead(() => item.getAttribute("data-elio-notion-card"), "") === card.key.slice(7)) {
+      try { item.removeAttribute("data-elio-notion-card"); } catch {}
+    }
+    _immutableItemCard.delete(item);
+    _immutableItemKey.delete(item);
+    _immutableItemBlock.delete(item);
+    if (card && card.item === item) card.item = null;
+  }
   function migrateImmutableCard(item, card, key) {
-    if (!card || !key || card.key === key) return card;
+    if (!card || !key || !immutableSameTurn(card, item, key)) return null;
+    if (card.key === key) return refreshImmutableCardRef(item, card);
     const oldKey = card.key;
     if (oldKey) _immutableCards.delete(oldKey);
     card.key = key;
@@ -948,7 +1007,7 @@ const RSProvider = (() => {
     }
     if (!key) return;
     let byItem = _immutableItemCard.get(item) || null;
-    if (byItem && byItem.cleared) byItem = null;
+    if (byItem && (byItem.cleared || (safeRead(() => item.isConnected, false) && !immutableSameTurn(byItem, item, key)))) byItem = null;
     // The core may still hold the old response node when Notion has already
     // remounted it. Never migrate an active card BACK to a disconnected block.
     if (byItem && !safeRead(() => item.isConnected, false) && byItem.key) key = byItem.key;
@@ -956,13 +1015,14 @@ const RSProvider = (() => {
       byItem = migrateImmutableCard(item, byItem, key);
     }
     let prev = _immutableCards.get(key) || byItem || null;
-    // A full response-root remount can also assign a fresh block ID. Reown the
-    // one recent running card (the loop executes one tool at a time) rather than
-    // creating a second spinner that the old node can never settle.
+    if (prev && safeRead(() => item.isConnected, false) && !immutableSameTurn(prev, item, key)) prev = null;
+    // A full response-root remount can assign a fresh block ID. Recover only
+    // a verified same-turn card, including its final outcome; never select an
+    // orphan merely because it is recent or runs the same tool.
     if (!prev && safeRead(() => item.isConnected, false)) {
       const wanted = opts.label || "";
       const orphan = [..._immutableCards.values()].reverse().find((card) =>
-        card && (card.phase === "run" || card.phase === "idle") &&
+        card && immutableSameTurn(card, item, key) &&
         card.item && !safeRead(() => card.item.isConnected, false) &&
         (card.owned || Date.now() - (card.updatedAt || 0) < 15000) &&
         (!wanted || !card.label || card.label === wanted || card.label === "command"));
@@ -980,6 +1040,7 @@ const RSProvider = (() => {
       : (prev.block || _immutableItemBlock.get(item) || null);
     const next = {
       key,
+      identity: prev.identity || immutableTurnIdentity(liveItem),
       label: opts.label || prev.label || "command",
       detail: opts.detail != null ? opts.detail : (prev.detail || ""),
       phase: opts.phase || prev.phase || "idle",
@@ -1012,6 +1073,7 @@ const RSProvider = (() => {
     let card = _immutableCards.get(key) || _immutableItemCard.get(item) || null;
     if (card && card.cleared) return null;
     if (card && !safeRead(() => item.isConnected, false)) return card;
+    if (card && !immutableSameTurn(card, item, key)) return null;
     if (card && card.key && card.key !== key) card = migrateImmutableCard(item, card, key);
     return refreshImmutableCardRef(item, card);
   }
@@ -1069,7 +1131,8 @@ const RSProvider = (() => {
       if (key.startsWith("row:") || key.startsWith("bubble:")) {
         const row = key.startsWith("bubble:") && safeRead(() => card.item.isConnected, false)
           ? card.item : safeQuery(document, immutableSelector(key));
-        if (row) { card.item = row; _immutableItemCard.set(row, card); _immutableItemKey.set(row, key); card.missingAt = 0; continue; }
+        if (row && immutableSameTurn(card, row, key)) { card.item = row; _immutableItemCard.set(row, card); _immutableItemKey.set(row, key); card.missingAt = 0; continue; }
+        if (row && key.startsWith("bubble:")) forgetImmutableItem(row, card);
       }
       const block = card && card.block;
       const exists = !!(block && safeRead(() => block.isConnected, false) &&
@@ -1081,7 +1144,7 @@ const RSProvider = (() => {
       if (item && safeRead(() => item.isConnected, false)) {
         const replacement = immutableCommandBlock(item);
         const replacementKey = replacement && safeRead(() => replacement.getAttribute("data-block-id"), null);
-        if (replacementKey) {
+        if (replacementKey && immutableSameTurn(card, item, replacementKey)) {
           _immutableItemBlock.set(item, replacement);
           _immutableItemKey.set(item, replacementKey);
           card.block = replacement;
@@ -1125,7 +1188,10 @@ const RSProvider = (() => {
     for (const item of roots) {
       if (!item || !safeRead(() => item.isConnected, false) || safeClosest(item, "#rs-root")) continue;
       const remembered = _immutableItemCard.get(item);
-      const existing = remembered && !remembered.cleared ? remembered : null;
+      let existing = remembered && !remembered.cleared ? remembered : null;
+      if (existing && !immutableSameTurn(existing, item, immutableKey(item))) {
+        forgetImmutableItem(item, existing); existing = null;
+      }
       // Normal token churn inside the same block needs no work: its CSS selector
       // is already active. Only a block/root replacement needs synchronous rekey.
       if (existing && existing.block && safeRead(() => existing.block.isConnected, false) && safeRead(() => item.contains(existing.block), false) &&

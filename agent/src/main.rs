@@ -93,6 +93,7 @@ mod platform;
 mod checkpoints;
 mod mcp_addons;
 mod studio_session;
+mod studio_desktop;
 mod studio_launcher;
 mod media;
 mod cancellation;
@@ -393,7 +394,10 @@ impl McpRuntime {
         self.ensure().await?;
         let result = self.request("tools/list", serde_json::json!({})).await?;
         self.tools = result.get("tools").and_then(|v| v.as_array()).cloned().unwrap_or_default();
-        Ok(studio_session::public_tools(&self.tools))
+        let mut public = studio_session::public_tools(&self.tools);
+        public.retain(|t| !matches!(t["name"].as_str(), Some("studio_ui_snapshot"|"studio_ui_action")));
+        public.extend(studio_desktop::tools());
+        Ok(public)
     }
 
     async fn probe_studio(&mut self) -> anyhow::Result<()> {
@@ -1449,10 +1453,10 @@ async fn checkpoint_tool_inner(state: &AppState, engine: &str, id: &str, name: &
         return result;
     }
     journal.step(id,name);
-    let read_only = name.starts_with("get_") || name.starts_with("list_") || name.starts_with("search_") || name.starts_with("inspect_") || matches!(name,"script_read"|"script_grep"|"script_analysis"|"screen_capture");
+    let read_only = name.starts_with("get_") || name.starts_with("list_") || name.starts_with("search_") || name.starts_with("inspect_") || matches!(name,"script_read"|"script_grep"|"script_analysis"|"screen_capture"|"studio_ui_snapshot");
     if !read_only {journal.check_protection(&state.workspace,id,engine,name,&args)?;}
     if read_only { return roblox_tool(state,name,args).await; }
-    if name.contains("__") || args["datamodel_type"].as_str().map_or(false,|dm|dm!="Edit") {
+    if name == "studio_ui_action" || name.contains("__") || args["datamodel_type"].as_str().map_or(false,|dm|dm!="Edit") {
         journal.warn(id,"This task includes an external server or runtime operation. Studio task revert is disabled.");journal.save()?;
         let result=roblox_tool(state,name,args).await;let _=journal.save();return result;
     }
@@ -2034,6 +2038,7 @@ async fn addon_snapshot(state: &AppState) -> Vec<serde_json::Value> {
 
 async fn roblox_tool(state: &AppState, name: &str, args: serde_json::Value) -> anyhow::Result<McpOutput> {
     let _busy = InFlight::enter(&state.mcp_in_flight);
+    if matches!(name,"studio_ui_snapshot"|"studio_ui_action") { return studio_desktop::call(state,name,args).await; }
     if name.contains("__") {
         let (text, images) = state.addons.lock().await.call_tool(name, args).await?;
         return Ok(McpOutput { text, images });
@@ -2045,7 +2050,7 @@ async fn roblox_tool(state: &AppState, name: &str, args: serde_json::Value) -> a
             if !helper_is_dead(&error) { return Err(error); }
             tracing::warn!("call_tool '{name}' failed ({error:#}) — recycling helper once");
             mcp.reset().await;
-            let read_only=name.starts_with("get_") || name.starts_with("list_") || name.starts_with("search_") || name.starts_with("inspect_") || matches!(name,"script_read"|"script_grep"|"script_analysis"|"screen_capture");
+            let read_only=name.starts_with("get_") || name.starts_with("list_") || name.starts_with("search_") || name.starts_with("inspect_") || matches!(name,"script_read"|"script_grep"|"script_analysis"|"screen_capture"|"studio_ui_snapshot");
             anyhow::ensure!(read_only,"Tool connection dropped with an uncertain result. The mutating command was not replayed. Inspect Studio state before retrying: {error}");
             match mcp.call_tool(name, args).await {
                 Ok(result) => {

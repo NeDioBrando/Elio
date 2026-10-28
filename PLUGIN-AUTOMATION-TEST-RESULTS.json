@@ -1,0 +1,96 @@
+{
+  "product": "Elio",
+  "version": "1.0.1",
+  "build": {
+    "build_id": "elio-41c615ffc0bf4d1bf0f9",
+    "protocol": 2
+  },
+  "recorded_at_utc": "2026-10-28T17:58:09.799005+00:00",
+  "scope": "Native Windows Studio desktop tools; source changes, not installed on user PC.",
+  "rust": {
+    "command": "cargo test --locked --manifest-path agent/Cargo.toml --no-default-features",
+    "library_passed": 3,
+    "binary_passed": 181,
+    "failed": 0,
+    "ignored": 1,
+    "linux_debug_build_passed": true,
+    "warnings": 16
+  },
+  "powershell": {
+    "full_script_ast": "passed with PowerShell 7 on Linux",
+    "embedded_csharp": "complete compilation passed",
+    "input_struct_size_x64": 40,
+    "win32_input_executed": false
+  },
+  "generated_plugin_luau": {
+    "complete_chunks_compiled": 34,
+    "read_only_runtime_fixtures": 32,
+    "includes_hidden_ancestor_regression": true
+  },
+  "export_inspectors": {
+    "emitter2d_checks": 29,
+    "qp2_checks": 41,
+    "vfx_studio_checks": 31,
+    "eclipse_checks": 53,
+    "simulated_DataModels_only": true
+  },
+  "native_route": {
+    "actual_authenticated_roblox_websocket": "passed",
+    "tools": [
+      "studio_ui_snapshot",
+      "studio_ui_action"
+    ],
+    "platform_or_full_pc_refusal": "passed before MCP/input",
+    "permission_auto_enabled": false
+  },
+  "native_skill_http_apis": {
+    "emitter2d": "passed",
+    "qp2": "passed",
+    "vfx_studio": "passed",
+    "eclipse": "passed",
+    "complete_packaged_resource_reads": true
+  },
+  "source_contract": "passed: native catalogue/dispatch/checkpoint, permission/session/TTL, fixed script + JSON stdin, build resource hash, mirror parity, unchanged core/config.js",
+  "windows_packager": "actual packager with explicitly non-executable PE fixture passed; version identity, paths, ZIP integrity, every SHA256; NOT a Windows build",
+  "js_regressions": [
+    "emitter2d",
+    "qp2",
+    "vfx-studio",
+    "eclipse",
+    "stop",
+    "resource-lifecycle",
+    "live-audit-fixes",
+    "identity",
+    "tool-guard-repair",
+    "upstream-merge",
+    "elio",
+    "elio-audit",
+    "elio-chat-live",
+    "desktop-chat",
+    "updates",
+    "motion",
+    "auto-creator-enhancement",
+    "notion-protocol-file"
+  ],
+  "not_verified": [
+    "Windows compilation/execution on user PC",
+    "actual Studio PNG and per-monitor DPI behavior",
+    "UIA coverage of installed Studio/plugin versions",
+    "real click/type/scroll/keyboard input",
+    "end-to-end QP2 / VFX Studio acquisition",
+    "Emitter2D / Eclipse toolbar operations",
+    "visual playback / asset loading / cleanup acceptance"
+  ],
+  "requirements": [
+    "Windows",
+    "user-enabled Full PC access",
+    "no folder-only restriction; input not read-only",
+    "exactly one connected Studio and one RobloxStudioBeta process",
+    "main window fully on screen, foreground, plugins docked"
+  ],
+  "no_user_project_mutations": true,
+  "no_plugins_or_catalogs_bundled": true,
+  "no_install_or_trust_grants": true,
+  "source_baseline_sha256": "586d2d68862108ee5021fbd388a4fe764771604b5033e996a5171fde7d309010",
+  "source_baseline": "Elio-v1.0.1-Plugin-Addressing-Fix-SOURCE.zip"
+}

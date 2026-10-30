@@ -1,16 +1,31 @@
 // Built-in reference lookup: offline extension resource; no native/Studio mutation.
+// MV3 classic workers must import dependencies during initial script evaluation.
+// A first import from an async tool request is blocked after worker installation.
+let assetLibraryScriptError = null;
+try {
+  if (!globalThis.ElioAssetLibrary) importScripts("core/asset-library.js");
+  if (typeof globalThis.ElioAssetLibrary?.create !== "function") {
+    throw Error("Bundled asset library did not register its API");
+  }
+} catch (error) {
+  // A damaged library must not stop the bridge or unrelated tools.
+  assetLibraryScriptError = error;
+}
 let assetLibraryReady;
 async function localAssetLibrary(request){
   if(!assetLibraryReady)assetLibraryReady=(async()=>{
-    if(!globalThis.ElioAssetLibrary){
-      if(typeof importScripts==="function")importScripts("core/asset-library.js");
-      else await import("./core/asset-library.js");
-    }
+    if (assetLibraryScriptError) throw assetLibraryScriptError;
     const response=await fetch(chrome.runtime.getURL("core/asset-library/catalog.json"));
-    if(!response.ok)throw Error("Bundled asset catalog unavailable");
-    return ElioAssetLibrary.create(await response.json());
+    if(!response.ok)throw Error("Bundled asset catalog unavailable (HTTP "+response.status+")");
+    return globalThis.ElioAssetLibrary.create(await response.json());
   })().catch(e=>{assetLibraryReady=null;throw e;});
-  try{return (await assetLibraryReady)(request);}catch(e){return {ok:false,error:String(e.message||e)};}
+  try{return (await assetLibraryReady)(request);}catch(e){
+    const reason=String(e.message||e);
+    const recovery="Replace the complete elio-Extension folder with the current build, then click Reload for Elio at chrome://extensions. Full PC access is not required.";
+    return {ok:false,error_code:"library_unavailable",reason,recovery,
+      resource:assetLibraryScriptError?"core/asset-library.js":"core/asset-library/catalog.json",
+      error:"library_unavailable: "+reason+". "+recovery};
+  }
 }
 // Elio build compatibility: distinct source builds may share product version 1.0.1.
 let elioBuild={build_id:"unknown",protocol:0}, elioVersionWarning="";

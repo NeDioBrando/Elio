@@ -17,6 +17,12 @@ node .\test-full-audit.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Full audit behavioral regressions failed.' }
 node .\test-asset-library.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Built-in asset library tests failed.' }
+if (-not $env:CHROMIUM_PATH -and -not $env:ELIO_TEST_CHROMIUM) {
+  node .\release-tools\node_modules\playwright\cli.js install chromium
+  if ($LASTEXITCODE -ne 0) { throw 'Chrome regression browser installation failed.' }
+}
+node .\test-asset-library-worker.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Asset library Chrome service worker regression failed.' }
 node .\test-tool-error-recovery.js
 if ($LASTEXITCODE -ne 0) { throw 'Tool error recovery regression failed.' }
 node .\test-stop.js

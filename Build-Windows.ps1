@@ -13,6 +13,10 @@ $env:NODE_PATH = (Join-Path $PSScriptRoot 'release-tools/node_modules') + [IO.Pa
 # Compile .NET Framework fixture EXEs under Windows PowerShell 5.1, not pwsh 7.
 & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -File .\test-updater-helper.ps1
 if ($LASTEXITCODE -ne 0) { throw 'Windows updater helper tests failed.' }
+node .\test-full-audit.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Full audit behavioral regressions failed.' }
+node .\test-asset-library.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Built-in asset library tests failed.' }
 node .\test-tool-error-recovery.js
 if ($LASTEXITCODE -ne 0) { throw 'Tool error recovery regression failed.' }
 node .\test-stop.js

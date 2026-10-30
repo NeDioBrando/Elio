@@ -1,0 +1,43 @@
+{
+  "counts": {
+    "texture": 5228,
+    "mesh": 287,
+    "total": 5515
+  },
+  "catalog_sha256": "1a4d89da2c27d17135089cdeecd407029fbdc3bc8d3f8d96976200415ff0f802",
+  "implementation": "offline extension metadata lookup; existing guarded Studio tools perform requested authoring",
+  "passed": [
+    "test-asset-library.cjs: actual search engine, production dispatch, lazy background loader, caching, RU/EN, pairs, variants, bounds and injection-as-data",
+    "test-message-error-preservation.js: 563 unrelated function bodies unchanged; scoped additions in ensureTools/runToolImpl/beginTaskCheckpoint",
+    "tool error recovery, Stop, Notion ownership/status/block transcript",
+    "identity, complete rename, extension parity, 71 scripts syntax audit",
+    "upstream merge, live chat, desktop chat, lifecycle, Emitter2D, QP2, VFX Studio, Eclipse, Oriveo, Figma, vault, theme, updates, live audit",
+    "actual Luau fixture suites: Emitter2D/QP2/VFX/Eclipse/Motion and generated plugin inspectors",
+    "Windows LF/CRLF positive and negative guards; desktop routing contract",
+    "actual Windows packager fixture: bundled JSON/engine/docs/report and all package hashes",
+    "Windows cp1252 regression: real contract, stamp and package fixture",
+    "expanded library: 5515 entries; ordered frame search/get, invalid sequence rejection, wrapper ID separation, official image metadata, idempotent merge"
+  ],
+  "not_run": [
+    "native Windows build/desktop input; unchanged native source",
+    "live loading/rendering/permission checks for individual catalog assets"
+  ],
+  "source_names": "preserved; not visually inferred",
+  "asset_rights": "source statements retained; underlying asset permissions not inferred",
+  "binary_assets_bundled": false,
+  "added": {
+    "texture": 681,
+    "mesh": 127,
+    "total": 808
+  },
+  "expansion": {
+    "fox_official_metadata_checked": 445,
+    "fox_asset_type_id": 1,
+    "bloxodes_mesh_records": 120,
+    "pew_resource_instances": 267,
+    "pew_unique_mesh_ids": 7,
+    "pew_frame_sequences": 11,
+    "remote_code_executed": false,
+    "scripts_bundled": false
+  }
+}

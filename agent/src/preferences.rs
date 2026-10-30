@@ -172,37 +172,26 @@ impl PreferencesStore {
         self.inner.read().map(|p| p.clone()).unwrap_or_default()
     }
 
-    pub fn replace(&self, mut prefs: DesktopPreferences) -> anyhow::Result<DesktopPreferences> {
-        prefs.normalize();
-        {
-            let mut guard = self.inner.write().map_err(|_| anyhow::anyhow!("preferences lock poisoned"))?;
-            *guard = prefs.clone();
-        }
-        self.save(&prefs)?;
-        Ok(prefs)
+    fn edit_persisted(&self, edit:impl FnOnce(&mut DesktopPreferences)->anyhow::Result<()>) -> anyhow::Result<DesktopPreferences> {
+        let mut guard=self.inner.write().map_err(|_|anyhow::anyhow!("preferences lock poisoned"))?;
+        let mut next=guard.clone();edit(&mut next)?;next.normalize();
+        // Keep read/modify/write serialized, and publish only after durable save succeeds.
+        self.save(&next)?;*guard=next.clone();Ok(next)
     }
-
-    pub fn patch(&self, patch: serde_json::Value) -> anyhow::Result<DesktopPreferences> {
-        let current = self.snapshot();
-        let mut value = serde_json::to_value(current)?;
-        let dst = value.as_object_mut().ok_or_else(|| anyhow::anyhow!("preferences are not an object"))?;
-        let src = patch.as_object().ok_or_else(|| anyhow::anyhow!("preferences patch must be an object"))?;
-        for (key, val) in src {
-            if dst.contains_key(key) || key == "rsCustomPrompt" || key == "rsAppearance" {
-                dst.insert(key.clone(), val.clone());
-            }
-        }
-        let next = serde_json::from_value::<DesktopPreferences>(value)?;
-        self.replace(next)
+    pub fn replace(&self, prefs:DesktopPreferences)->anyhow::Result<DesktopPreferences> {
+        self.edit_persisted(|next|{*next=prefs;Ok(())})
     }
-
-    pub fn update<F>(&self, mut edit: F) -> anyhow::Result<DesktopPreferences>
-    where
-        F: FnMut(&mut DesktopPreferences),
-    {
-        let mut next = self.snapshot();
-        edit(&mut next);
-        self.replace(next)
+    pub fn patch(&self, patch:serde_json::Value)->anyhow::Result<DesktopPreferences> {
+        self.edit_persisted(|next|{
+            let mut value=serde_json::to_value(&*next)?;
+            let dst=value.as_object_mut().ok_or_else(||anyhow::anyhow!("preferences are not an object"))?;
+            let src=patch.as_object().ok_or_else(||anyhow::anyhow!("preferences patch must be an object"))?;
+            for (key,val) in src {if dst.contains_key(key)||key=="rsCustomPrompt"||key=="rsAppearance"{dst.insert(key.clone(),val.clone());}}
+            *next=serde_json::from_value(value)?;Ok(())
+        })
+    }
+    pub fn update<F>(&self,mut edit:F)->anyhow::Result<DesktopPreferences> where F:FnMut(&mut DesktopPreferences) {
+        self.edit_persisted(|next|{edit(next);Ok(())})
     }
 
     fn save(&self, prefs: &DesktopPreferences) -> anyhow::Result<()> {
@@ -211,9 +200,6 @@ impl PreferencesStore {
         }
         let tmp = self.path.with_extension("json.tmp");
         std::fs::write(&tmp, serde_json::to_vec_pretty(prefs)?)?;
-        if self.path.exists() {
-            std::fs::remove_file(&self.path)?;
-        }
         std::fs::rename(&tmp, &self.path)?;
         Ok(())
     }
@@ -453,4 +439,19 @@ mod tests {
         let _=std::fs::remove_file(root);
     }
 
+}
+
+#[cfg(test)] mod audit_persistence_tests {
+    use super::*;
+    #[test] fn failed_settings_save_does_not_publish_unsaved_preferences() {
+        let root=std::env::temp_dir().join(format!("elio-audit-preferences-fail-{}",std::process::id()));std::fs::create_dir_all(root.join("settings.json")).unwrap();
+        let store=PreferencesStore::load_from(root.join("settings.json"));let before=serde_json::to_value(store.snapshot()).unwrap();
+        assert!(store.patch(serde_json::json!({"rsLanguage":"ru"})).is_err());assert_eq!(serde_json::to_value(store.snapshot()).unwrap(),before);assert!(root.join("settings.json").is_dir());std::fs::remove_dir_all(root).unwrap();
+    }
+    #[test] fn concurrent_updates_do_not_lose_changes() {
+        let root=std::env::temp_dir().join(format!("elio-audit-preferences-concurrent-{}",std::process::id()));std::fs::create_dir_all(&root).unwrap();let path=root.join("settings.json");
+        let store=std::sync::Arc::new(PreferencesStore::load_from(path.clone()));store.update(|p|p.custom_prompt=Some(String::new())).unwrap();
+        let mut workers=Vec::new();for _ in 0..16{let store=store.clone();workers.push(std::thread::spawn(move||store.update(|p|p.custom_prompt.as_mut().unwrap().push('x')).unwrap()));}for worker in workers{worker.join().unwrap();}
+        assert_eq!(store.snapshot().custom_prompt.as_deref(),Some("xxxxxxxxxxxxxxxx"));assert_eq!(PreferencesStore::load_from(path).snapshot().custom_prompt,store.snapshot().custom_prompt);std::fs::remove_dir_all(root).unwrap();
+    }
 }

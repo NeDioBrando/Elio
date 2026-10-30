@@ -1,0 +1,212 @@
+[
+  {
+    "test": "test-1.20.0-regressions.js",
+    "initial_state": "fail",
+    "diagnostic": "yntax core/main.js\nok - syntax providers/notion.js\nok - syntax elio-Extension/core/main.js\nok - syntax elio-Extension/providers/notion.js\nok - cut-off commands do not stop the run after 3 failures\nok - repeated cut-off commands get a split-the-edit hint\nok - attachment/large sends are never auto-retried\nok - Notion provisional composer survives innerHeight 0 (Edge)\nok - Notion composer has a relaxed late acceptance for Edge\n\nnode:fs:440\n    return binding.readFileUtf8(path, stringToFlags(options.flag));\n                   ^\n\nError: ENOENT: no such file or directory, open '/data/Elio-vfx-library/agent/src/updater.rs'\n    at Object.readFileSync (node:fs:440:20)\n    at read (/data/Elio-vfx-library/test-1.20.0-regressions.js:10:26)\n    at Object.<anonymous> (/data/Elio-vfx-library/test-1.20.0-regressions.js:62:13)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47 {\n  errno: -2,\n  code: 'ENOENT',\n  syscall: 'open',\n  path: '/data/Elio-vfx-library/agent/src/updater.rs'\n}\n\nNode.js v24.14.1\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-1.22.0-debug-capture.js",
+    "initial_state": "fail",
+    "diagnostic": "\nAssertionError [ERR_ASSERTION]: routes and update-activity exclusion\n    at /data/Elio-vfx-library/test-1.22.0-debug-capture.js:116:5\n    at Object.<anonymous> (/data/Elio-vfx-library/test-1.22.0-debug-capture.js:119:3)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-1.24.10-fixes.js",
+    "initial_state": "fail",
+    "diagnostic": "PASS Notion reformatted startup draft is accepted and delivered exactly once without a fallback paste.\nPASS Notion foreign startup draft is preserved and not submitted.\nPASS Notion block/Markdown-rendered result receipt confirms delivery without a second click.\nPASS plan-only auto-continue detection, connected add-on note and ready follow-up acceptance.\nPASS checklist seeds numbered steps, adopts plans from command replies, tracks Step N progress and completes.\nPASS auto enhancer leaves ordinary commands alone, runs once before creator saves and falls back on failure.\n\nAssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(main.includes('One-time task reference (separate from the command result above')&&!main.includes('command has NOT run yet'))\n\n    at /data/Elio-vfx-library/test-1.24.10-fixes.js:114:3 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-1.24.12-fixes.js",
+    "initial_state": "fail",
+    "diagnostic": "\nnode:internal/assert/utils:77\n    throw err;\n    ^\n\nAssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(/A\\.pendingReference=reference/.test(main)&&/One-time task reference \\(separate from the command result above/.test(main))\n\n    at Object.<anonymous> (/data/Elio-vfx-library/test-1.24.12-fixes.js:24:1)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v24.14.1\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-1.24.13-merged-fixes.js",
+    "initial_state": "fail",
+    "diagnostic": "\nnode:fs:440\n    return binding.readFileUtf8(path, stringToFlags(options.flag));\n                   ^\n\nError: ENOENT: no such file or directory, open '../../development/1.0.1/package.py'\n    at Object.readFileSync (node:fs:440:20)\n    at Object.<anonymous> (/data/Elio-vfx-library/test-1.24.13-merged-fixes.js:24:15)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47 {\n  errno: -2,\n  code: 'ENOENT',\n  syscall: 'open',\n  path: '../../development/1.0.1/package.py'\n}\n\nNode.js v24.14.1\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-1.24.13-status.js",
+    "initial_state": "fail",
+    "diagnostic": "\nevalmachine.<anonymous>:131\n    type: \"rs-status\", version_warning:elioVersionWarning, build_id:elioBuild.build_id, connected: mode === \"local\" ? localReady : connected, mcpAlive: mode === \"local\" ? localReady : mcpAlive, studio: studioConnected, studioApp, studioProc,\n                                       ^\n\nReferenceError: elioVersionWarning is not defined\n    at Object.statusObj (evalmachine.<anonymous>:131:40)\n    at Object.<anonymous> (/data/Elio-vfx-library/test-1.24.13-status.js:19:14)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47\n\nNode.js v24.14.1\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-1.24.16-fixes.js",
+    "initial_state": "fail",
+    "diagnostic": "\n<anonymous_script>:26\n      if(!fullStartup) {\n      ^\n\nReferenceError: fullStartup is not defined\n    at systemPrompt (eval at <anonymous> (/data/Elio-vfx-library/test-1.24.16-fixes.js:11:32), <anonymous>:26:7)\n    at Object.<anonymous> (/data/Elio-vfx-library/test-1.24.16-fixes.js:12:19)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47\n\nNode.js v24.14.1\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-1.24.17-fixes.js",
+    "initial_state": "fail",
+    "diagnostic": "\nevalmachine.<anonymous>:35\n    const max=inputBudget();\n              ^\n\nReferenceError: inputBudget is not defined\n    at Object.prepareToolFeedback (evalmachine.<anonymous>:35:15)\n    at reconstruct (/data/Elio-vfx-library/test-1.24.17-fixes.js:19:18)\n    at Object.<anonymous> (/data/Elio-vfx-library/test-1.24.17-fixes.js:27:10)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47\n\nNode.js v24.14.1\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-approach-summary.js",
+    "initial_state": "fail",
+    "diagnostic": "\nevalmachine.<anonymous>:173\nelioVersion.mount(popupUpdateHost,{current:chrome.runtime.getManifest().version,\n            ^\n\nTypeError: elioVersion.mount is not a function\n    at evalmachine.<anonymous>:173:13\n    at Script.runInContext (node:vm:149:12)\n    at Object.runInContext (node:vm:301:6)\n    at /data/Elio-vfx-library/test-approach-summary.js:31:19\n    at Object.<anonymous> (/data/Elio-vfx-library/test-approach-summary.js:34:24)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-blender.js",
+    "initial_state": "fail",
+    "diagnostic": "estart blender\nPASS  bg routes blender tools only when connected\nPASS  bg sendLocalEngine for one-shot\nPASS  main connect uses blender_connect\nPASS  main does not intercept blender tools when disconnected\nPASS  cards do not claim blender is already connected\nPASS  prompt no uvx requirement\nPASS  prompt does not mention hop\nFAIL  glass tokens untouched\nPASS  ops script has export and import\nPASS  ops script writes status file\nPASS  ops can group objects\nPASS  ops has 24+ commands\nPASS  bg ships blender_ops.py\nPASS  bg replaces every ARGS token\nPASS  execute_code maps EEVEE_NEXT\nPASS  ops loads ARGS as JSON\nPASS  ops has daily commands\nPASS  bg export filepath is optional\nPASS  main intercepts asset_bridge_import\nPASS  main auto-imports export to Studio\nPASS  disconnect blender button\nPASS  connect verifies actual scene with native transport\nPASS  dump falls back to all meshes\nPASS  blenderCall returns meshes\nPASS  blender flag survives SW restart\nPASS  asset_bridge is not a queue stub in the intercept\nPASS  blender_once --probe prints UP or DOWN\nPASS  probe of empty port is DOWN\nPASS  align camera axis command\nPASS  view axis + camera_to_view + lens\nPASS  bg maps blender_align_camera\nPASS  blender scale/bevel/keyframe/track\nPASS  bg maps new blender cmds\nPASS  probe sees mock addon\nPASS  once send prints ELIO_BLENDER_OK\nPASS  once round-trip result\n\nSome blender checks failed.\n\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-bridges.js",
+    "initial_state": "fail",
+    "diagnostic": "\n/data/Elio-vfx-library/test-bridges.js:11\nif (!key) throw new Error(\"Run against an isolated bridge with ELIO_TEST_KEY set.\");\n          ^\n\nError: Run against an isolated bridge with ELIO_TEST_KEY set.\n    at Object.<anonymous> (/data/Elio-vfx-library/test-bridges.js:11:17)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47\n\nNode.js v24.14.1\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-clarification.js",
+    "initial_state": "fail",
+    "diagnostic": "\nReferenceError: fullStartup is not defined\n    at Object.systemPrompt (evalmachine.<anonymous>:14:7)\n    at /data/Elio-vfx-library/test-clarification.js:30:434\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-claude.js",
+    "initial_state": "fail",
+    "diagnostic": "PASS  claude provider id\nPASS  claude finds ProseMirror composer\nPASS  claude user-message selector\nPASS  claude send/stop buttons\nPASS  claude typeAndSend\nPASS  bg PROVIDER_URLS has claude.ai\nPASS  overlay Switch AI lists Claude\nPASS  popup SUPPORTED_HOSTS has claude.ai\nPASS  manifest matches claude.ai\nPASS  manifest loads providers/claude.js\nFAIL  glass tokens untouched\nPASS  every Claude family has caps\nPASS  does not lock the model picker\nPASS  thinking is read for every model\nPASS  Haiku gets a compact prompt\nPASS  Opus/Fable get long thinking windows\nPASS  user send starts the agent loop\nPASS  prompt works on every Claude model\nPASS  project chats are keyed\nPASS  vision attach works\nPASS  locked composer still counts as ready\nPASS  getEditor falls back if the composer is locked or unlaid-out\nPASS  bar stays on screen without a composer\nPASS  Start is not gated on a Claude family\nPASS  banner is not a fake model-switch\nPASS  DeepSeek Start is not blocked on Expert\n\nSome Claude checks failed.\n\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-clickup-provider.js",
+    "initial_state": "fail",
+    "diagnostic": "\nnode:assert:152\n  throw new AssertionError(obj);\n  ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n'1.0.1' !== '1.0.0'\n\n    at Object.<anonymous> (/data/Elio-vfx-library/test-clickup-provider.js:13:8)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: '1.0.1',\n  expected: '1.0.0',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v24.14.1\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-design-upgrade.js",
+    "initial_state": "fail",
+    "diagnostic": "\nnode:assert:152\n  throw new AssertionError(obj);\n  ^\n\nAssertionError [ERR_ASSERTION]: 'default' == 'amethyst'\n    at Object.<anonymous> (/data/Elio-vfx-library/test-design-upgrade.js:13:9)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 'default',\n  expected: 'amethyst',\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v24.14.1\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-desktop-regression.js",
+    "initial_state": "fail",
+    "diagnostic": "\n/data/Elio-vfx-library/test-desktop-regression.js:64\n  if (actual !== expected) throw new Error(\"Protected elio file changed: \" + path + \"\\nexpected \" + expected + \"\\nactual   \" + actual);\n                           ^\n\nError: Protected elio file changed: core/config.js\nexpected 54e14472bb723ed02c949c2a3db2c8aad26ce6f8\nactual   4fb81f09e1a2ec2d81da67bfeb2381207f4c6f3c\n    at Object.<anonymous> (/data/Elio-vfx-library/test-desktop-regression.js:64:34)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47\n\nNode.js v24.14.1\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-donation-links.js",
+    "initial_state": "fail",
+    "diagnostic": "\nevalmachine.<anonymous>:30\n    const palette = ELIO_PALETTES[sharedAppearance.theme], root=document.documentElement;\n                                                                ^\n\nReferenceError: document is not defined\n    at applySharedAppearance (evalmachine.<anonymous>:30:65)\n    at evalmachine.<anonymous>:38:3\n    at Script.runInContext (node:vm:149:12)\n    at Script.runInNewContext (node:vm:154:17)\n    at Object.runInNewContext (node:vm:310:38)\n    at Object.<anonymous> (/data/Elio-vfx-library/test-donation-links.js:10:15)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n\nNode.js v24.14.1\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-notion-protocol-file.js",
+    "initial_state": "timeout",
+    "diagnostic": "Command '['node', 'test-notion-protocol-file.js']' timed out after 100 seconds",
+    "current_suite": "pass",
+    "classification": "Suite completed successfully with adequate timeout"
+  },
+  {
+    "test": "test-notion-startup-small-paste.js",
+    "initial_state": "timeout",
+    "diagnostic": "Command '['node', 'test-notion-startup-small-paste.js']' timed out after 100 seconds",
+    "current_suite": "pass",
+    "classification": "Suite completed successfully with adequate timeout"
+  },
+  {
+    "test": "test-package-version-display.js",
+    "initial_state": "fail",
+    "diagnostic": "\n/data/Elio-vfx-library/test-package-version-display.js:7\nassert.equal(nodes.sidebarVersion.textContent,'1.19.11');assert.equal(nodes.settingsVersion.textContent,'1.19.11');assert.equal(nodes.titleVersion.textContent,'1.19.11');assert.equal(nodes.updateInstalled.textContent,'1.19.11');assert.equal(nodes.updateLatest.textContent,'1.19.11');\n                                  ^\n\nTypeError: Cannot read properties of undefined (reading 'textContent')\n    at Object.<anonymous> (/data/Elio-vfx-library/test-package-version-display.js:7:35)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47\n\nNode.js v24.14.1\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-provider-preservation.js",
+    "initial_state": "fail",
+    "diagnostic": "\n/data/Elio-vfx-library/test-provider-preservation.js:27\n for(const [fn,ast]of Object.entries(before)){if(fn==='RSProvider'||fn==='waitFor'||fn==='truncateForSend'||name==='qwen-net.js'&&fn==='consume'||exceptions[key]?.has(fn))continue;if(ast!==after[fn])(()=>{throw Error('Unexpected healthy control-flow change: '+name+' > '+fn);})();else total++;}\n                                                                                                                                                                                                             ^\n\nError: Unexpected healthy control-flow change: notion.js > renderReadyAcknowledgement\n    at /data/Elio-vfx-library/test-provider-preservation.js:27:212\n    at Object.<anonymous> (/data/Elio-vfx-library/test-provider-preservation.js:27:278)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47\n\nNode.js v24.14.1\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-studio-status.js",
+    "initial_state": "fail",
+    "diagnostic": "\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at /data/Elio-vfx-library/test-studio-status.js:8:93 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-supported-ai-icons.js",
+    "initial_state": "fail",
+    "diagnostic": "\nnode:assert:152\n  throw new AssertionError(obj);\n  ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n17 !== 15\n\n    at Object.<anonymous> (/data/Elio-vfx-library/test-supported-ai-icons.js:7:8)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 17,\n  expected: 15,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v24.14.1\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-supported-ai-links.js",
+    "initial_state": "fail",
+    "diagnostic": "\nnode:assert:152\n  throw new AssertionError(obj);\n  ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n17 !== 15\n\n    at Object.<anonymous> (/data/Elio-vfx-library/test-supported-ai-links.js:4:8)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 17,\n  expected: 15,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v24.14.1\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-ultracode-default.js",
+    "initial_state": "fail",
+    "diagnostic": "\nnode:assert:152\n  throw new AssertionError(obj);\n  ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ '#80613d'\n- '#e9ba53'\n\n    at Object.<anonymous> (/data/Elio-vfx-library/test-ultracode-default.js:20:155)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: '#80613d',\n  expected: '#e9ba53',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v24.14.1\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-unattended-run.js",
+    "initial_state": "fail",
+    "diagnostic": "\nReferenceError: clearTimeout is not defined\n    at Object.wakeDueSleepers (evalmachine.<anonymous>:4:72)\n    at /data/Elio-vfx-library/test-unattended-run.js:33:16\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-v111.js",
+    "initial_state": "fail",
+    "diagnostic": "PASS  persona catalogue removed\nPASS  persona helper removed\nPASS  roblox prompt has no persona block\nPASS  legacy unreal engine falls back to roblox prompt\nPASS  legacy unreal engine is not an Unreal prompt\nPASS  local prompt still builds\nPASS  legacy anim engine falls back to roblox prompt\nPASS  legacy anim engine is not a dedicated AN prompt\nPASS  roblox prompt keeps animation tools\nPASS  roblox prompt carries SYS_MARKER first\nPASS  roblox prompt keeps JSON command contract\nPASS  img2model names the flow\nPASS  img2model includes user notes\nPASS  img2model verify step\nPASS  img2model does not target Unreal\nPASS  background ENGINES is roblox+local\nPASS  background maps non-local WS to 17613\nPASS  main activeEngine folds anim into roblox\nPASS  main setEngine folds anim into roblox\nPASS  popup engine list is roblox+local\nPASS  no Unreal engine button in the bar\nPASS  no Animation engine button in the bar\nPASS  execute_luau auto-chunks around 24KB\nPASS  luau chunks use long-strings not JSONDecode\nFAIL  manifest at 1.11.0 or newer\nFAIL  manifest name is elio\n\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-v112.js",
+    "initial_state": "fail",
+    "diagnostic": "  loop retries dead turns once\nPASS  retry budget refills on healthy turn\nPASS  late-reply rescue before empty\nPASS  crax targets new composer\nPASS  crax targets composer-bar/form\nPASS  crax detects auth gate\nPASS  crax modeWarning gates start\nPASS  crax exports modeWarning\nPASS  background auto-heals dead MCP helper\nPASS  heal only on studio engines, never mid-tool\nPASS  menu has Repair Studio link\nPASS  library cards have copy button\nPASS  copy intercepts before send\nPASS  popup keeps all load-bearing IDs\nPASS  popup has 2 engine segments, no Anim/Unreal\nFAIL  glass has @supports fallback\nFAIL  glass base opacity readable\nFAIL  manifest at 1.12.0 or newer\nPASS  deepseek send button has fallbacks\nPASS  deepseek start does not require Expert radios\nPASS  deepseek start respects a legacy user-chosen Vision tab\nPASS  deepseek start does not wait for a deleted picker\nPASS  deepseek user detect survives hashed-class churn\nPASS  deepseek stamps 2026-09 UI beacon\nPASS  SendAbortedError exists + thrown on dead send\nPASS  agentLoop swallows SendAbortedError\nPASS  startSession swallows SendAbortedError\nPASS  composer-unlock failsafe in meter loop\nPASS  error hook filters on chrome-extension origin\nPASS  crax targets .msg/.bubble turns\nPASS  crax generation via is-streaming\nPASS  crax stop clicks the send button\nPASS  crax excludes reasoning from parsing\nPASS  crax form-submit fallback\n\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-v115.js",
+    "initial_state": "fail",
+    "diagnostic": "rsona gone from prompt builder\nPASS  blender MCP connect in menu\nPASS  blender disconnect button\nPASS  blender prompt when connected\nPASS  overlay atelier skin\nPASS  overlay float is a card not a capsule\nPASS  overlay panels revamp\nPASS  overlay settings menu has photo head\nPASS  overlay cards panel painted\nPASS  log-only panel\nPASS  no motion tab\nPASS  UI Creator removed from interface\nPASS  forge gui toggle removed\nFAIL  robux donation links have explicit amounts\nPASS  setup card 1.17.19\nPASS  chat gui atelier composer\nPASS  manifest exposes ui photos\nPASS  sharp edges on overlay chrome\nPASS  mode lock SYSTEM_STATE\nPASS  work mode does not clobber extra thinking\nPASS  engine switch ignores echo\nPASS  plan mode toggle + prompt\nPASS  cards RNG button\nPASS  script_read_analysis alias\nPASS  analysis no loadstring / no task.wait false positive\nPASS  new studio daily commands\nPASS  new blender commands\nPASS  freebuff slow-chat not treated as hung\nFAIL  elio_screenshot send-to-self\nFAIL  condo lock is condo-topic only\nPASS  automatic debugger\nPASS  undo transaction button\nFAIL  context compression\nPASS  multi-agent\nFAIL  studio plus 40 commands file\nPASS  developer product create\nFAIL  v18 version\nPASS  devproduct reaches game\nPASS  claude sonnet5 no-refuse\nPASS  bridge reconnect retry\nPASS  request understanding in prompts\nPASS  task wrap + create rider\n\nSome v1.16 checks failed.\n\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  },
+  {
+    "test": "test-v118.js",
+    "initial_state": "fail",
+    "diagnostic": "ot routed\nPASS  attach alias attach_recent_image routed\nPASS  attach alias copy_screenshot routed\nPASS  attach alias paste_screenshot routed\nPASS  attach alias elio_attach routed\nPASS  attach_feedback reads workspace files through the bridge\nPASS  attach_feedback stages into the composer via the provider\nPASS  attach_feedback can attach without attaching (copy only)\nPASS  attach_feedback refuses on non-vision sites\nPASS  capture results are recorded for later re-sends\nPASS  the popup offers Copy + Use as feedback\nPASS  the popup can re-attach by hand\nPASS  attach_feedback is featured in the tool list\n\nbackground.js:1054\nconst desktopPinReady = chrome.storage.session.get(\"elioDesktopPinnedTab\").then(value => {\n                                               ^\n\nTypeError: Cannot read properties of undefined (reading 'get')\n    at background.js:1054:48\n    at Script.runInContext (node:vm:149:12)\n    at Object.runInContext (node:vm:301:6)\n    at makeWorker (/data/Elio-vfx-library/test-v118.js:226:6)\n    at /data/Elio-vfx-library/test-v118.js:251:27\n    at Object.<anonymous> (/data/Elio-vfx-library/test-v118.js:642:3)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n\nNode.js v24.14.1\n",
+    "current_suite": null,
+    "classification": "Historical assertion/fixture or external-service prerequisite; retained for review, not silently disabled"
+  }
+]

@@ -1,3 +1,17 @@
+// Built-in reference lookup: offline extension resource; no native/Studio mutation.
+let assetLibraryReady;
+async function localAssetLibrary(request){
+  if(!assetLibraryReady)assetLibraryReady=(async()=>{
+    if(!globalThis.ElioAssetLibrary){
+      if(typeof importScripts==="function")importScripts("core/asset-library.js");
+      else await import("./core/asset-library.js");
+    }
+    const response=await fetch(chrome.runtime.getURL("core/asset-library/catalog.json"));
+    if(!response.ok)throw Error("Bundled asset catalog unavailable");
+    return ElioAssetLibrary.create(await response.json());
+  })().catch(e=>{assetLibraryReady=null;throw e;});
+  try{return (await assetLibraryReady)(request);}catch(e){return {ok:false,error:String(e.message||e)};}
+}
 // Elio build compatibility: distinct source builds may share product version 1.0.1.
 let elioBuild={build_id:"unknown",protocol:0}, elioVersionWarning="";
 const elioBuildReady=Promise.resolve().then(()=>fetch(chrome.runtime.getURL("core/build-info.json"))).then(r=>r.json()).then(v=>{elioBuild=v;}).catch(()=>{});
@@ -2174,6 +2188,9 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         const ok = r.ok || tools.length > 0;
         sendResponse({ ok, tools, error: r.ok ? undefined : r.error });
         break;
+      }
+      case "asset_library": {
+        sendResponse(await localAssetLibrary(msg.request));break;
       }
       case "skills": {
         const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),28000);

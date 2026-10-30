@@ -2,7 +2,16 @@
 const elioToolGuard = (() => {
   const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
   function validate(value, schema, path = 'arguments', depth = 0) {
+    if (schema === false) return [`${path}: value is forbidden by the tool schema`];
     if (!object(schema) || depth > 12) return [];
+    // MCP catalogues are external input. Malformed schema collections must
+    // become feedback, not throw before the agent's tool-error boundary.
+    const malformed = ['enum', 'required', 'anyOf', 'oneOf', 'allOf'].find(key =>
+      Object.hasOwn(schema, key) && (!Array.isArray(schema[key]) ||
+        (key === 'required' && schema[key].some(entry => typeof entry !== 'string')) ||
+        (['anyOf','oneOf','allOf'].includes(key) && schema[key].some(entry => typeof entry !== 'boolean' && !object(entry)))));
+    if (malformed) return [`${path}: invalid tool schema (${malformed}); refresh the tool catalogue`];
+    if (schema.properties != null && !object(schema.properties)) return [`${path}: invalid tool schema (properties)`];
     const errors = [], types = Array.isArray(schema.type) ? schema.type : schema.type ? [schema.type] : [];
     const matches = type => type === 'object' ? object(value) : type === 'array' ? Array.isArray(value) : type === 'integer' ? Number.isInteger(value) : type === 'number' ? typeof value === 'number' && Number.isFinite(value) : type === 'null' ? value === null : typeof value === type;
     if (types.length && !types.some(matches)) return [`${path}: expected ${types.join(' or ')}`];
@@ -19,7 +28,7 @@ const elioToolGuard = (() => {
     if (object(value)) {
       for (const key of schema.required || []) if (!Object.hasOwn(value, key)) errors.push(`${path}.${key}: required`);
       for (const [key, entry] of Object.entries(value)) {
-        if (schema.properties?.[key]) errors.push(...validate(entry, schema.properties[key], `${path}.${key}`, depth + 1));
+        if (object(schema.properties) && Object.hasOwn(schema.properties, key)) errors.push(...validate(entry, schema.properties[key], `${path}.${key}`, depth + 1));
         else if (schema.additionalProperties === false) errors.push(`${path}.${key}: unknown argument`);
       }
     }

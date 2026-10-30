@@ -1,0 +1,366 @@
+   Compiling elio-agent v1.0.1 (/data/Elio-vfx-library/agent)
+warning: function `valid_key` is never used
+ --> src/security.rs:4:8
+  |
+4 | pub fn valid_key(key: &str) -> bool {
+  |        ^^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `chromium_id` is never used
+ --> src/security.rs:8:4
+  |
+8 | fn chromium_id(id: &str) -> bool {
+  |    ^^^^^^^^^^^
+
+warning: function `firefox_uuid` is never used
+  --> src/security.rs:12:4
+   |
+12 | fn firefox_uuid(id: &str) -> bool {
+   |    ^^^^^^^^^^^^
+
+warning: function `can_auto_pair` is never used
+  --> src/security.rs:18:8
+   |
+18 | pub fn can_auto_pair(headers: &HeaderMap) -> bool {
+   |        ^^^^^^^^^^^^^
+
+warning: function `allowed_origin` is never used
+  --> src/security.rs:29:8
+   |
+29 | pub fn allowed_origin(headers: &HeaderMap) -> bool {
+   |        ^^^^^^^^^^^^^^
+
+warning: function `authorized` is never used
+  --> src/security.rs:43:8
+   |
+43 | pub fn authorized(headers: &HeaderMap, key: &str) -> bool {
+   |        ^^^^^^^^^^
+
+warning: function `load_key` is never used
+  --> src/security.rs:54:8
+   |
+54 | pub fn load_key() -> anyhow::Result<String> {
+   |        ^^^^^^^^
+
+warning: function `require_pairing` is never used
+   --> src/security.rs:111:14
+    |
+111 | pub async fn require_pairing(
+    |              ^^^^^^^^^^^^^^^
+
+warning: function `load_key` is never used
+  --> src/security.rs:54:8
+   |
+54 | pub fn load_key() -> anyhow::Result<String> {
+   |        ^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `elio-agent` (lib) generated 8 warnings
+warning: `elio-agent` (lib test) generated 1 warning
+warning: use of deprecated method `std::sync::atomic::Atomic::<usize>::fetch_update`: renamed to `try_update` for consistency
+  --> src/resource_limits.rs:20:39
+   |
+20 |   let bytes=text.len();if self.budget.fetch_update(Ordering::AcqRel,Ordering::Acquire,|used|used.checked_add(bytes).filter(|n|*n<=se...
+   |                                       ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+20 -   let bytes=text.len();if self.budget.fetch_update(Ordering::AcqRel,Ordering::Acquire,|used|used.checked_add(bytes).filter(|n|*n<=self.max_bytes)).is_err(){self.close();return Err("Bridge byte budget exceeded; connection closed without replay");}
+20 +   let bytes=text.len();if self.budget.try_update(Ordering::AcqRel,Ordering::Acquire,|used|used.checked_add(bytes).filter(|n|*n<=self.max_bytes)).is_err(){self.close();return Err("Bridge byte budget exceeded; connection closed without replay");}
+   |
+
+warning: unused variable: `html`
+   --> src/gui.rs:470:13
+    |
+470 |         let html=include_str!("desktop.html");
+    |             ^^^^ help: if this is intentional, prefix it with an underscore: `_html`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `port_owner_pid` is never used
+   --> src/main.rs:523:4
+    |
+523 | fn port_owner_pid(_port: u16) -> Option<u32> { None }
+    |    ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `process_image` is never used
+   --> src/main.rs:543:4
+    |
+543 | fn process_image(_pid: u32) -> Option<String> { None }
+    |    ^^^^^^^^^^^^^
+
+warning: static `FOREGROUND` is never used
+ --> src/gui.rs:9:12
+  |
+9 | pub static FOREGROUND: AtomicBool = AtomicBool::new(false);
+  |            ^^^^^^^^^^
+
+warning: static `WINDOW_OPEN` is never used
+  --> src/gui.rs:12:12
+   |
+12 | pub static WINDOW_OPEN: AtomicBool = AtomicBool::new(false);
+   |            ^^^^^^^^^^^
+
+warning: static `RESTORE_WINDOW` is never used
+  --> src/gui.rs:13:12
+   |
+13 | pub static RESTORE_WINDOW: AtomicBool = AtomicBool::new(false);
+   |            ^^^^^^^^^^^^^^
+
+warning: function `j_i32` is never used
+   --> src/workspace.rs:245:4
+    |
+245 | fn j_i32(args: &serde_json::Value, key: &str) -> Result<i32, String> {
+    |    ^^^^^
+
+warning: method `path` is never used
+   --> src/preferences.rs:207:12
+    |
+153 | impl PreferencesStore {
+    | --------------------- method in this implementation
+...
+207 |     pub fn path(&self) -> &Path {
+    |            ^^^^
+
+warning: function `matching` is never used
+  --> src/templates.rs:80:16
+   |
+80 | #[cfg(test)]fn matching(catalog:&Catalog,query:&str)->Vec<Value>{matching_with_limit(catalog,query,3)}
+   |                ^^^^^^^^
+
+warning: function `is_enabled` is never used
+   --> src/mcp_addons.rs:139:8
+    |
+139 | pub fn is_enabled(id: &str) -> bool {read_config().servers.contains_key(id)}
+    |        ^^^^^^^^^^
+
+warning: method `reset_tool` is never used
+   --> src/mcp_addons.rs:489:18
+    |
+454 | impl AddonManager {
+    | ----------------- method in this implementation
+...
+489 |     pub async fn reset_tool(&mut self, advertised: &str) {
+    |                  ^^^^^^^^^^
+
+warning: `elio-agent` (bin "elio" test) generated 12 warnings (run `cargo fix --bin "elio" -p elio-agent --tests` to apply 2 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.54s
+     Running unittests src/lib.rs (/data/SynerixCode/agent/target/debug/deps/elio_agent-294ec731ccbaa872)
+
+running 3 tests
+test integration::unauthorized_calls_never_reach_command_handler ... ok
+test security::tests::rejects_missing_wrong_and_web_origin_credentials ... ok
+test integration::auto_pair_rejects_webpages_and_accepts_extension_requests ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (/data/SynerixCode/agent/target/debug/deps/elio-3d5d85992197f783)
+
+running 193 tests
+test blender::tests::responds_without_waiting_for_socket_close ... ok
+test cancellation::tests::cancellation_is_scoped_and_survives_a_signal_before_wait ... ok
+test blender::tests::listening_but_silent_is_not_connected ... ok
+test chat_history::tests::chat_capture_merges_updates_persists_and_rejects_invalid_identity ... ok
+test chat_history::tests::corrupted_chat_archive_is_preserved ... ok
+test checkpoints::tests::checkpoint_survives_restart_and_refuses_later_edits ... ok
+test checkpoints::tests::multifile_restore_is_prevalidated_and_protection_persists ... ok
+test checkpoints::tests::selective_restore_preserves_other_files_and_rejects_conflicts ... ok
+test checkpoints::tests::studio_restore_checks_every_waypoint_and_rolls_back_on_a_gap ... ok
+test checkpoints::tests::studio_source_snapshots_preserve_literals_and_refuse_changed_identity ... ok
+test compatibility::tests::matching_browser_cannot_hide_old_extension ... ok
+test creation_export::tests::exports_materials_transforms_refs_attributes_and_animation ... ok
+test creations::tests::corrupt_library_is_not_overwritten ... ok
+test creations::tests::exported_welds_survive_id_collisions_and_long_names ... ok
+test creations::tests::persistence_revisions_duplicates_undo_feedback_and_failures ... ok
+test debug_report::tests::empty_report_says_extension_not_connected ... ok
+test debug_report::tests::redaction_removes_secrets_and_personal_data ... ok
+test debug_report::tests::report_flags_causes_with_files_and_caps_input ... ok
+test eclipse_skill::tests::resources_are_bounded_and_cannot_traverse ... ok
+test chat_history::linear_merge_tests::large_updates_preserve_order_deduplicate_and_trim_bytes ... ok
+test eclipse_skill::tests::shipped_resources_are_complete_and_unicode_safe ... ok
+test emitter2d_skill::tests::resource_symlink_cannot_escape ... ok
+test emitter2d_skill::tests::resources_are_bounded_and_complete ... ok
+test emitter2d_skill::tests::scoped_routing ... ok
+test engram::tests::input_limits_are_bytes ... ok
+test engram::tests::scope_keys_are_stable_and_safe ... ok
+test explorer::tests::guards_are_required ... ok
+test explorer::tests::nested_mcp_payload_is_decoded ... ok
+test explorer::tests::quoted_request_is_data ... ok
+test figma::tests::delivery_is_once_and_receipt_is_not_success ... ok
+test figma::tests::no_edits_without_plugin_permission ... ok
+test figma::tests::pairing_and_no_cross_client ... ok
+test figma::tests::stale_delivery_becomes_unknown_not_requeued ... ok
+test figma::tests::unsafe_svg_and_bad_graph_refused ... ok
+test gui::desktop_lease_tests::cancelled_waiter_releases_its_slot ... ok
+test gui::desktop_lease_tests::old_lease_cannot_remove_reused_request_id ... ok
+test gui::resource_tests::log_ring_bounds_line_length_and_count ... ok
+test gui::tests::browser_tool_refresh_replaces_only_browser_rows ... ok
+test gui::tests::donation_links_are_fixed_and_match_desktop_anchors ... ok
+test eclipse_skill::tests::routing_respects_blender_scope_and_explicit_choice ... ok
+test gui::tests::tool_catalog_merges_all_sources ... ok
+test gui::tests::tool_descriptions_survive_all_sources ... ok
+test gui::tests::toolkit_store_search_uses_fixed_origin ... ok
+test gui::tests::supported_ai_links_are_fixed_and_match_desktop_buttons ... ok
+test mcp_addons::audit_config_size_test::oversized_edit_preserves_last_readable_config ... ok
+test mcp_addons::audit_config_tests::failed_replacement_cleans_only_its_temporary_file ... ok
+test mcp_addons::audit_config_tests::concurrent_config_edits_preserve_all_servers_and_leave_no_temp_files ... ok
+test mcp_addons::audit_config_tests::invalid_config_cannot_be_overwritten_by_mutation ... ok
+test mcp_addons::git_runtime_tests::explicit_git_override_is_respected_and_other_servers_untouched ... ok
+test mcp_addons::git_runtime_tests::git_is_found_on_path_or_in_standard_locations ... ok
+test mcp_addons::drop_resource_tests::dropped_runtime_aborts_stderr_task ... ok
+test mcp_addons::git_runtime_tests::git_server_is_detected_by_id_or_package ... ok
+test mcp_addons::git_runtime_tests::missing_git_reports_an_actionable_error ... ok
+test mcp_addons::git_runtime_tests::registry_path_is_parsed_and_expanded ... ok
+test mcp_addons::git_runtime_tests::studio_addon_calls_get_their_requested_time_and_are_not_killed_on_one_timeout ... ok
+test mcp_addons::tests::failed_initialize_is_never_reused_as_ready ... ok
+test mcp_addons::tests::stdio_fixture ... ignored
+test mcp_addons::tests::stdio_handshake_and_tool_call ... ok
+test mcp_addons::uv_default_tests::user_configured_value_is_preserved ... ok
+test mcp_addons::uv_default_tests::uvx_refuses_source_builds_of_cryptography ... ok
+test media::tests::actual_decoder_converts_image_and_samples_video ... ok
+test media::tests::rejects_empty_and_oversized_without_starting_decoder ... ok
+test media::tests::scratch_only_removes_its_own_session ... ok
+test memory::tests::durable_manual_and_automatic_memory ... ok
+test memory::tests::every_note_has_a_title ... ok
+test memory::tests::large_memory_capacity_is_durable_and_transactional ... ok
+test platform::tests::bundle_root_is_outside_signed_app ... ok
+test platform::translocation_tests::app_moved_to_applications_uses_record ... ok
+test platform::translocation_tests::normal_launch_ignores_record ... ok
+test platform::translocation_tests::translocated_launch_uses_recorded_installation ... ok
+test preferences::audit_persistence_tests::concurrent_updates_do_not_lose_changes ... ok
+test preferences::audit_persistence_tests::failed_settings_save_does_not_publish_unsaved_preferences ... ok
+test preferences::tests::continuation_offer_defaults_on_and_persists_off ... ok
+test preferences::tests::elio_color_mode_persists_and_rejects_unknown ... ok
+test preferences::tests::every_supported_language_persists_across_reopen_and_unrelated_patches ... ok
+test preferences::tests::immediate_stop_default_and_selected_safe_mode_persist ... ok
+test preferences::tests::instructions_preserve_old_settings_and_persist_multiline_and_clear ... ok
+test preferences::tests::invalid_language_falls_back_without_resetting_other_preferences ... ok
+test preferences::tests::invalid_saved_choices_are_normalized ... ok
+test preferences::tests::language_defaults_to_english_and_migrates_old_settings_without_losing_choices ... ok
+test preferences::tests::preferences_persist_across_reopen ... ok
+test preferences::tests::shared_appearance_persists_and_normalizes ... ok
+test preferences::tests::ultracode_and_legacy_solar_preferences_are_preserved ... ok
+test qp2_skill::tests::resource_symlink_cannot_escape ... ok
+test qp2_skill::tests::resources_are_bounded_and_complete ... ok
+test qp2_skill::tests::scoped_routing ... ok
+test resource_limits::client_tests::client_registry_is_bounded_without_evicting_existing_connections ... ok
+test resource_limits::line_tests::oversized_lines_are_drained_with_bounded_memory ... ok
+test resource_limits::line_tests::partial_lines_survive_timeout_without_unbounded_retention ... ok
+test resource_limits::rolling_tests::diagnostic_rotation_bounds_existing_and_new_logs ... ok
+test resource_limits::tests::count_overflow_closes_and_frees_rejected_frame ... ok
+test resource_limits::tests::outbound_frames_release_budget_on_send_drop_and_overflow ... ok
+test resource_limits::tests::queue_has_count_and_byte_limits_without_eviction ... ok
+test safety::audit_policy_load_tests::unreadable_existing_policy_is_not_treated_as_first_install ... ok
+test safety::desktop_tests::desktop_cannot_escape_policy ... ok
+test safety::enforcement_tests::no_confirmation_and_folder_policy ... ok
+test safety::tests::conservative_readonly ... ok
+test safety::tests::symlink_and_prefix_boundaries ... ok
+test security::tests::rejects_missing_wrong_and_web_origin_credentials ... ok
+test shared_learning::tests::exported_inspection_names_are_supported ... ok
+test shared_learning::tests::index_cannot_supply_instructions ... ok
+test shared_learning::tests::payload_has_no_private_strings_or_identifiers ... ok
+test shared_learning::tests::verifies_order_and_fails_closed ... ok
+test skills::deleted_skills_tests::bulk_purge_is_revision_checked_and_never_deletes_active_skills ... ok
+test mcp_addons::tests::addon_backpressured_stdin_is_bounded_without_cutting_long_call_defaults ... ok
+test skills::deleted_skills_tests::legacy_catalog_adds_empty_trash_without_losing_skills ... ok
+test skills::deleted_skills_tests::permanent_delete_requires_confirmation_and_redacts_app_backup ... ok
+test skills::deleted_skills_tests::delete_reload_restore_preserves_method_and_rejects_stale_operations ... ok
+test skills::emitter2d_tests::migration_routing_disabled_and_deleted ... ok
+test skills::tests::cleanup_collapses_untouched_duplicates_once ... ok
+test skills::tests::eclipse_seed_migration_match_and_user_deletion ... ok
+test skills::qp2_tests::migration_choice_and_removal ... ok
+test skills::tests::favourite_and_delete_all_keep_bundled_and_starred ... ok
+test skills::tests::explicit_saved_guidance_is_matched_without_claiming_verification ... ok
+test skills::tests::matching_ignores_filler_words ... ok
+test skills::tests::scope_revision_and_corruption ... ok
+test skills::tests::starter_seed_preserves_user_data_and_deletions ... ok
+test skills::tests::ultragui_pack_two_replaces_retired_cards ... ok
+test skills::tests::favourites_get_priority_in_matching ... ok
+test starter_skills::tests::complete_catalog_and_bounded_safe_resources ... ok
+test starter_skills::tests::ultragui_pages_and_rejects_unlisted_resources ... ok
+test starter_skills::ultra_tests::hidden_ultra_references_are_paginated_and_allowlisted ... ok
+test skills::tests::vfx_seed_migration_routing_and_deletion ... ok
+test startup_tests::free_ports_bind_without_startup_recovery ... ok
+test startup_tests::mcp_deadline_accepts_one_matching_result_after_noise ... ok
+test startup_tests::exiting_listener_is_retried_until_released ... ok
+test startup_tests::mcp_deadline_covers_a_helper_that_stops_reading_stdin ... ok
+test startup_tests::mcp_matching_reply_ignores_unrelated_and_late_ids_without_replay ... ok
+test startup_tests::mcp_notification_noise_and_backpressured_writes_have_total_deadlines ... ok
+test startup_tests::native_tcp_tables_find_only_local_listening_owners ... ok
+test startup_tests::mcp_deadline_does_not_restart_for_notifications_or_wrong_ids ... ok
+test startup_tests::older_version_is_replaced_instead_of_reused ... ok
+test startup_tests::queued_command_deadline_does_not_reset_another_tasks_helper ... ok
+test startup_tests::reactor_resource_panics_are_recognised_but_other_panics_are_not ... ok
+test startup_tests::same_version_reuses_existing_background_instance ... ok
+test startup_tests::stale_cleanup_targets_only_elio_images ... ok
+test startup_tests::studio_ids_reach_stdio_calls_and_legacy_calls_stay_unchanged ... ok
+test startup_tests::verified_editor_transitions_push_to_all_subscribers_without_locking_tools ... ok
+test studio_desktop::tests::catalogue_is_explicit_and_embedded ... ok
+test studio_desktop::tests::input_validation ... ok
+test studio_desktop::tests::snapshots_single_use_expiry_and_identity ... ok
+test studio_detection_tests::competitor_cleanup_is_rate_limited ... ok
+test studio_detection_tests::empty_state_text_is_not_disconnected ... ok
+test studio_detection_tests::explicit_disconnect_is_detected ... ok
+test studio_detection_tests::only_foreign_studio_helpers_are_closed ... ok
+test studio_detection_tests::single_miss_keeps_live_connection ... ok
+test studio_detection_tests::slow_probes_are_misses_but_a_dead_helper_is_fatal ... ok
+test studio_launcher::tests::native_windows_discovery_handles_missing_batch_and_running_installs ... ok
+test studio_process_names_allow_platform_spacing ... ok
+test studio_session::tests::discover_exact_ids_and_preserve_targets ... ok
+test studio_session::tests::only_targeted_schemas_get_automatic_ids ... ok
+test templates::tests::binary_and_xml_templates_persist_match_and_read_without_execution ... ok
+test templates::tests::camel_case_and_synonyms_improve_relevance ... ok
+test templates::tests::described_systems_match_code_and_ignore_unrelated_metadata ... ok
+test startup_tests::occupied_port_reports_the_exact_endpoint ... ok
+test toolkit::tests::backup_restore_checksums_and_open_studio ... ok
+test toolkit::tests::typed_asset_upload_kinds ... ok
+test toolkit::tests::validate_controls_and_seed ... ok
+test update_service::audit_gate_tests::aborted_operations_release_gates_and_tools ... ok
+test update_service::audit_gate_tests::committed_install_stays_locked_and_duplicate_cannot_release_owner ... ok
+test update_service::tests::background_browser_runs_are_not_ignored ... ok
+test update_service::tests::numeric_versions_not_lexical ... ok
+test update_service::tests::renamed_repository_is_the_only_update_authority ... ok
+test update_service::tests::strict_repository_digest_and_stable_release ... ok
+test update_service::tests::tool_gate_blocks_during_install ... ok
+test vault::resource_tests::externally_enlarged_vault_is_rejected_before_reading_note_bodies ... ok
+test vault::resource_tests::obsidian_snapshot_links_and_user_edits_preserved ... ok
+test vault::resource_tests::stale_exclusion_verification_and_bounded_review ... ok
+test vault::tests::corrupt_markdown_is_not_silently_discarded ... ok
+test vault::tests::durable_markdown_revision_history_external_edit_and_isolation ... ok
+test vault::tests::graph_context_budgets_and_confidence ... ok
+test vault::tests::no_op_receipts_and_topic_upsert_are_guarded ... ok
+test vault::tests::plain_yaml_lists_unknown_properties_and_crlf_roundtrip ... ok
+test vault::transfer_tests::deterministic_retrieval_at_project_scale ... ok
+test vault::transfer_tests::export_import_delete_and_conflict_guards ... ok
+test vault_assets::tests::png_roundtrip_limits_and_scope ... ok
+test vfx_studio_skill::symlink_tests::cannot_follow_resource_symlink_outside_bundle ... ok
+test vfx_studio_skill::tests::relevant_tasks_only ... ok
+test vfx_studio_skill::tests::shipped_resources_and_unicode_bounds ... ok
+test workspace::audit_download_tests::cancelled_stream_preserves_original ... ok
+test workspace::audit_download_tests::failed_stream_preserves_original_and_success_replaces_it ... ok
+test workspace::tests::base64_read_encodes_binary_files ... ok
+test workspace::tests::cancelled_command_does_not_leave_a_running_child ... ok
+test workspace::tests::delete_and_move_guard_the_root ... ok
+test workspace::tests::edit_enforces_uniqueness_and_nearmiss_hint ... ok
+test workspace::tests::full_access_toggles_absolute_paths_and_gates_kill ... ok
+test workspace::tests::grep_search_tree_basics ... ok
+test workspace::tests::lenient_string_typed_args ... ok
+test workspace::tests::recorded_command_outcome_ignores_spoofed_stdout ... ok
+test workspace::tests::run_command_captures_and_times_out ... ok
+test workspace::tests::sandbox_rejects_escapes_and_absolute ... ok
+test workspace::tests::write_read_edit_roundtrip_preserves_crlf ... ok
+test templates::tests::desktop_accepts_large_places_with_small_script_indexes ... ok
+
+test result: ok. 192 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 5.55s
+
+   Doc-tests elio_agent
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

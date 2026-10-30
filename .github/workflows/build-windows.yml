@@ -2,6 +2,8 @@ name: Build and release Elio (Windows x64)
 on:
   workflow_dispatch:
   push:
+    branches:
+      - update/latest-source-fbf54ce7
     tags:
       - 'v[0-9]*'
 permissions:

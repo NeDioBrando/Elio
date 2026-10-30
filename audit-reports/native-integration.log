@@ -1,0 +1,1 @@
+PASS actual authenticated Roblox WS -> native Studio desktop route, both tools fail before MCP/input when platform/Full PC is unavailable; no automatic access grant. No Studio/plugin UI tested.

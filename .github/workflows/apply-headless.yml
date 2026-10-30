@@ -1,0 +1,37 @@
+name: Apply verified headless Blender patch
+on:
+  push:
+    branches: [update/latest-source-fbf54ce7]
+    paths: ['.elio-headless-transfer/patch.b64']
+permissions:
+  contents: write
+  actions: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify and apply source patch
+        shell: bash
+        run: |
+          python3 - <<'PYCODE'
+          import base64,lzma,hashlib,subprocess
+          from pathlib import Path
+          patch=lzma.decompress(base64.b64decode(Path('.elio-headless-transfer/patch.b64').read_bytes()))
+          assert hashlib.sha256(patch).hexdigest() == '192a1e145a446da972eb5c59450d969cb0fc361505456067a09f2cda0f7f1151'
+          Path('/tmp/elio-headless.patch').write_bytes(patch)
+          subprocess.run(['git','apply','--check','/tmp/elio-headless.patch'],check=True)
+          subprocess.run(['git','apply','--index','/tmp/elio-headless.patch'],check=True)
+          PYCODE
+          rm -rf .elio-headless-transfer .github/workflows/apply-headless.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Add lightweight owned headless Blender backend with on-demand previews and lifecycle tests'
+          git push origin HEAD:update/latest-source-fbf54ce7
+      - name: Start Windows build on applied sources
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run build-windows.yml --ref update/latest-source-fbf54ce7

@@ -2,6 +2,8 @@ name: Build and release Elio (Windows x64)
 on:
   workflow_dispatch:
   push:
+    branches:
+      - update/latest-source-fbf54ce7
     tags:
       - 'v[0-9]*'
 permissions:
@@ -30,7 +32,32 @@ jobs:
           if ('${{ github.ref_type }}' -eq 'tag' -and '${{ github.ref_name }}' -ne "v$Version") { throw 'Tag does not match the package version.' }
       - name: Audit, test, compile and package
         shell: pwsh
-        run: ./Build-Windows.ps1
+        run: |
+          try {
+            & ./Build-Windows.ps1 *>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP/elio-build.log"
+            if ($LASTEXITCODE -ne 0) { throw "Build exited with $LASTEXITCODE" }
+          } catch {
+            if (Test-Path "$env:RUNNER_TEMP/elio-build.log") {
+              Get-Content "$env:RUNNER_TEMP/elio-build.log" -Tail 65 | ForEach-Object {
+                $Line = ("$_" -replace '%','%25' -replace "`r",'%0D' -replace "`n",'%0A')
+                Write-Output "::error::$Line"
+              }
+            }
+            throw
+          }
+      - name: Verify real headless Blender lifecycle
+        shell: pwsh
+        run: |
+          # CI only: never bundled, installed on the user PC, or published with Elio.
+          $Zip = Join-Path $env:RUNNER_TEMP 'blender-4.5.3-windows-x64.zip'
+          curl.exe --fail --location --retry 3 'https://mirror.clarkson.edu/blender/release/Blender4.5/blender-4.5.3-windows-x64.zip' --output $Zip
+          if ($LASTEXITCODE -ne 0) { throw 'Blender CI fixture download failed.' }
+          if ((Get-FileHash $Zip -Algorithm SHA256).Hash.ToLowerInvariant() -ne '6b657c8bdd3a7b65b07b9e1ae17eb4be7dd4aa23121da7f3d3354fc2551330a7') { throw 'Blender CI fixture checksum mismatch.' }
+          Expand-Archive -Path $Zip -DestinationPath (Join-Path $env:RUNNER_TEMP 'elio-blender-fixture')
+          $env:ELIO_TEST_BLENDER = Join-Path $env:RUNNER_TEMP 'elio-blender-fixture/blender-4.5.3-windows-x64/blender.exe'
+          $env:ELIO_TEST_NATIVE = Join-Path $PWD 'agent/target/release/elio.exe'
+          python -u tools/test_blender_headless.py
+          if ($LASTEXITCODE -ne 0) { throw 'Real Windows Blender lifecycle regression failed.' }
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:

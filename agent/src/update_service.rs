@@ -49,6 +49,26 @@ fn client()->anyhow::Result<reqwest::Client>{
             if attempt.previous().len()<5 && attempt.url().scheme()=="https" && matches!(host,"github.com"|"api.github.com"|"release-assets.githubusercontent.com"|"objects.githubusercontent.com") {attempt.follow()} else {attempt.error("Unexpected update redirect")}
         })).build()?)
 }
+// A dropped future must release its gate, not permanently disable checks/tools.
+struct UpdateLease<'a> { service: &'a Service, install: bool, committed: bool }
+impl<'a> UpdateLease<'a> {
+    fn acquire(service: &'a Service, install: bool) -> Option<Self> {
+        let flag=if install { &service.installing } else { &service.checking };
+        if flag.swap(true,Ordering::SeqCst) { None } else { Some(Self { service, install, committed:false }) }
+    }
+    fn commit(&mut self) { self.committed=true; }
+}
+impl Drop for UpdateLease<'_> {
+    fn drop(&mut self) {
+        if self.committed { return; }
+        let flag=if self.install { &self.service.installing } else { &self.service.checking };
+        let mut status=self.service.status.lock().unwrap_or_else(|e|e.into_inner());
+        if matches!(status.phase.as_str(),"checking"|"downloading"|"preparing") {
+            status.phase="error".into();status.error="Update operation interrupted. Check again before retrying.".into();
+        }
+        flag.store(false,Ordering::SeqCst);
+    }
+}
 impl Service {
     pub fn snapshot(&self)->Value{
         let s=self.status.lock().unwrap_or_else(|e|e.into_inner());
@@ -71,11 +91,12 @@ impl Service {
         Ok(ToolGuard(self))
     }
     pub async fn check(&self)->anyhow::Result<()> {
-        if self.installing.load(Ordering::SeqCst) || self.checking.swap(true,Ordering::SeqCst){return Ok(());}
+        if self.installing.load(Ordering::SeqCst){return Ok(());}
+        let Some(_lease)=UpdateLease::acquire(self,false) else {return Ok(());};
         self.phase("checking","");
         let result=async {
             let response=client()?.get(format!("https://api.github.com/repos/{REPOSITORY}/releases/latest")).header("Accept","application/vnd.github+json").header("X-GitHub-Api-Version","2022-11-28").timeout(Duration::from_secs(25)).send().await?;
-            if response.status()==reqwest::StatusCode::NOT_FOUND { self.phase("unpublished","Нет опубликованного стабильного релиза.");return Ok(()); }
+            if response.status()==reqwest::StatusCode::NOT_FOUND { self.status.lock().unwrap_or_else(|e|e.into_inner()).release=None;self.phase("unpublished","Нет опубликованного стабильного релиза.");return Ok(()); }
             let response=response.error_for_status()?;
             ensure!(response.content_length().unwrap_or(0)<=2*1024*1024,"Release metadata is too large");
             let mut body=Vec::new();let mut stream=response.bytes_stream();while let Some(chunk)=stream.next().await{let chunk=chunk?;ensure!(body.len()+chunk.len()<=2*1024*1024,"Release metadata is too large");body.extend_from_slice(&chunk);}
@@ -83,17 +104,17 @@ impl Service {
             let available=version(&release.version)?>version(env!("CARGO_PKG_VERSION"))?;
             let mut s=self.status.lock().unwrap_or_else(|e|e.into_inner());s.release=Some(release);s.phase=if available{"available"}else{"current"}.into();s.error.clear();Ok::<_,anyhow::Error>(())
         }.await;
-        {self.status.lock().unwrap_or_else(|e|e.into_inner()).checked=chrono::Utc::now().timestamp_millis();}
+        if result.is_ok(){self.status.lock().unwrap_or_else(|e|e.into_inner()).checked=chrono::Utc::now().timestamp_millis();}
         if let Err(error)=&result{self.phase("error",&error.to_string());}
-        self.checking.store(false,Ordering::SeqCst);result
+        result
     }
     pub async fn install(self:Arc<Self>, ui:Arc<crate::gui::UiShared>)->anyhow::Result<()> {
         ensure!(cfg!(windows),"Автоматическая установка пока доступна только на Windows x64.");
         ensure!(!self.browser_busy(),"Сначала завершите активные задачи ИИ во всех браузерах.");
-        ensure!(!self.installing.swap(true,Ordering::SeqCst),"Обновление уже запущено.");
-        if self.active_tools.load(Ordering::SeqCst)>0 {self.installing.store(false,Ordering::SeqCst);anyhow::bail!("Дождитесь завершения выполняющегося инструмента.");}
+        let mut lease=UpdateLease::acquire(&self,true).context("Обновление уже запущено.")?;
+        if self.active_tools.load(Ordering::SeqCst)>0 {anyhow::bail!("Дождитесь завершения выполняющегося инструмента.");}
         let result=self.prepare_and_launch().await;
-        match result {Ok(())=>{self.phase("installing","");tokio::spawn(async move{tokio::time::sleep(Duration::from_millis(700)).await;ui.request_quit();});Ok(())},Err(e)=>{self.installing.store(false,Ordering::SeqCst);self.phase("error",&e.to_string());Err(e)}}
+        match result {Ok(())=>{lease.commit();self.phase("installing","");tokio::spawn(async move{tokio::time::sleep(Duration::from_millis(700)).await;ui.request_quit();});Ok(())},Err(e)=>{self.phase("error",&e.to_string());Err(e)}}
     }
     async fn prepare_and_launch(&self)->anyhow::Result<()> {
         // Use a recent verified GitHub snapshot. Never use an
@@ -159,4 +180,25 @@ pub fn mark_ready(path:&Path)->anyhow::Result<()> {
     #[test]fn strict_repository_digest_and_stable_release(){assert!(parse_release(&release()).is_ok());for(field,value)in [("draft",json!(true)),("prerelease",json!(true)),("tag_name",json!("v1.2.3-beta"))]{let mut v=release();v[field]=value;assert!(parse_release(&v).is_err());}for(field,value)in [("browser_download_url",json!("https://example.com/evil.zip")),("digest",Value::Null),("size",json!(MAX_ZIP+1)),("state",json!("new"))]{let mut v=release();v["assets"][0][field]=value;assert!(parse_release(&v).is_err());}let mut v=release();let duplicate=v["assets"][0].clone();v["assets"].as_array_mut().unwrap().push(duplicate);assert!(parse_release(&v).is_err());}
     #[test]fn tool_gate_blocks_during_install(){let s=Service::default();{let _guard=s.begin_tool().unwrap();assert_eq!(s.active_tools.load(Ordering::SeqCst),1);}assert_eq!(s.active_tools.load(Ordering::SeqCst),0);s.installing.store(true,Ordering::SeqCst);assert!(s.begin_tool().is_err());assert_eq!(s.active_tools.load(Ordering::SeqCst),0);}
     #[test]fn background_browser_runs_are_not_ignored(){let s=Service::default();s.note_browser("b1",true);s.note_browser("b2",false);assert!(s.browser_busy());s.note_browser("b1",false);assert!(!s.browser_busy());}
+}
+
+#[cfg(test)] mod audit_gate_tests {
+    use super::*;
+    #[tokio::test] async fn aborted_operations_release_gates_and_tools() {
+        for install in [false,true] {
+            let service=Arc::new(Service::default());let copy=service.clone();
+            let (sent,ready)=tokio::sync::oneshot::channel();
+            let task=tokio::spawn(async move {let _lease=UpdateLease::acquire(&copy,install).unwrap();copy.phase(if install{"downloading"}else{"checking"},"");sent.send(()).unwrap();std::future::pending::<()>().await;});
+            ready.await.unwrap();assert!(if install{service.installing.load(Ordering::SeqCst)}else{service.checking.load(Ordering::SeqCst)});
+            task.abort();let _=task.await;
+            assert!(!service.installing.load(Ordering::SeqCst));assert!(!service.checking.load(Ordering::SeqCst));
+            assert_eq!(service.snapshot()["phase"],"error");assert!(service.begin_tool().is_ok());
+            assert!(UpdateLease::acquire(&service,install).is_some());
+        }
+    }
+    #[test] fn committed_install_stays_locked_and_duplicate_cannot_release_owner() {
+        let service=Service::default();let mut owner=UpdateLease::acquire(&service,true).unwrap();
+        assert!(UpdateLease::acquire(&service,true).is_none());assert!(service.begin_tool().is_err());
+        owner.commit();drop(owner);assert!(service.installing.load(Ordering::SeqCst));assert!(service.begin_tool().is_err());
+    }
 }

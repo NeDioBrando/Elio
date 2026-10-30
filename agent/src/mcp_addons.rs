@@ -102,68 +102,52 @@ pub fn config_path() -> PathBuf {
         .unwrap_or_else(|| PathBuf::from("config.json"))
 }
 
-pub fn read_config() -> McpConfig {
-    let path = config_path();
-    let mut cfg = std::fs::read_to_string(path)
-        .ok()
-        .and_then(|raw| serde_json::from_str::<McpConfig>(&raw).ok())
-        .unwrap_or_default();
+fn read_config_at(path: &std::path::Path) -> anyhow::Result<McpConfig> {
+    use std::io::Read;
+    let mut cfg=match std::fs::File::open(path) {
+        Ok(file)=>{let mut raw=Vec::new();file.take(2*1024*1024+1).read_to_end(&mut raw)?;
+            anyhow::ensure!(raw.len()<=2*1024*1024,"MCP configuration exceeds 2 MB; original file preserved.");
+            serde_json::from_slice::<McpConfig>(&raw).map_err(|e|anyhow::anyhow!("MCP configuration is invalid; original file preserved: {e}"))?},
+        Err(e) if e.kind()==std::io::ErrorKind::NotFound=>McpConfig::default(),
+        Err(e)=>return Err(e.into()),
+    };
     cfg.servers.entry("roblox".to_string()).or_insert_with(|| ServerSpec {
-        command: "launch_studio_mcp.py".to_string(),
-        args: Vec::new(),
-        env: HashMap::new(),
-    });
-    cfg
+        command: "launch_studio_mcp.py".to_string(), args: Vec::new(), env: HashMap::new(),
+    });Ok(cfg)
 }
-
-pub fn write_config(cfg: &McpConfig) -> anyhow::Result<()> {
-    let path = config_path();
-    if let Some(parent) = path.parent() { std::fs::create_dir_all(parent)?; }
-    let tmp = path.with_extension("json.tmp");
-    std::fs::write(&tmp, serde_json::to_vec_pretty(cfg)?)?;
-    if path.exists() {
-        std::fs::remove_file(&path)?;
-    }
-    std::fs::rename(tmp, path)?;
-    Ok(())
+pub fn read_config() -> McpConfig {
+    read_config_at(&config_path()).unwrap_or_else(|error|{tracing::warn!("{error}");McpConfig::default()})
 }
-
-pub fn is_enabled(id: &str) -> bool {
-    read_config().servers.contains_key(id)
+fn write_config_at(path: &std::path::Path, cfg: &McpConfig) -> anyhow::Result<()> {
+    use std::io::Write;
+    let raw=serde_json::to_vec_pretty(cfg)?;anyhow::ensure!(raw.len()<=2*1024*1024,"MCP configuration exceeds 2 MB; original file preserved.");
+    if let Some(parent)=path.parent(){std::fs::create_dir_all(parent)?;}
+    let mut nonce=[0u8;16];getrandom::getrandom(&mut nonce).map_err(|e|anyhow::anyhow!("Config temporary file: {e}"))?;
+    let tmp=path.with_extension(format!("json.{}.tmp",nonce.iter().map(|b|format!("{b:02x}")).collect::<String>()));
+    let mut created=false;
+    let result=(||{let mut file=std::fs::OpenOptions::new().write(true).create_new(true).open(&tmp)?;created=true;
+        file.write_all(&raw)?;file.sync_all()?;drop(file);
+        // rename replaces an existing file on Windows too. Never delete the only good config first.
+        std::fs::rename(&tmp,path)?;Ok::<_,anyhow::Error>(())})();
+    if result.is_err() && created{let _=std::fs::remove_file(&tmp);}result
 }
-
+static CONFIG_WRITE:std::sync::Mutex<()>=std::sync::Mutex::new(());
+fn mutate_config_at(path:&std::path::Path, update:impl FnOnce(&mut McpConfig)->anyhow::Result<()>) -> anyhow::Result<()> {
+    let _lock=CONFIG_WRITE.lock().unwrap_or_else(|e|e.into_inner());
+    let mut cfg=read_config_at(path)?;update(&mut cfg)?;write_config_at(path,&cfg)
+}
+pub fn is_enabled(id: &str) -> bool {read_config().servers.contains_key(id)}
 pub fn set_catalog_enabled(id: &str, enabled: bool) -> anyhow::Result<()> {
-    let entry = catalog().into_iter().find(|e| e.id == id)
-        .ok_or_else(|| anyhow::anyhow!("unknown catalog server '{id}'"))?;
-    let mut cfg = read_config();
-    if enabled {
-        cfg.servers.insert(id.to_string(), ServerSpec {
-            command: entry.command.to_string(),
-            args: entry.args.iter().map(|v| (*v).to_string()).collect(),
-            env: HashMap::new(),
-        });
-    } else {
-        cfg.servers.remove(id);
-    }
-    write_config(&cfg)
+    let entry=catalog().into_iter().find(|e|e.id==id).ok_or_else(||anyhow::anyhow!("unknown catalog server '{id}'"))?;
+    mutate_config_at(&config_path(),|cfg|{if enabled{cfg.servers.insert(id.into(),ServerSpec{command:entry.command.into(),args:entry.args.iter().map(|v|(*v).into()).collect(),env:HashMap::new()});}else{cfg.servers.remove(id);}Ok(())})
 }
-
 pub fn add_server(id: &str, spec: ServerSpec) -> anyhow::Result<()> {
-    let id = id.trim();
-    anyhow::ensure!(!id.is_empty(), "server id is required");
-    anyhow::ensure!(id != "roblox", "the Roblox server cannot be replaced");
-    anyhow::ensure!(!spec.command.trim().is_empty(), "server command is required");
-    let mut cfg = read_config();
-    cfg.servers.insert(id.to_string(), spec);
-    write_config(&cfg)
+    let id=id.trim();anyhow::ensure!(!id.is_empty(),"server id is required");anyhow::ensure!(id!="roblox","the Roblox server cannot be replaced");anyhow::ensure!(!spec.command.trim().is_empty(),"server command is required");
+    mutate_config_at(&config_path(),|cfg|{cfg.servers.insert(id.into(),spec);Ok(())})
 }
-
 pub fn remove_server(id: &str) -> anyhow::Result<()> {
-    let id = id.trim();
-    anyhow::ensure!(id != "roblox", "the Roblox server cannot be removed");
-    let mut cfg = read_config();
-    anyhow::ensure!(cfg.servers.remove(id).is_some(), "server '{id}' is not configured");
-    write_config(&cfg)
+    let id=id.trim();anyhow::ensure!(id!="roblox","the Roblox server cannot be removed");
+    mutate_config_at(&config_path(),|cfg|{anyhow::ensure!(cfg.servers.remove(id).is_some(),"server '{id}' is not configured");Ok(())})
 }
 
 pub(crate) struct AddonRuntime {
@@ -914,3 +898,31 @@ mod uv_default_tests {
 }
 
 #[cfg(test)]mod drop_resource_tests{use super::*;#[tokio::test]async fn dropped_runtime_aborts_stderr_task(){let mut runtime=AddonRuntime::new("fixture".into(),ServerSpec{command:"unused".into(),args:vec![],env:HashMap::new()});let task=tokio::spawn(std::future::pending::<()>());let handle=task.abort_handle();runtime.stderr_task=Some(task);drop(runtime);tokio::task::yield_now().await;assert!(handle.is_finished());}}
+
+#[cfg(test)] mod audit_config_tests {
+    use super::*;
+    #[test] fn invalid_config_cannot_be_overwritten_by_mutation() {
+        let root=std::env::temp_dir().join(format!("elio-audit-config-corrupt-{}",std::process::id()));std::fs::create_dir_all(&root).unwrap();let path=root.join("config.json");
+        let original=b"{broken user configuration";std::fs::write(&path,original).unwrap();
+        assert!(mutate_config_at(&path,|c|{c.servers.clear();Ok(())}).is_err());assert_eq!(std::fs::read(&path).unwrap(),original);std::fs::remove_dir_all(root).unwrap();
+    }
+    #[test] fn concurrent_config_edits_preserve_all_servers_and_leave_no_temp_files() {
+        let root=std::env::temp_dir().join(format!("elio-audit-config-concurrent-{}",std::process::id()));std::fs::create_dir_all(&root).unwrap();let path=root.join("config.json");
+        let mut workers=Vec::new();for i in 0..16{let path=path.clone();workers.push(std::thread::spawn(move||mutate_config_at(&path,|c|{c.servers.insert(format!("fixture-{i}"),ServerSpec{command:"fixture".into(),args:vec![],env:HashMap::new()});Ok(())}).unwrap()));}
+        for worker in workers{worker.join().unwrap();}let c=read_config_at(&path).unwrap();assert_eq!(c.servers.len(),17);assert!(c.servers.contains_key("roblox"));assert_eq!(std::fs::read_dir(&root).unwrap().count(),1);std::fs::remove_dir_all(root).unwrap();
+    }
+    #[test] fn failed_replacement_cleans_only_its_temporary_file() {
+        let root=std::env::temp_dir().join(format!("elio-audit-config-failed-{}",std::process::id()));std::fs::create_dir_all(root.join("config.json")).unwrap();std::fs::write(root.join("config.json/keep"),b"keep").unwrap();
+        assert!(write_config_at(&root.join("config.json"),&McpConfig::default()).is_err());assert_eq!(std::fs::read(root.join("config.json/keep")).unwrap(),b"keep");assert_eq!(std::fs::read_dir(&root).unwrap().count(),1);std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+#[cfg(test)] mod audit_config_size_test {
+    use super::*;
+    #[test] fn oversized_edit_preserves_last_readable_config() {
+        let root=std::env::temp_dir().join(format!("elio-audit-config-size-{}",std::process::id()));std::fs::create_dir_all(&root).unwrap();let path=root.join("config.json");
+        mutate_config_at(&path,|_|Ok(())).unwrap();let original=std::fs::read(&path).unwrap();
+        assert!(mutate_config_at(&path,|c|{c.servers.insert("large".into(),ServerSpec{command:"fixture".into(),args:vec!["x".repeat(2*1024*1024)],env:HashMap::new()});Ok(())}).is_err());
+        assert_eq!(std::fs::read(&path).unwrap(),original);assert!(read_config_at(&path).is_ok());std::fs::remove_dir_all(root).unwrap();
+    }
+}

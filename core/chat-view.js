@@ -25,11 +25,11 @@ function memoryReceipt(raw){
 }
 function present(row){
  const raw=String(row.text||''),system=row.kind==='system'||(row.role==='user'&&isSetupText(raw));
- const feedback=row.kind==='result'||(row.role==='user'&&/^\s*(?:Output of '[^']+':|\(System note:|\[elio retained the COMPLETE result\.)/.test(raw));
+ const feedback=row.kind==='result'||(row.role==='user'&&/^\s*(?:Output of '[^']+':|ERROR\b|\(System note:|\[elio retained the COMPLETE result\.)/.test(raw));
  if(system)return {...row,kind:'system',hidden:true,name:'Agent setup',segments:[],status:row.phase==='run'?'running':'done'};
  if(feedback){const m=raw.match(/Output of '([^']+)'/);const failed=row.phase==='err'||/^\s*ERROR\b/.test(raw)||/^\s*Output of '[^']+':\s*ERROR\b/i.test(raw);return {...row,kind:'result',name:m?m[1]:'Tool result',memory_receipt:failed?null:memoryReceipt(raw),segments:[],status:failed?'error':'done'};}
  const parts=row.role==='assistant'?segments(raw):[{type:'text',text:raw}];return {...row,kind:parts.some(p=>p.type==='tool')?'tool':'message',segments:parts,status:row.phase==='err'?'error':row.phase==='done'?'done':row.phase==='run'?'running':'requested'};
 }
-function prepare(rows){const out=(rows||[]).map(present).filter(row=>!row.hidden),waiting=new Map();out.forEach(r=>{if(r.kind==='tool')for(const s of r.segments.filter(x=>x.type==='tool'))waiting.set(s.name,{r,s});if(r.kind==='result'){const w=waiting.get(r.name);if(w){w.s.status=r.status;w.r.status=r.status;waiting.delete(r.name);}}});return out;}
+function prepare(rows){const out=(rows||[]).map(present).filter(row=>!row.hidden),waiting=new Map();out.forEach(r=>{if(r.kind==='tool')for(const s of r.segments.filter(x=>x.type==='tool'))waiting.set(s.name,{r,s});if(r.kind==='result'){const w=waiting.get(r.name);if(w){w.s.status=r.status;const calls=w.r.segments.filter(s=>s.type==='tool');w.r.status=calls.some(s=>s.status==='error')?'error':calls.every(s=>s.status==='done')?'done':w.r.phase==='run'?'running':'requested';waiting.delete(r.name);}}});return out;}
 const api={segments,present,prepare,isSetupText,memoryReceipt};g.elioChatView=api;if(typeof module!=='undefined')module.exports=api;
 })(globalThis);

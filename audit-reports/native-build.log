@@ -1,0 +1,171 @@
+warning: function `valid_key` is never used
+ --> src/security.rs:4:8
+  |
+4 | pub fn valid_key(key: &str) -> bool {
+  |        ^^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `chromium_id` is never used
+ --> src/security.rs:8:4
+  |
+8 | fn chromium_id(id: &str) -> bool {
+  |    ^^^^^^^^^^^
+
+warning: function `firefox_uuid` is never used
+  --> src/security.rs:12:4
+   |
+12 | fn firefox_uuid(id: &str) -> bool {
+   |    ^^^^^^^^^^^^
+
+warning: function `can_auto_pair` is never used
+  --> src/security.rs:18:8
+   |
+18 | pub fn can_auto_pair(headers: &HeaderMap) -> bool {
+   |        ^^^^^^^^^^^^^
+
+warning: function `allowed_origin` is never used
+  --> src/security.rs:29:8
+   |
+29 | pub fn allowed_origin(headers: &HeaderMap) -> bool {
+   |        ^^^^^^^^^^^^^^
+
+warning: function `authorized` is never used
+  --> src/security.rs:43:8
+   |
+43 | pub fn authorized(headers: &HeaderMap, key: &str) -> bool {
+   |        ^^^^^^^^^^
+
+warning: function `load_key` is never used
+  --> src/security.rs:54:8
+   |
+54 | pub fn load_key() -> anyhow::Result<String> {
+   |        ^^^^^^^^
+
+warning: function `require_pairing` is never used
+   --> src/security.rs:111:14
+    |
+111 | pub async fn require_pairing(
+    |              ^^^^^^^^^^^^^^^
+
+warning: `elio-agent` (lib) generated 8 warnings
+   Compiling elio-agent v1.0.1 (/data/Elio-vfx-library/agent)
+warning: use of deprecated method `std::sync::atomic::Atomic::<usize>::fetch_update`: renamed to `try_update` for consistency
+  --> src/resource_limits.rs:20:39
+   |
+20 |   let bytes=text.len();if self.budget.fetch_update(Ordering::AcqRel,Ordering::Acquire,|used|used.checked_add(bytes).filter(|n|*n<=se...
+   |                                       ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+20 -   let bytes=text.len();if self.budget.fetch_update(Ordering::AcqRel,Ordering::Acquire,|used|used.checked_add(bytes).filter(|n|*n<=self.max_bytes)).is_err(){self.close();return Err("Bridge byte budget exceeded; connection closed without replay");}
+20 +   let bytes=text.len();if self.budget.try_update(Ordering::AcqRel,Ordering::Acquire,|used|used.checked_add(bytes).filter(|n|*n<=self.max_bytes)).is_err(){self.close();return Err("Bridge byte budget exceeded; connection closed without replay");}
+   |
+
+warning: function `port_owner_pid` is never used
+   --> src/main.rs:523:4
+    |
+523 | fn port_owner_pid(_port: u16) -> Option<u32> { None }
+    |    ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `process_image` is never used
+   --> src/main.rs:543:4
+    |
+543 | fn process_image(_pid: u32) -> Option<String> { None }
+    |    ^^^^^^^^^^^^^
+
+warning: function `is_elio_image` is never used
+   --> src/main.rs:545:4
+    |
+545 | fn is_elio_image(image: &str) -> bool {
+    |    ^^^^^^^^^^^^^
+
+warning: static `FOREGROUND` is never used
+ --> src/gui.rs:9:12
+  |
+9 | pub static FOREGROUND: AtomicBool = AtomicBool::new(false);
+  |            ^^^^^^^^^^
+
+warning: static `WINDOW_OPEN` is never used
+  --> src/gui.rs:12:12
+   |
+12 | pub static WINDOW_OPEN: AtomicBool = AtomicBool::new(false);
+   |            ^^^^^^^^^^^
+
+warning: static `RESTORE_WINDOW` is never used
+  --> src/gui.rs:13:12
+   |
+13 | pub static RESTORE_WINDOW: AtomicBool = AtomicBool::new(false);
+   |            ^^^^^^^^^^^^^^
+
+warning: function `toolkit_store_url` is never used
+  --> src/gui.rs:30:4
+   |
+30 | fn toolkit_store_url(action:&str)->Option<String>{
+   |    ^^^^^^^^^^^^^^^^^
+
+warning: function `donation_url` is never used
+  --> src/gui.rs:37:4
+   |
+37 | fn donation_url(action: &str) -> Option<&'static str> {
+   |    ^^^^^^^^^^^^
+
+warning: function `supported_ai_url` is never used
+  --> src/gui.rs:43:4
+   |
+43 | fn supported_ai_url(action: &str) -> Option<&'static str> {
+   |    ^^^^^^^^^^^^^^^^
+
+warning: function `j_i32` is never used
+   --> src/workspace.rs:245:4
+    |
+245 | fn j_i32(args: &serde_json::Value, key: &str) -> Result<i32, String> {
+    |    ^^^^^
+
+warning: methods `replace`, `update`, and `path` are never used
+   --> src/preferences.rs:181:12
+    |
+153 | impl PreferencesStore {
+    | --------------------- methods in this implementation
+...
+181 |     pub fn replace(&self, prefs:DesktopPreferences)->anyhow::Result<DesktopPreferences> {
+    |            ^^^^^^^
+...
+193 |     pub fn update<F>(&self,mut edit:F)->anyhow::Result<DesktopPreferences> where F:FnMut(&mut DesktopPreferences) {
+    |            ^^^^^^
+...
+207 |     pub fn path(&self) -> &Path {
+    |            ^^^^
+
+warning: constant `ASSET_KINDS` is never used
+  --> src/toolkit.rs:15:11
+   |
+15 | pub const ASSET_KINDS:&[(&str,&str)]=&[("model","Model"),("mesh","Mesh"),("animation","Animation"),("sound","Sound / audio"),("image...
+   |           ^^^^^^^^^^^
+
+warning: function `is_translocated` is never used
+  --> src/platform.rs:15:8
+   |
+15 | pub fn is_translocated(executable:&Path)->bool {executable.components().any(|part|part.as_os_str()=="AppTranslocation")}
+   |        ^^^^^^^^^^^^^^^
+
+warning: function `is_enabled` is never used
+   --> src/mcp_addons.rs:139:8
+    |
+139 | pub fn is_enabled(id: &str) -> bool {read_config().servers.contains_key(id)}
+    |        ^^^^^^^^^^
+
+warning: method `reset_tool` is never used
+   --> src/mcp_addons.rs:489:18
+    |
+454 | impl AddonManager {
+    | ----------------- method in this implementation
+...
+489 |     pub async fn reset_tool(&mut self, advertised: &str) {
+    |                  ^^^^^^^^^^
+
+warning: `elio-agent` (bin "elio") generated 16 warnings (run `cargo fix --bin "elio" -p elio-agent` to apply 1 suggestion)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 20.76s

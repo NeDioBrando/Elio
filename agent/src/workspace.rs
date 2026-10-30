@@ -930,6 +930,10 @@ pub async fn tool_open_path(ws: &Workspace, args: &serde_json::Value) -> Result<
 }
 
 const DOWNLOAD_MAX_BYTES: u64 = 200 * 1024 * 1024;
+// Removes only this download's partial file, including on cancelled futures.
+struct DownloadScratch(PathBuf);
+impl Drop for DownloadScratch {fn drop(&mut self){let _=std::fs::remove_file(&self.0);}}
+
 
 pub async fn tool_download_file(ws: &Workspace, args: &serde_json::Value) -> Result<String, String> {
     let url = arg_str(args, "url")?;
@@ -938,6 +942,7 @@ pub async fn tool_download_file(ws: &Workspace, args: &serde_json::Value) -> Res
     }
     let dest_rel = arg_str(args, "path")?;
     let dest = ws.resolve_path(dest_rel.as_str(), false)?;
+    if dest==ws.canon_root || dest.is_dir(){return Err("Download destination must be a file, not the workspace root or a directory".into());}
     if let Some(parent) = dest.parent() {
         tokio::fs::create_dir_all(parent).await.map_err(|e| format!("mkdir failed: {e}"))?;
     }
@@ -954,7 +959,11 @@ pub async fn tool_download_file(ws: &Workspace, args: &serde_json::Value) -> Res
             return Err(format!("file is {} - over the {} download cap", human_size(n as f64), human_size(DOWNLOAD_MAX_BYTES as f64)));
         }
     }
-    let mut file = tokio::fs::File::create(&dest).await.map_err(|e| format!("create failed: {e}"))?;
+    let mut nonce=[0u8;16];getrandom::getrandom(&mut nonce).map_err(|e|format!("download session failed: {e}"))?;
+    let temporary=dest.with_file_name(format!(".elio-download-{}.part",nonce.iter().map(|b|format!("{b:02x}")).collect::<String>()));
+    let raw=std::fs::OpenOptions::new().write(true).create_new(true).open(&temporary).map_err(|e|format!("create failed: {e}"))?;
+    let scratch=DownloadScratch(temporary);
+    let mut file=tokio::fs::File::from_std(raw);
     use tokio::io::AsyncWriteExt;
     let mut written: u64 = 0;
     let mut stream = resp.bytes_stream();
@@ -963,12 +972,16 @@ pub async fn tool_download_file(ws: &Workspace, args: &serde_json::Value) -> Res
         let chunk = chunk.map_err(|e| format!("stream error: {e}"))?;
         written += chunk.len() as u64;
         if written > DOWNLOAD_MAX_BYTES {
-            let _ = tokio::fs::remove_file(&dest).await;
             return Err(format!("download exceeded the {} cap mid-stream; aborted", human_size(DOWNLOAD_MAX_BYTES as f64)));
         }
         file.write_all(&chunk).await.map_err(|e| format!("write failed: {e}"))?;
     }
     file.flush().await.map_err(|e| format!("flush failed: {e}"))?;
+    file.sync_all().await.map_err(|e|format!("download sync failed: {e}"))?;drop(file);
+    if total.is_some_and(|expected|written!=expected){return Err("Incomplete download; original file preserved".into());}
+    if ws.resolve_path(dest_rel.as_str(),false)?!=dest{return Err("Download destination changed; original file preserved".into());}
+    // One same-filesystem replacement after the COMPLETE body, never truncate first.
+    std::fs::rename(&scratch.0,&dest).map_err(|e|format!("download replacement failed; original preserved: {e}"))?;
     Ok(format!(
         "Downloaded {url} -> {} ({}{})",
         ws.display(&dest),
@@ -1552,5 +1565,32 @@ mod tests {
         let own = std::process::id();
         let self_kill = tool_process_kill(&ws, &serde_json::json!({"pid": own})).await;
         assert!(self_kill.is_err());
+    }
+}
+
+#[cfg(test)]mod audit_download_tests {
+    use super::*;
+    async fn server(body:&'static [u8])->(String,tokio::task::JoinHandle<()>) {
+        use tokio::io::{AsyncReadExt,AsyncWriteExt};
+        let listener=tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();let url=format!("http://{}/file",listener.local_addr().unwrap());
+        let task=tokio::spawn(async move{let(mut socket,_)=listener.accept().await.unwrap();let mut request=[0u8;4096];let _=socket.read(&mut request).await;socket.write_all(body).await.unwrap();});(url,task)
+    }
+    #[tokio::test]async fn failed_stream_preserves_original_and_success_replaces_it() {
+        let root=std::env::temp_dir().join(format!("elio-audit-download-{}",std::process::id()));let ws=Workspace::new(root.to_str()).unwrap();let path=root.join("existing.bin");std::fs::write(&path,b"original").unwrap();
+        assert!(tool_download_file(&ws,&serde_json::json!({"url":"http://127.0.0.1:1/file","path":"."})).await.unwrap_err().contains("must be a file"));
+        let(url,task)=server(b"HTTP/1.1 200 OK\r\nContent-Length: 100\r\nConnection: close\r\n\r\npartial").await;
+        assert!(tool_download_file(&ws,&serde_json::json!({"url":url,"path":"existing.bin"})).await.is_err());task.await.unwrap();assert_eq!(std::fs::read(&path).unwrap(),b"original");assert_eq!(std::fs::read_dir(&root).unwrap().count(),1);
+        let(url,task)=server(b"HTTP/1.1 200 OK\r\nContent-Length: 8\r\nConnection: close\r\n\r\ncomplete").await;
+        assert!(tool_download_file(&ws,&serde_json::json!({"url":url,"path":"existing.bin"})).await.is_ok());task.await.unwrap();assert_eq!(std::fs::read(&path).unwrap(),b"complete");assert_eq!(std::fs::read_dir(&root).unwrap().count(),1);std::fs::remove_dir_all(root).unwrap();
+    }
+    #[tokio::test]async fn cancelled_stream_preserves_original() {
+        use tokio::io::{AsyncReadExt,AsyncWriteExt};
+        let root=std::env::temp_dir().join(format!("elio-audit-download-cancel-{}",std::process::id()));let ws=std::sync::Arc::new(Workspace::new(root.to_str()).unwrap());std::fs::write(root.join("keep.bin"),b"original").unwrap();
+        let listener=tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();let url=format!("http://{}/file",listener.local_addr().unwrap());
+        let server=tokio::spawn(async move{let(mut socket,_)=listener.accept().await.unwrap();let mut buf=[0u8;4096];let _=socket.read(&mut buf).await;socket.write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 100\r\n\r\npartial").await.unwrap();std::future::pending::<()>().await;});
+        let copy=ws.clone();let task=tokio::spawn(async move{tool_download_file(&copy,&serde_json::json!({"url":url,"path":"keep.bin"})).await});
+        for _ in 0..100{if std::fs::read_dir(&root).unwrap().count()>1{break;}tokio::time::sleep(std::time::Duration::from_millis(10)).await;}
+        tokio::time::sleep(std::time::Duration::from_millis(30)).await;task.abort();let _=task.await;server.abort();let _=server.await;
+        assert_eq!(std::fs::read(root.join("keep.bin")).unwrap(),b"original");assert_eq!(std::fs::read_dir(&root).unwrap().count(),1);std::fs::remove_dir_all(root).unwrap();
     }
 }

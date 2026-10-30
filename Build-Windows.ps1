@@ -13,6 +13,20 @@ $env:NODE_PATH = (Join-Path $PSScriptRoot 'release-tools/node_modules') + [IO.Pa
 # Compile .NET Framework fixture EXEs under Windows PowerShell 5.1, not pwsh 7.
 & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -File .\test-updater-helper.ps1
 if ($LASTEXITCODE -ne 0) { throw 'Windows updater helper tests failed.' }
+node .\test-full-audit.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Full audit behavioral regressions failed.' }
+node .\test-asset-library.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Built-in asset library tests failed.' }
+if (-not $env:CHROMIUM_PATH -and -not $env:ELIO_TEST_CHROMIUM) {
+  node .\release-tools\node_modules\playwright\cli.js install chromium
+  if ($LASTEXITCODE -ne 0) { throw 'Chrome regression browser installation failed.' }
+}
+node .\test-asset-library-worker.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Asset library Chrome service worker regression failed.' }
+node .\test-blender-headless.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Headless Blender extension regression failed.' }
+python tools/test_blender_headless.py
+if ($LASTEXITCODE -ne 0) { throw 'Headless Blender source contracts failed.' }
 node .\test-tool-error-recovery.js
 if ($LASTEXITCODE -ne 0) { throw 'Tool error recovery regression failed.' }
 node .\test-stop.js

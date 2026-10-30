@@ -20,17 +20,18 @@ jobs:
           import base64,lzma,hashlib,subprocess
           from pathlib import Path
           patch=lzma.decompress(base64.b64decode(Path('.elio-headless-transfer/patch.b64').read_bytes()))
-          assert hashlib.sha256(patch).hexdigest() == '192a1e145a446da972eb5c59450d969cb0fc361505456067a09f2cda0f7f1151'
+          assert hashlib.sha256(patch).hexdigest() == 'e8fdecc3c615ee2f10d7877280dfbb66b2769acf084da5a31e3f6f97aa5692ba'
           Path('/tmp/elio-headless.patch').write_bytes(patch)
           subprocess.run(['git','apply','--check','/tmp/elio-headless.patch'],check=True)
           subprocess.run(['git','apply','--index','/tmp/elio-headless.patch'],check=True)
           PYCODE
-          rm -rf .elio-headless-transfer .github/workflows/apply-headless.yml
+          rm -rf .elio-headless-transfer
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
           git commit -m 'Add lightweight owned headless Blender backend with on-demand previews and lifecycle tests'
-          git push origin HEAD:update/latest-source-fbf54ce7
+          git push origin HEAD:update/latest-source-fbf54ce7 2>&1 | tee /tmp/push.log
+          if [ "${PIPESTATUS[0]}" != 0 ]; then echo "::error::$(tail -c 1800 /tmp/push.log)"; exit 1; fi
       - name: Start Windows build on applied sources
         env:
           GH_TOKEN: ${{ github.token }}

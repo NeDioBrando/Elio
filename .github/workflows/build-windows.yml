@@ -32,7 +32,19 @@ jobs:
           if ('${{ github.ref_type }}' -eq 'tag' -and '${{ github.ref_name }}' -ne "v$Version") { throw 'Tag does not match the package version.' }
       - name: Audit, test, compile and package
         shell: pwsh
-        run: ./Build-Windows.ps1
+        run: |
+          try {
+            & ./Build-Windows.ps1 *>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP/elio-build.log"
+            if ($LASTEXITCODE -ne 0) { throw "Build exited with $LASTEXITCODE" }
+          } catch {
+            if (Test-Path "$env:RUNNER_TEMP/elio-build.log") {
+              Get-Content "$env:RUNNER_TEMP/elio-build.log" -Tail 65 | ForEach-Object {
+                $Line = ("$_" -replace '%','%25' -replace "`r",'%0D' -replace "`n",'%0A')
+                Write-Output "::error::$Line"
+              }
+            }
+            throw
+          }
       - name: Verify real headless Blender lifecycle
         shell: pwsh
         run: |

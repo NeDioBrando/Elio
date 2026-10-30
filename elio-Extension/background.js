@@ -1608,6 +1608,11 @@ async function blenderRequest(payload, timeout=120000) {
   if(!response.ok) throw Error("Blender bridge request failed (HTTP "+response.status+"). Update the desktop app and extension together.");
   return response.json();
 }
+async function headlessBlenderControl(request) {
+  const response=await bridgeFetch(RUST_ROBLOX_HTTP+"/api/blender-headless",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(request),signal:AbortSignal.timeout(request.action==="start"?70000:8000)});
+  if(!response.ok)throw Error("Headless Blender API failed (HTTP "+response.status+"). Update Elio.exe and the extension together.");
+  return response.json();
+}
 async function connectBlender() {
   blenderSuppressed=false;
   try {
@@ -1807,7 +1812,8 @@ function blenderShotCode(filepath, maxSize) {
 
 async function blenderPayload(name, args) {
   const bare = String(name || "").split("__").pop().split("/").pop().split(".").pop();
-  const a = args || {};
+  const a = Object.assign({},args||{});
+  delete a._elio_headless_request_id;
   if (bare === "get_scene_info" || bare === "blender_get_scene_info") return { type: "get_scene_info", params: {} };
   if (bare === "get_object_info" || bare === "blender_get_object_info") return { type: "get_object_info", params: { name: a.name || a.object_name || "" } };
   if (bare === "execute_blender_code" || bare === "execute_code" || bare === "blender_execute_code") return { type: "execute_code", params: { code: wrapBlenderUserCode(a.code || "") } };
@@ -1818,7 +1824,8 @@ async function blenderPayload(name, args) {
     if (root) shot = root.replace(/[\\/]+$/, "") + "/" + relativeShot;
     // _orShot: the exact path we asked Blender to write, so blenderCall can read
     // the pixels back (see the screenshot branch there) without guessing.
-    return { type: "execute_code", params: { code: blenderShotCode(shot, a.max_size) }, _orShot: shot, _orReadShot: relativeShot, _orIsShot: true };
+    const backend=await headlessBlenderControl({action:"status"});
+    return { type: backend.mode==="headless"?"render_preview":"execute_code", params: backend.mode==="headless"?{filepath:shot,max_size:a.max_size||512}:{code:blenderShotCode(shot,a.max_size)}, _orShot: shot, _orReadShot: relativeShot, _orIsShot: true };
   }
   const mapped = BLENDER_CMD[bare];
   if (mapped) {
@@ -1859,7 +1866,7 @@ async function blenderCall(name, args, timeout) {
   const run = async () => {
     const payload = await blenderPayload(name, args);
     const statusPath = payload._orStatus || "";
-    const reply = await blenderRequest({type:payload.type,params:payload.params},payload.type === "get_scene_info" ? 8000 : Math.min(180000,timeout || 120000));
+    const reply = await blenderRequest({type:payload.type,params:payload.params,request_id:args?._elio_headless_request_id},payload.type === "get_scene_info" ? 8000 : Math.min(180000,timeout || 120000));
     if(!reply.ok) {if(/not listening|actively refused|connection refused|connection (?:closed|failed)|closed (?:the )?(?:socket|connection)|Blender is not connected/i.test(reply.error || ""))setBlender(false,reply.error);return {ok:false,error:reply.error || "Blender command failed."};}
     const data = reply.data;
     if (data && data.status === "error") {
@@ -1934,7 +1941,7 @@ async function blenderCall(name, args, timeout) {
     }
     let textOut = typeof result === "string" ? result : JSON.stringify(result, null, 2);
     if (payload._orIsShot && shotInfo) {
-      textOut = "Fresh Blender viewport capture " + (shotInfo.size || []).join("x") + " via " + shotInfo.method +
+      textOut = "Fresh Blender preview " + (shotInfo.size || []).join("x") + " via " + shotInfo.method +
         " at " + shotInfo.taken + " (sha1 " + shotInfo.sha1 + ", " + shotInfo.bytes + " bytes)" +
         (shotInfo.offscreen_error ? " [off-screen render failed: " + shotInfo.offscreen_error + "]" : "");
     }
@@ -2295,15 +2302,24 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         }
         break;
       }
+      case "blender_headless": {
+        const result=await headlessBlenderControl(msg.request||{action:"status"});
+        if(result.ok&&msg.request?.action==="start") {blenderSuppressed=false;sendResponse(await connectBlender());}
+        else {if(result.ok&&["stop","desktop"].includes(msg.request?.action))setBlender(false,"");sendResponse(result);}
+        break;
+      }
       case "blender_connect": {
+        if(msg.mode==="desktop") {const changed=await headlessBlenderControl({action:"desktop"});if(!changed.ok){sendResponse(changed);break;}}
         sendResponse(await connectBlender());
         break;
       }
       case "blender_status": {
-        sendResponse({ ok: blenderAddon, blender: blenderAddon, error: blenderError || undefined });
+        const backend=await headlessBlenderControl({action:"status"});
+        sendResponse({ ok: blenderAddon, blender: blenderAddon, mode:backend.mode, headless:backend, error: blenderError || undefined });
         break;
       }
       case "blender_disconnect": {
+        await headlessBlenderControl({action:"stop"});
         blenderSuppressed=true;
         setBlender(false, "");
         broadcastStatus();

@@ -72,3 +72,6 @@ Lightpanda пока не реализована и не заявляется с�
 Модель получает короткую строку `You are Elio, the user's AI assistant.`. После обнаружения инструментов ожидается точный ответ **`Elio is ready to assist you.`**. Правила вызова инструментов, ограничения, формат команд и остальное поведение промпта не переписывались.
 
 Старые release-tools/package-appearance.py и publisher-appearance.py отключены с понятным сообщением: используйте Build-Windows.ps1 и текущий workflow, а не исторический pipeline публикации.
+
+### Blender без окна
+В Connections → Blender доступен **Start / Resume headless**: один фоновый процесс, 2 потока, PNG-превью по запросу и выгрузка после 120 секунд простоя. Подробнее: [BLENDER-HEADLESS-RU.md](BLENDER-HEADLESS-RU.md).

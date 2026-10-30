@@ -23,6 +23,10 @@ if (-not $env:CHROMIUM_PATH -and -not $env:ELIO_TEST_CHROMIUM) {
 }
 node .\test-asset-library-worker.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Asset library Chrome service worker regression failed.' }
+node .\test-blender-headless.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Headless Blender extension regression failed.' }
+python tools/test_blender_headless.py
+if ($LASTEXITCODE -ne 0) { throw 'Headless Blender source contracts failed.' }
 node .\test-tool-error-recovery.js
 if ($LASTEXITCODE -ne 0) { throw 'Tool error recovery regression failed.' }
 node .\test-stop.js

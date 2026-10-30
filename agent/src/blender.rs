@@ -4,7 +4,7 @@ use std::time::Duration;
 use tokio::{io::{AsyncReadExt, AsyncWriteExt}, net::TcpStream};
 
 static LAST_CONNECTION: std::sync::Mutex<Option<(std::time::Instant,bool)>> = std::sync::Mutex::new(None);
-pub fn connected() -> Option<bool> { LAST_CONNECTION.lock().ok().and_then(|state|state.as_ref().filter(|(at,_)|at.elapsed()<Duration::from_secs(20)).map(|(_,ready)|*ready)) }
+pub fn connected() -> Option<bool> { if crate::blender_headless::selected(){let s=crate::blender_headless::status();return Some(!s["faulted"].as_bool().unwrap_or(true)&&!s["starting"].as_bool().unwrap_or(false));} LAST_CONNECTION.lock().ok().and_then(|state|state.as_ref().filter(|(at,_)|at.elapsed()<Duration::from_secs(20)).map(|(_,ready)|*ready)) }
 
 pub async fn command_at(host: &str, port: u16, kind: &str, params: Value, limit: Duration) -> anyhow::Result<Value> {
     tokio::time::timeout(limit, async {
@@ -34,6 +34,12 @@ pub async fn command(kind: &str, params: Value, limit: Duration) -> anyhow::Resu
     // Several chats/browsers can share one Blender. Wait briefly for the active
     // command instead of failing immediately; commands are never repeated.
     let _guard=tokio::time::timeout(Duration::from_secs(45),COMMAND_LOCK.lock()).await.map_err(|_|anyhow::anyhow!("Blender is processing another elio command. Wait for it to finish before running a scene check."))?;
+    if crate::blender_headless::selected() {
+        if kind!="get_scene_info"{crate::safety::desktop_policy(false)?;}
+        let result=crate::blender_headless::command(kind,params,limit).await;
+        if let Ok(mut state)=LAST_CONNECTION.lock(){*state=Some((std::time::Instant::now(),result.is_ok()));}
+        return result;
+    }
     let config=crate::mcp_addons::read_config();
     let spec=config.servers.get("blender");
     let host = spec.and_then(|s|s.env.get("BLENDER_HOST")).cloned().or_else(||std::env::var("BLENDER_HOST").ok()).unwrap_or_else(|| "127.0.0.1".into());
@@ -50,9 +56,11 @@ pub async fn post(Json(request): Json<Value>) -> Json<Value> {
     let kind = request["type"].as_str().unwrap_or("get_scene_info");
     if kind!="get_scene_info"{if let Err(error)=crate::safety::mutation(){return Json(json!({"ok":false,"error":error.to_string()}));}}
     let seconds = if kind == "get_scene_info" {8} else {request["timeout_seconds"].as_u64().unwrap_or(120).clamp(1,180)};
-    match command(kind, request.get("params").cloned().unwrap_or_else(||json!({})), Duration::from_secs(seconds)).await {
+    let mut params=request.get("params").cloned().unwrap_or_else(||json!({}));
+    if crate::blender_headless::selected(){if let (Some(id),Some(map))=(request["request_id"].as_str(),params.as_object_mut()){map.insert("__elio_request_id".into(),json!(id));}}
+    match command(kind, params, Duration::from_secs(seconds)).await {
         Ok(value) => Json(json!({"ok":true,"blender":true,"data":value})),
-        Err(error) => Json(json!({"ok":false,"blender":false,"error":format!("{error}. Check that the Blender MCP addon is enabled and its server is started on the same host and port as elio (default 127.0.0.1:9876).")})),
+        Err(error) => Json(json!({"ok":false,"blender":false,"error":if crate::blender_headless::selected(){error.to_string()}else{format!("{error}. Check that the Blender MCP addon is enabled and its server is started on the same host and port as elio (default 127.0.0.1:9876).")}})),
     }
 }
 

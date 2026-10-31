@@ -1,0 +1,49 @@
+name: Apply reviewed useful ports and asset expansion
+on:
+  push:
+    branches: [update/latest-source-fbf54ce7]
+    paths: ['.elio-ports-transfer/part-1.b64']
+permissions:
+  contents: write
+  actions: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify and apply reviewed source and metadata deltas
+        shell: bash
+        run: |
+          python3 - <<'PYCODE'
+          import base64,lzma,hashlib,subprocess,json,sys
+          from pathlib import Path
+          encoded=''.join(Path('.elio-ports-transfer/part-'+str(i)+'.b64').read_text() for i in range(2))
+          payload=lzma.decompress(base64.b64decode(encoded))
+          assert hashlib.sha256(payload).hexdigest() == 'b88ef6469f217570c8289ddf220c4fa81e2cdf570523c4127644e66cc1ae44fe'
+          data=json.loads(payload)
+          Path('/tmp/elio-ports.patch').write_text(data['patch'],encoding='utf-8')
+          subprocess.run(['git','apply','--check','/tmp/elio-ports.patch'],check=True)
+          subprocess.run(['git','apply','--index','/tmp/elio-ports.patch'],check=True)
+          sys.path.insert(0,'tools')
+          from merge_asset_library import merge
+          for name,delta in data['asset_deltas'].items():
+              path=Path('core/asset-library')/name
+              merged=merge(json.loads(path.read_text(encoding='utf-8')),delta)
+              if name=='supplement.json': merged.pop('counts',None)
+              raw=(json.dumps(merged,ensure_ascii=False,separators=(',',':'))+'\n').encode()
+              assert hashlib.sha256(raw).hexdigest() == data['expected_files'][name]
+              path.write_bytes(raw)
+              (Path('elio-Extension/core/asset-library')/name).write_bytes(raw)
+          PYCODE
+          rm -rf .elio-ports-transfer
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Add bounded script batches, provider reliability, updater fixes and 493 public asset references'
+          git push origin HEAD:update/latest-source-fbf54ce7
+      - name: Build Windows executable and package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run build-windows.yml --ref update/latest-source-fbf54ce7

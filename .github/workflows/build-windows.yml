@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - update/latest-source-fbf54ce7
+    paths-ignore:
+      - '.elio-ports-transfer/**'
+      - '.github/workflows/apply-useful-ports.yml'
     tags:
       - 'v[0-9]*'
 permissions:

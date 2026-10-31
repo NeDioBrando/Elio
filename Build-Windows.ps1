@@ -13,6 +13,12 @@ $env:NODE_PATH = (Join-Path $PSScriptRoot 'release-tools/node_modules') + [IO.Pa
 # Compile .NET Framework fixture EXEs under Windows PowerShell 5.1, not pwsh 7.
 & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -File .\test-updater-helper.ps1
 if ($LASTEXITCODE -ne 0) { throw 'Windows updater helper tests failed.' }
+node .\test-provider-ports.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Provider send queue / Codex regressions failed.' }
+node .\test-useful-ports.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Provider/parser/menu port regressions failed.' }
+node tools/test_read_scripts.mjs
+if ($LASTEXITCODE -ne 0) { throw 'Read scripts batch regressions failed.' }
 node .\test-full-audit.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Full audit behavioral regressions failed.' }
 node .\test-asset-library.cjs

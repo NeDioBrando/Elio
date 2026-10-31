@@ -23,7 +23,7 @@ async function probe(dir,profile,missing=false){
   async function call(req){return page.evaluate(req=>chrome.runtime.sendMessage(req),req);}
   const stats=await call({action:'stats'});
   if(missing){assert.equal(stats.ok,false);assert.equal(stats.error_code,'library_unavailable');assert.equal(stats.resource,'core/asset-library.js');assert.match(stats.recovery,/Reload/);assert.match(stats.error,/Full PC access is not required/);return;}
-  assert.equal(stats.ok,true,JSON.stringify(stats));assert.equal(stats.total,5515);
+  assert.equal(stats.ok,true,JSON.stringify(stats));assert.equal(stats.total,6008);
   const search=await call({action:'search',query:'beam',limit:12});assert.equal(search.ok,true);assert(search.results.length>0);
   const reported=await call({action:'search',query:'energy beam tapered laser lightning sparks',limit:12});assert.equal(reported.ok,true);assert(Array.isArray(reported.results));
   const get=await call({action:'get',key:search.results[0].key});assert.equal(get.ok,true);
@@ -38,7 +38,7 @@ async function checkLoaderFailures(){
  const context={chrome:{runtime:{getURL:p=>'chrome-extension://test/'+p}},importScripts:p=>{assert(startup,'Late importScripts');assert.equal(p,'core/asset-library.js');imports++;context.ElioAssetLibrary=require('./core/asset-library.js');},fetch:async()=>{fetches++;return {ok:!fail,status:503,json:async()=>data};}};
  vm.createContext(context);vm.runInContext(source+';this.lookup=localAssetLibrary',context);startup=false;assert.equal(imports,1);
  const unavailable=await context.lookup({action:'stats'});assert.equal(unavailable.error_code,'library_unavailable');assert.equal(unavailable.resource,'core/asset-library/catalog.json');
- fail=false;const replies=await Promise.all(Array.from({length:8},()=>context.lookup({action:'stats'})));assert(replies.every(r=>r.ok&&r.total===5515));assert.equal(fetches,2);assert.equal(imports,1);
+ fail=false;const replies=await Promise.all(Array.from({length:8},()=>context.lookup({action:'stats'})));assert(replies.every(r=>r.ok&&r.total===6008));assert.equal(fetches,2);assert.equal(imports,1);
 }
 (async()=>{
  await checkLoaderFailures();

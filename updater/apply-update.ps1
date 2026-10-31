@@ -18,6 +18,44 @@ $log=Join-Path $stage 'update.log'
 $changed=New-Object 'System.Collections.Generic.List[object]'
 $stopped=$false
 $newProcess=$null
+$deadline=[DateTime]::UtcNow.AddMinutes(15)
+function Check-Deadline {if([DateTime]::UtcNow -gt $deadline){throw 'Update deadline exceeded (15 minutes); restoring changed files'}}
+function Retry-FileIO([scriptblock]$Action,[string]$Context){
+ for($attempt=0;$attempt -lt 3;$attempt++){
+  Check-Deadline
+  try{return (& $Action)}catch{
+   $cause=$_.Exception
+   while($cause.InnerException){$cause=$cause.InnerException}
+   if($attempt -ge 2 -or !($cause -is [IO.IOException])){throw ($Context+': '+$cause.Message)}
+   Start-Sleep -Milliseconds (400*($attempt+1))
+  }
+ }
+}
+function Read-NativeVersion([string]$Exe){
+ $limit=[DateTime]::UtcNow.AddSeconds(120)
+ for($attempt=0;$attempt -lt 3;$attempt++){
+  Check-Deadline
+  $proc=New-Object Diagnostics.Process
+  $proc.StartInfo=New-Object Diagnostics.ProcessStartInfo
+  $proc.StartInfo.FileName=$Exe;$proc.StartInfo.Arguments='--version'
+  $proc.StartInfo.UseShellExecute=$false;$proc.StartInfo.CreateNoWindow=$true
+  $proc.StartInfo.RedirectStandardOutput=$true;$proc.StartInfo.RedirectStandardError=$true
+  try {
+   try{$started=$proc.Start()}catch [ComponentModel.Win32Exception]{
+    if($attempt -lt 2 -and $_.Exception.NativeErrorCode -in @(32,33)){Start-Sleep -Seconds ($attempt+1);continue};throw
+   }
+   if(!$started){throw "Cannot start native version verifier: $Exe"}
+   $out=$proc.StandardOutput.ReadToEndAsync();$err=$proc.StandardError.ReadToEndAsync()
+   $remaining=[Math]::Max(1,[Math]::Min(40000,($limit-[DateTime]::UtcNow).TotalMilliseconds))
+   if(!$proc.WaitForExit([int]$remaining)){try{$proc.Kill()}catch{};throw "Native version verifier timed out: $Exe"}
+   if(!$out.Wait(2000) -or !$err.Wait(2000)){throw "Native verifier output pipe timed out: $Exe"}
+   $text=$out.GetAwaiter().GetResult().Trim();$detail=$err.GetAwaiter().GetResult()
+   if($proc.ExitCode -ne 0){throw "Native version verifier exited $($proc.ExitCode): $Exe"}
+   return $text
+  }finally{$proc.Dispose()}
+ }
+ throw "Native version verifier unavailable: $Exe"
+}
 function Note([string]$Text){Add-Content -LiteralPath $log -Value ((Get-Date -Format o)+' '+$Text)}
 function Assert-NoReparse([string]$Path){
  $p=$Path
@@ -36,7 +74,7 @@ function Is-PackageFile([string]$Relative){
 try {
  Note "Validating release $ExpectedVersion"
  Assert-NoReparse $InstallDir
- if((Get-FileHash -LiteralPath $ZipPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $ExpectedSha256){throw 'ZIP digest changed. No installed files were changed.'}
+ if((Retry-FileIO { (Get-FileHash -LiteralPath $ZipPath -Algorithm SHA256).Hash.ToLowerInvariant() } ('Cannot read release ZIP '+$ZipPath)) -ne $ExpectedSha256){throw 'ZIP digest changed. No installed files were changed.'}
  $install=[IO.Path]::GetFullPath($InstallDir).TrimEnd('\')
  if(!(Test-Path -LiteralPath (Join-Path $install 'elio.exe'))){throw 'Installation EXE not found'}
  New-Item -ItemType Directory -Path $payload -Force | Out-Null
@@ -47,6 +85,7 @@ try {
  $count=0
  try {
   foreach($entry in $archive.Entries){
+   Check-Deadline
    $name=$entry.FullName.Replace('\','/')
    if(!$name.StartsWith('elio/',[StringComparison]::Ordinal)){throw 'Unexpected ZIP root'}
    $relative=$name.Substring('elio/'.Length)
@@ -68,15 +107,16 @@ try {
  $manifest=Join-Path $payload 'elio-Extension\manifest.json'
  if(!(Test-Path -LiteralPath $exe) -or !(Test-Path -LiteralPath $manifest) -or !(Test-Path -LiteralPath (Join-Path $payload 'WebView2Loader.dll'))){throw 'Incomplete application package'}
  if((Get-Content -LiteralPath $manifest -Raw | ConvertFrom-Json).version -ne $ExpectedVersion){throw 'Extension version mismatch'}
- $versionOutput=& $exe --version
- if($LASTEXITCODE -ne 0 -or $versionOutput -notmatch ('^elio-agent '+[regex]::Escape($ExpectedVersion)+'$')){throw 'Native version mismatch'}
+ $versionOutput=Read-NativeVersion $exe
+ if($versionOutput -notmatch ('^elio-agent '+[regex]::Escape($ExpectedVersion)+'$')){throw 'Native version mismatch'}
  $files=@(Get-ChildItem -LiteralPath $payload -Recurse -File | Where-Object {Is-PackageFile $_.FullName.Substring($payload.Length+1)})
  # Prepare backup and write probe before asking an app to exit. Neither Studio
  # nor Blender is ever killed. Config is intentionally excluded from updates.
  foreach($file in $files){
+  Check-Deadline
   $relative=$file.FullName.Substring($payload.Length+1);$target=Join-Path $install $relative
   Assert-NoReparse $target
-  if(Test-Path -LiteralPath $target){$saved=Join-Path $backup $relative;New-Item -ItemType Directory -Path (Split-Path -Parent $saved) -Force|Out-Null;Copy-Item -LiteralPath $target -Destination $saved -Force}
+  if(Test-Path -LiteralPath $target){$saved=Join-Path $backup $relative;New-Item -ItemType Directory -Path (Split-Path -Parent $saved) -Force|Out-Null;Retry-FileIO {Copy-Item -LiteralPath $target -Destination $saved -Force} ('Cannot back up '+$relative)}
  }
  $probe=Join-Path $install ('.update-probe-'+[guid]::NewGuid().ToString('N'));[IO.File]::WriteAllText($probe,'probe');Remove-Item -LiteralPath $probe
  [IO.File]::WriteAllText((Join-Path $stage 'prepared'),'ready')
@@ -84,6 +124,7 @@ try {
  if(Get-Process -Id $ParentPid -ErrorAction SilentlyContinue){Wait-Process -Id $ParentPid -Timeout 45 -ErrorAction Stop}
  $stopped=$true
  foreach($file in $files){
+  Check-Deadline
   $relative=$file.FullName.Substring($payload.Length+1);$target=Join-Path $install $relative
   Assert-NoReparse $target
   New-Item -ItemType Directory -Path (Split-Path -Parent $target) -Force | Out-Null
@@ -99,6 +140,7 @@ try {
  $newProcess=Start-Process -FilePath (Join-Path $install 'elio.exe') -ArgumentList @('--update-receipt',$quotedReceipt) -WorkingDirectory $install -PassThru
  $ready=$false
  for($try=0;$try -lt 90;$try++){
+  Check-Deadline
   Start-Sleep -Milliseconds 500
   if($newProcess.HasExited){throw 'New executable exited before readiness'}
   if((Test-Path -LiteralPath $Receipt) -and (Get-Content -LiteralPath $Receipt -Raw) -eq $ExpectedVersion){$ready=$true;break}
@@ -118,7 +160,7 @@ try {
  }
  if($stopped){Start-Process -FilePath (Join-Path $InstallDir 'elio.exe') -WorkingDirectory $InstallDir -ErrorAction SilentlyContinue|Out-Null}
  [IO.File]::WriteAllText((Join-Path $stage 'result.txt'),'failed '+$failure)
- # The helper is hidden, so surface failure with the OS message dialog.
- if(!$NoDialog){try{Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show("Update failed. Previous files were restored where possible. Log: $log`n$failure",'Elio update')|Out-Null}catch{}}
+ # Never block rollback/restart on a modal dialog. result.txt and update.log
+ # are read by the next app startup and remain available for diagnostics.
  exit 1
 }

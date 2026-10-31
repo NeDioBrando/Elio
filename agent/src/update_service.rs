@@ -21,7 +21,25 @@ pub struct Service {
     pub active_tools: AtomicUsize,
     pub busy_browsers: Mutex<std::collections::HashMap<String, (std::time::Instant, bool)>>,
 }
-impl Default for Service { fn default()->Self { Self {status:Mutex::new(Status::default()),checking:AtomicBool::new(false),installing:AtomicBool::new(false),active_tools:AtomicUsize::new(0),busy_browsers:Mutex::new(std::collections::HashMap::new())} } }
+impl Default for Service { fn default()->Self { Self {status:Mutex::new(initial_status()),checking:AtomicBool::new(false),installing:AtomicBool::new(false),active_tools:AtomicUsize::new(0),busy_browsers:Mutex::new(std::collections::HashMap::new())} } }
+fn initial_status()->Status {
+    let mut status=Status::default();
+    if let Ok(root)=update_root() {
+        if let Ok(stages)=std::fs::read_dir(root) {
+            let latest=stages.filter_map(Result::ok).filter(|e|e.file_name().to_string_lossy().starts_with("stage-"))
+                .filter_map(|e|{let path=e.path().join("result.txt");let meta=std::fs::symlink_metadata(&path).ok()?;
+                    if !meta.is_file() || meta.len()>8192 {return None;} Some((meta.modified().ok()?,path))}).max_by_key(|(time,_)|*time);
+            if let Some((time,path))=latest {
+                if time.elapsed().unwrap_or_default()<Duration::from_secs(7*86400) {
+                    if let Ok(result)=std::fs::read_to_string(&path) {
+                        if result.starts_with("failed ") {status.phase="error".into();status.error=format!("Previous update failed: {}. Log: {}",result.trim(),path.with_file_name("update.log").display());}
+                    }
+                }
+            }
+        }
+    }
+    status
+}
 pub fn version(value:&str)->anyhow::Result<[u64;3]> {
     let parts=value.split('.').collect::<Vec<_>>();
     ensure!(parts.len()==3 && parts.iter().all(|p| !p.is_empty() && p.len()<=9 && p.bytes().all(|b|b.is_ascii_digit()) && (p.len()==1 || !p.starts_with('0'))),"Expected a stable x.y.z version");
@@ -141,9 +159,11 @@ impl Service {
                 .creation_flags(0x0800_0000).spawn().context("Не удалось запустить локальный обновлятор; возможно, PowerShell заблокирован политикой системы")?;
             let prepared=stage.join("prepared");
             let mut ready=false;
-            for _ in 0..180 {
+            for _ in 0..300 {
                 if prepared.is_file(){ready=true;break;}
-                if let Some(status)=child.try_wait()?{anyhow::bail!("Обновлятор не прошёл подготовку ({status}). Журнал: {}",stage.display());}
+                if let Some(status)=child.try_wait()?{let detail=std::fs::read_to_string(stage.join("result.txt")).unwrap_or_default();
+                    let detail=detail.chars().take(1200).collect::<String>();
+                    anyhow::bail!("Обновлятор не прошёл подготовку ({status}): {detail}. Журнал: {}",stage.display());}
                 tokio::time::sleep(Duration::from_millis(500)).await;
             }
             if !ready {let _=child.kill();anyhow::bail!("Истекло время подготовки обновления. Файлы приложения не изменены.");}

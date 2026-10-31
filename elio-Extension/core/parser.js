@@ -60,8 +60,41 @@ const RSParse = (() => {
   // contains - so paramless calls are detected without false-positiving on text.
   const CMD_KEY_RE = /"(?:command|tool)"\s*:\s*"/;
 
+
+  // DeepSeek native DSML is data, never executable markup. Incomplete/malformed
+  // envelopes fail closed and still pass through the normal tool guard.
+  const DSML_START = /<\s*[|｜]DSML[|｜]function_calls\s*>/i;
+  const DSML_END = /<\s*(?:\/\s*[|｜]DSML[|｜]function_calls|[|｜]DSML[|｜]\/function_calls)\s*>/i;
+  function parseDsml(text) {
+    if (typeof text !== "string" || text.length > 2000000) return [];
+    const start = DSML_START.exec(text); if (!start) return [];
+    const tail = text.slice(start.index + start[0].length), end = DSML_END.exec(tail);
+    if (!end) return [];
+    const body = tail.slice(0,end.index), calls = [];
+    const invoke = /<\s*[|｜]DSML[|｜]invoke\s+name\s*=\s*(["'])([\w.-]+)\1\s*>([\s\S]*?)<\s*(?:\/\s*[|｜]DSML[|｜]invoke|[|｜]DSML[|｜]\/invoke)\s*>/gi;
+    let match, consumed = "", last = 0;
+    while ((match = invoke.exec(body))) {
+      consumed += body.slice(last,match.index); last = invoke.lastIndex;
+      if (calls.length >= 32) return [];
+      const args = Object.create(null), params = match[3]; let pm, pos = 0, residual = "";
+      const parameter = /<\s*[|｜]DSML[|｜]parameter\s+name\s*=\s*(["'])([\w.-]+)\1(?:\s+string\s*=\s*(["'])(true|false)\3)?\s*>([\s\S]*?)<\s*(?:\/\s*[|｜]DSML[|｜]parameter|[|｜]DSML[|｜]\/parameter)\s*>/gi;
+      while ((pm = parameter.exec(params))) {
+        residual += params.slice(pos,pm.index); pos = parameter.lastIndex;
+        if (["__proto__","prototype","constructor"].includes(pm[2]) || Object.hasOwn(args,pm[2])) return [];
+        try { args[pm[2]] = pm[4]?.toLowerCase() === "true" ? pm[5] : JSON.parse(pm[5]); }
+        catch { return []; }
+      }
+      residual += params.slice(pos); if (residual.trim()) return [];
+      const call = normalizeCall({command:match[2],params:args}); if (!call) return [];
+      calls.push(call);
+    }
+    consumed += body.slice(last);
+    return consumed.trim() ? [] : calls;
+  }
+
   function hasToolSignature(r) {
     return (
+      DSML_START.test(r) ||
       r.includes(START_M) ||
       r.includes("MCP_TOOL") ||
       LUA_START_RE.test(r) ||
@@ -74,6 +107,8 @@ const RSParse = (() => {
   // response watcher to avoid finalizing a command that is still being streamed.
   function hasOpenToolBlock(r) {
     if (!r) return false;
+    const ds = DSML_START.exec(r);
+    if (ds && !CMD_KEY_RE.test(r.slice(0,ds.index)) && !DSML_END.test(r)) return true;
     const { pos: ls, len } = findLuaStart(r);
     if (ls !== -1 && findLuaEnd(r, ls + len) === -1) return true;
     const sm = r.indexOf(START_M);
@@ -236,6 +271,8 @@ const RSParse = (() => {
       return Math.min(a, b);
     };
     const out = [];
+    const ds = DSML_START.exec(r);
+    if (ds && !CMD_KEY_RE.test(r.slice(0,ds.index))) return parseDsml(r).map(cleanLuaCall);
     let from = 0;
     while (true) {
       const sm = r.indexOf(START_M, from);

@@ -636,6 +636,7 @@ async function connect() {
     lastMessageAt = Date.now();
     lastSocketOpenAt = Date.now();
     log(`connected to ${engineLabel()} bridge (${url})`);
+    debugRecord({source:"extension",level:"info",kind:"bridge",text:"Bridge connected; pending mutations are never replayed",where:[`engine=${engine}`]});
     startHeartbeat();
     studioChecking = engine !== "local";
     refreshProcStatus();
@@ -655,8 +656,13 @@ async function connect() {
     handleBridgeMessage(msg);
   };
 
-  sock.onclose = () => {
+  sock.onclose = (event) => {
     if (sock !== ws) return;
+    const closeCode = Number.isInteger(event && event.code) ? event.code : 0;
+    // Reasons can contain server-supplied secrets: record only RFC code/clean flag.
+    const closeSummary = `bridge connection closed (code ${closeCode}, clean ${!!(event && event.wasClean)})`;
+    debugRecord({source:"extension",level:"warn",kind:"bridge",text:closeSummary,
+      where:[`engine=${engine}`,`uptime_ms=${lastSocketOpenAt ? Math.max(0,Date.now()-lastSocketOpenAt) : 0}`,`pending=${pending.size}`]});
     connected = false;
     mcpAlive = false;
     studioConnected = null;
@@ -666,7 +672,7 @@ async function connect() {
     toolsCache = [];
     serversCache = [];
     stopHeartbeat();
-    failAllPending("bridge connection closed");
+    failAllPending(closeSummary + ". Reconnect is automatic; mutations are not replayed.");
     broadcastStatus();
     scheduleReconnect();
   };
@@ -687,6 +693,7 @@ function scheduleReconnect() {
 function startHeartbeat() {
   stopHeartbeat();
   heartbeatTimer = setInterval(() => {
+    try { chrome.storage.session.set({elioBridgeWorkerAlive:Date.now()}).catch(() => {}); } catch {}
     if (connected) {
       // Half-open socket: the WS still reports OPEN but nothing comes through.
       // The pong (and every other frame) refreshes lastMessageAt; if it has
@@ -757,6 +764,16 @@ let mcpDownStreak = 0;
 let lastMcpHealAt = 0;
 let mcpHealInFlight = false;
 let lastSocketOpenAt = 0;
+const workerEpoch = Date.now();
+(async () => {
+  try {
+    const value = await chrome.storage.session.get("elioBridgeWorkerAlive");
+    const previous = value && value.elioBridgeWorkerAlive;
+    if (Number.isFinite(previous) && previous > 0) debugRecord({source:"extension",level:"info",kind:"bridge",text:"Extension service worker restarted",where:[`heartbeat_gap_ms=${Math.max(0,workerEpoch-previous)}`]});
+    await chrome.storage.session.set({elioBridgeWorkerAlive:workerEpoch});
+  } catch { /* session storage diagnostics never block the bridge */ }
+})();
+
 const MCP_HEAL_STREAK = 3;          // 3 heartbeats (~30 s) of a dead helper
 const MCP_HEAL_GRACE_MS = 60000;    // let Studio auto-connect settle after (re)connect
 const MCP_HEAL_COOLDOWN_MS = 180000; // at most one heal every 3 min

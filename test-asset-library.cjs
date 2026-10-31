@@ -1,9 +1,15 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const {create}=require('./core/asset-library.js');const data=JSON.parse(fs.readFileSync('core/asset-library/catalog.json','utf8'));const run=create(data);
-const stats=run({action:'stats'});assert.equal(stats.total,5515);assert.deepEqual(stats.counts,{texture:5228,mesh:287});assert(stats.categories.includes('impact'));
+const stats=run({action:'stats'});assert.equal(stats.total,6008);assert.deepEqual(stats.counts,{texture:5388,mesh:620});assert(stats.categories.includes('impact'));
+assert(run({action:'search',query:'cursed energy'}).total>=40);assert(run({action:'search',query:'black flash'}).total>=25);
+for(const [a,b] of [['CursedEnergy','cursed energy'],['BlackFlash','black flash'],['проклятая энергия','cursed energy'],['чёрная вспышка','black flash']])assert.deepEqual(run({action:'search',query:a}),run({action:'search',query:b}));
+for(const key of ['texture:17863944368','texture:70610805232342']){const entry=run({action:'get',key}).entry;assert(entry.variants.some(v=>v.asset_type_id===1&&v.mapping==='roblox_api_explicit_textureId'));}
+assert.equal(run({action:'search',query:'black flash'}).results[0].key,'texture:70610805232342');
+assert.equal(run({action:'get',key:'texture:86325147759876'}).ok,false,'listing wrapper is not Image ID');
+
 for(const [ru,en] of [['огонь','fire'],['дым','smoke'],['молния','lightning'],['меч','sword']]){const a=run({action:'search',query:ru}),b=run({action:'search',query:en});assert(a.total>0);assert.deepEqual(a,b);}
 assert(run({action:'search',query:'impact',kind:'texture',layout:'4x4'}).total>0);
-assert.equal(run({action:'search',kind:'mesh'}).total,287);
+assert.equal(run({action:'search',kind:'mesh'}).total,620);
 assert.deepEqual(run({action:'search',query:'текстура огня'}),run({action:'search',query:'fire'}));
 assert.equal(run({action:'search',query:'elio_no_match_7c91'}).total,0);
 const page=run({action:'search',limit:2});assert.equal(page.results.length,2);assert.equal(page.next_offset,2);assert.notDeepEqual(page.results,run({action:'search',limit:2,offset:2}).results);
@@ -32,5 +38,5 @@ assert.match(src,/name:'elio_asset_library'/);assert.match(src,/BUILT-IN ASSET L
  const bg=fs.readFileSync('background.js','utf8');const prefix=bg.slice(0,bg.indexOf('// Elio build compatibility:'));let fetches=0;const context={ElioAssetLibrary:{create},chrome:{runtime:{getURL:p=>'chrome-extension://test/'+p}},fetch:async url=>{assert.equal(url,'chrome-extension://test/core/asset-library/catalog.json');fetches++;return {ok:true,json:async()=>data}}};vm.createContext(context);vm.runInContext(prefix+'this.lookup=localAssetLibrary',context);
  assert((await context.lookup({action:'search',query:'дым'})).total>0);assert((await context.lookup({action:'get',key:'mesh:1290033'})).ok);assert.equal(fetches,1);assert.equal((await context.lookup({action:'delete'})).ok,false);
  assert(bg.includes('sendResponse(await localAssetLibrary(msg.request))'));
- console.log('PASS asset library: 5515 records; type separation, provenance, mesh-texture pairs, RU/EN search, flipbooks, pagination, bounds, hostile metadata, offline bridge caching and mirrored packaging.');
+ console.log('PASS asset library: 6008 records; type separation, provenance, mesh-texture pairs, RU/EN search, flipbooks, pagination, bounds, hostile metadata, offline bridge caching and mirrored packaging.');
 })().catch(e=>{console.error(e);process.exitCode=1});

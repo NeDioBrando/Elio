@@ -183,11 +183,12 @@ fn clip(text: &str, limit: usize) -> String {
     format!("{}\n... [output truncated at {limit} characters]", &text[..cut])
 }
 
-fn human_size(n: f64) -> String {
+fn human_size(mut n: f64) -> String {
     for unit in ["B", "KB", "MB", "GB", "TB"] {
         if n < 1024.0 || unit == "TB" {
             return if unit == "B" { format!("{n} B") } else { format!("{n:.1} {unit}") };
         }
+        n /= 1024.0;
     }
     format!("{n} B")
 }
@@ -1592,5 +1593,14 @@ mod tests {
         for _ in 0..100{if std::fs::read_dir(&root).unwrap().count()>1{break;}tokio::time::sleep(std::time::Duration::from_millis(10)).await;}
         tokio::time::sleep(std::time::Duration::from_millis(30)).await;task.abort();let _=task.await;server.abort();let _=server.await;
         assert_eq!(std::fs::read(root.join("keep.bin")).unwrap(),b"original");assert_eq!(std::fs::read_dir(&root).unwrap().count(),1);std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+#[cfg(test)] mod human_size_regression {
+    use super::human_size;
+    #[test] fn binary_unit_boundaries() {
+        for (bytes, expected) in [(0.0,"0 B"),(1023.0,"1023 B"),(1024.0,"1.0 KB"),(1048576.0,"1.0 MB"),(17179869184.0,"16.0 GB"),(1099511627776.0,"1.0 TB")] {
+            assert_eq!(human_size(bytes), expected);
+        }
     }
 }

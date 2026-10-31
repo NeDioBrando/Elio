@@ -9,6 +9,7 @@ function Assert($Condition,[string]$Message){if(!$Condition){throw $Message}}
 function Fixture([string]$Name,[string]$Version,[bool]$Fail){
  $exe=Join-Path $root ($Name+'.exe')
  $body=if($Fail){'return 7;'}elseif($Version -eq '1.0.1'){'File.WriteAllText(Path.Combine(home,"restarted.txt"),"1.0.1"); return 0;'}else{'for(int i=0;i<args.Length-1;i++) if(args[i]=="--update-receipt") File.WriteAllText(args[i+1],"1.0.2"); System.Threading.Thread.Sleep(30000); return 0;'}
+ $versionBody=if($Version -eq 'hang-version'){'System.Threading.Thread.Sleep(60000); return 0;'}else{'Console.WriteLine("elio-agent '+$Version+'");return 0;'}
  $code=@"
 using System;
 using System.IO;
@@ -16,7 +17,7 @@ using System.Reflection;
 using System.Diagnostics;
 public class $Name {
  public static int Main(string[] args) {
-  if(args.Length>0 && args[0]=="--version") { Console.WriteLine("elio-agent $Version");return 0; }
+  if(args.Length>0 && args[0]=="--version") { $versionBody }
   var home=Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
   File.WriteAllText(Path.Combine(home,"fixture.pid"),Process.GetCurrentProcess().Id.ToString());
   $body
@@ -63,11 +64,15 @@ try{
  $old=Fixture 'FixtureOld101' '1.0.1' $false
  $new=Fixture 'FixtureNew102' '1.0.2' $false
  $bad=Fixture 'FixtureFail102' '1.0.2' $true
+ $hung=Fixture 'FixtureHungVersion' 'hang-version' $false
  Run-Case 'success' $new '1.0.2' 'normal' $true
  Run-Case 'hash-refused' $new '1.0.2' 'bad-hash' $false
  Run-Case 'manifest-refused' $new '1.0.3' 'normal' $false
  Run-Case 'traversal-refused' $new '1.0.2' 'traversal' $false
  Run-Case 'startup-rollback' $bad '1.0.2' 'normal' $false
+ $clock=[Diagnostics.Stopwatch]::StartNew()
+ Run-Case 'version-timeout-preserves-install' $hung '1.0.2' 'normal' $false
+ Assert ($clock.Elapsed.TotalSeconds -lt 55) 'Hung verifier was not bounded'
 }finally{
  Get-ChildItem -LiteralPath $root -Filter fixture.pid -Recurse -ErrorAction SilentlyContinue|ForEach-Object{try{Stop-Process -Id ([int](Get-Content -LiteralPath $_.FullName -Raw)) -Force -ErrorAction SilentlyContinue}catch{}}
  Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue

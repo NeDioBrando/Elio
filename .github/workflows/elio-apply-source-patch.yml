@@ -1,0 +1,22 @@
+name: Apply verified Elio source patch
+on:
+  push:
+    branches: [feat/manual-vault-liquid-glass]
+    paths: [.elio-source-transfer/patch.b64]
+permissions:
+  contents: read
+jobs:
+  apply:
+    if: github.repository == 'NeDioBrando/Elio'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: true
+      - name: Apply and verify exact source hashes
+        run: python3 .elio-source-transfer/apply.py

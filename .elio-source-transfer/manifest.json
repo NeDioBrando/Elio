@@ -1,0 +1,24 @@
+{
+  "baseline": "89d82ef9b74de3517c7fa1b1acc6023cfec2fba4",
+  "patch_sha256": "ebb860b260f545f28e1f5fed22d9f662d0a0113454509e04f0419a7f3f80acdc",
+  "files": {
+    "VAULT-GLASS-RU.md": "59e88a602a9126a976bc5924eec7771913940647f6825d60821d36b5e1a3446c",
+    "VAULT-GLASS-TEST-RESULTS.json": "9ae04f4649e50ead617fdb23a147a056022534b79f2cca8d5232e581d0420793",
+    "agent/src/checkpoints.rs": "b06ca0e61b5f0e8bb6d34cf0320c7b520144855ed271850ffe34acae1f16a75a",
+    "agent/src/main.rs": "1ed207b39b4888f7799311ca76fb9cd34cef056bf47d777b7ee7b73783d2a097",
+    "agent/src/vault.rs": "e9c55fb6e090ba1d6a9146accaf417acd56818c830a950fdebdea694226fadbf",
+    "core/i18n-catalog.js": "f321f7761282ed271331c51b5c462537e15455d447d94f0e7ca6456181d46764",
+    "core/locales/en.json": "663a75cf00cd4e64dc6a9cddcf0f21d27bdd1a793cb08781f7050eee3ccf70ea",
+    "core/locales/ru.json": "fe5e6e0813a7b19ee10211fa80e8e867420f6b25a75487041fb16361a557b67d",
+    "core/theme.css": "f0a4f4a248c9e8528b08576908b023e35d243ec2a87e5136edd1139676e72561",
+    "core/vault-ui.js": "a9a8c3d9362c9c3efdf8e7415139cc3b7f0de716783b80e20a3ea7579b463202",
+    "desktop/elio.css": "c2e227cdf7cef4f93e1fe6fe56fcf37822643a43a4ed4f3241b3a6a37db1ac8a",
+    "elio-Extension/core/i18n-catalog.js": "f321f7761282ed271331c51b5c462537e15455d447d94f0e7ca6456181d46764",
+    "elio-Extension/core/locales/en.json": "663a75cf00cd4e64dc6a9cddcf0f21d27bdd1a793cb08781f7050eee3ccf70ea",
+    "elio-Extension/core/locales/ru.json": "fe5e6e0813a7b19ee10211fa80e8e867420f6b25a75487041fb16361a557b67d",
+    "elio-Extension/core/theme.css": "f0a4f4a248c9e8528b08576908b023e35d243ec2a87e5136edd1139676e72561",
+    "elio-Extension/core/vault-ui.js": "a9a8c3d9362c9c3efdf8e7415139cc3b7f0de716783b80e20a3ea7579b463202",
+    "test-vault-selection-live.cjs": "b04b3f381d696866c30aa49490a1b5b2b48c6769ba95847f79ea6d48405b40f0",
+    "test-vault-selection-ui.cjs": "0d9da9be8a04a7032a5395e00825167d7a57b7272b6c097092311c5310269833"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "base_commit": "89d82ef9b74de3517c7fa1b1acc6023cfec2fba4",
+  "platform": "Linux x86_64 / Chromium (not Windows WebView2)",
+  "checks": {
+    "rust_lib": {
+      "passed": 3,
+      "failed": 0
+    },
+    "rust_bin": {
+      "passed": 182,
+      "failed": 0,
+      "ignored": 1
+    },
+    "native_build": "passed",
+    "real_vault_routing": "passed: pinned read/context/write, other-chat isolation, independent project and browsing, invalid selection rejection, restart persistence, Auto reset",
+    "vault_ui": "passed: browse/pin separation, save guard, reload, failed save, Auto reset, selection polling without note changes, RU labels, unsaved-edit cancellation",
+    "theme_tokens": "passed: representative AA text pairs >= 4.5:1 in both modes",
+    "existing_regressions": [
+      "test-vault-contract.cjs",
+      "test-elio-theme.cjs",
+      "test-elio-theme-ui.cjs",
+      "test-elio-audit.cjs",
+      "test-elio-identity.cjs",
+      "test-elio-rename.cjs"
+    ]
+  },
+  "visual_views": [
+    "home",
+    "memory empty",
+    "memory populated",
+    "memory editor",
+    "settings",
+    "chat"
+  ],
+  "visual_widths": [
+    1460,
+    390
+  ],
+  "limitations": [
+    "No Windows EXE built or published",
+    "No Windows/WebView2 smoke-test",
+    "Past chat context cannot be retracted by changing vault"
+  ],
+  "delivery": {
+    "github": "Source commit on feat/manual-vault-liquid-glass; main unchanged; no release deployment"
+  }
+}

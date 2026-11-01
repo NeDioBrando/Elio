@@ -947,5 +947,12 @@
   "Elio is connecting…": "Elio is connecting…",
   "Elio is running {tool}…": "Elio is running {tool}…",
   "Elio is working…": "Elio is working…",
-  "Elio is stopping…": "Elio is stopping…"
+  "Elio is stopping…": "Elio is stopping…",
+  "AI memory source": "AI memory source",
+  "Applies to the selected chat, including AI memory reads and saves. Does not move notes or change its project. Previously sent chat context cannot be removed.": "Applies to the selected chat, including AI memory reads and saves. Does not move notes or change its project. Previously sent chat context cannot be removed.",
+  "Auto": "Auto",
+  "Auto-select vault": "Auto-select vault",
+  "Follow AI vault": "Follow AI vault",
+  "Open a saved chat to choose its AI vault.": "Open a saved chat to choose its AI vault.",
+  "Use this vault for AI": "Use this vault for AI"
 }

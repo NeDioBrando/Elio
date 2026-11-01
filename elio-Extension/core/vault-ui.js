@@ -87,7 +87,7 @@
   function mount(root, request, options = {}) {
     root.classList.add("ev");
     root.setAttribute("data-i18n-user-content", "");
-    root.innerHTML = `<style>${css}</style><header class="ev-head"><div><div class="ev-kicker">Elio • project memory</div><h1>Memory, with connections.</h1><p>A quiet place for everything worth remembering.</p></div><div class="ev-controls"><select data-project aria-label="Project"></select><label><input type="checkbox" data-auto> Auto memory</label><button data-active-project>Active project</button><button data-project-new>New project</button><button data-refresh>↻ Refresh</button></div></header><div class="ev-shell"><aside class="ev-side"><div class="ev-controls"><button data-new>＋ New note</button></div><input data-search type="search" placeholder="Find a memory…" aria-label="Search project memory"><div data-count class="ev-muted"></div><div class="ev-tree" data-tree></div><hr><button data-import>Import old notes</button><button data-import-file>Import file</button><input type="file" data-file accept=".md,.markdown,.json" hidden><button data-export>Export</button><button data-location>Vault location</button><button data-obsidian>Obsidian snapshot</button></aside><main class="ev-main"><nav class="ev-tabs" aria-label="Memory views"><button data-view="notes">Notes</button><button data-view="graph">Connections</button><button data-view="context">Agent context</button><button data-view="audit">Review memory</button></nav><div data-content></div></main></div><p class="ev-status" data-status role="status" aria-live="polite"></p>`;
+    root.innerHTML = `<style>${css}</style><header class="ev-head"><div><div class="ev-kicker">Elio • project memory</div><h1>Memory, with connections.</h1><p>A quiet place for everything worth remembering.</p></div><div class="ev-controls"><select data-project aria-label="Project"></select><label><input type="checkbox" data-auto> Auto memory</label><button data-active-project>Follow AI vault</button><button data-project-new>New project</button><button data-refresh>↻ Refresh</button></div></header><section class="ev-agent-selection" aria-label="AI vault selection"><div><strong data-source-title>AI memory source</strong><p data-agent-source role="status" aria-live="polite">Checking active vault…</p><p class="ev-selection-chat" data-agent-chat></p></div><div class="ev-controls"><button data-pin>Use this vault for AI</button><button data-unpin>Auto-select vault</button></div><p class="ev-selection-help" data-selection-help>Applies to the selected chat, including AI memory reads and saves. Does not move notes or change its project. Previously sent chat context cannot be removed.</p></section><div class="ev-shell"><aside class="ev-side"><div class="ev-controls"><button data-new>＋ New note</button></div><input data-search type="search" placeholder="Find a memory…" aria-label="Search project memory"><div data-count class="ev-muted"></div><div class="ev-tree" data-tree></div><hr><button data-import>Import old notes</button><button data-import-file>Import file</button><input type="file" data-file accept=".md,.markdown,.json" hidden><button data-export>Export</button><button data-location>Vault location</button><button data-obsidian>Obsidian snapshot</button></aside><main class="ev-main"><nav class="ev-tabs" aria-label="Memory views"><button data-view="notes">Notes</button><button data-view="graph">Connections</button><button data-view="context">Agent context</button><button data-view="audit">Review memory</button></nav><div data-content></div></main></div><p class="ev-status" data-status role="status" aria-live="polite"></p>`;
     const q = (s) => root.querySelector("[data-" + s + "]");
     let scope = "",
       notes = [],
@@ -102,7 +102,9 @@
       searchGeneration = 0,
       searchMatches = null,
       version = "",
-      polling = false;
+      polling = false,
+      agentContext = {},
+      selecting = false;
     const status = (s, error = false) => {
       q("status").textContent = s;
       q("status").dataset.error = String(error);
@@ -123,9 +125,45 @@
           ? "Unassigned chat · " + s.slice(-10)
           : s;
     }
+    async function selectionContext() {
+      const chat=options.chat?.() || "";
+      if(!chat)return {...((await options.context?.()) || {}),chat:""};
+      const selected=await request({action:"selection",chat});
+      if(!selected || selected.ok===false)throw Error(selected?.error || "AI vault selection is unavailable.");
+      return {scope:selected.vault_scope,mode:selected.vault_mode || "auto",chat};
+    }
+    const tr = (key) => g.elioI18n?.t(key) || key;
+    function paintSelection(context) {
+      agentContext=context || {};
+      const manual=agentContext.mode==="manual";
+      q("agent-source").textContent=(manual?tr("Pinned"):tr("Auto"))+" · "+label(agentContext.scope || "project:Personal");
+      q("agent-source").setAttribute("data-i18n-user-content", "");
+      q("agent-chat").textContent=agentContext.chat || tr("Open a saved chat to choose its AI vault.");
+      q("agent-chat").setAttribute("data-i18n-user-content", "");
+      for(const [key,text] of Object.entries({"source-title":"AI memory source",pin:"Use this vault for AI",unpin:"Auto-select vault","active-project":"Follow AI vault","selection-help":"Applies to the selected chat, including AI memory reads and saves. Does not move notes or change its project. Previously sent chat context cannot be removed."}))q(key).textContent=tr(text);
+      q("pin").disabled=selecting || !agentContext.chat || (manual && agentContext.scope===scope);
+      q("unpin").disabled=selecting || !agentContext.chat || !manual;
+    }
+    async function chooseVault(next) {
+      if(selecting || !agentContext.chat || !discard())return;
+      const chat=agentContext.chat;
+      selecting=true;paintSelection(agentContext);
+      try {
+        const current=await selectionContext();
+        if(current?.chat!==chat)throw Error("The selected chat changed. Refresh and choose its vault again.");
+        const saved=await request({action:"select",scope:next,chat});
+        if(!saved || saved.ok===false)throw Error(saved?.error || "Vault selection could not be saved.");
+        paintSelection({scope:saved.vault_scope,mode:saved.vault_mode,chat});
+        dirty=false;active=null;follow=true;
+        await refresh();
+        if(q("status").dataset.error!=="true")status(next?"Vault pinned for AI. New memory requests use this vault.":"Automatic vault selection restored.");
+      }catch(e){status(e.message,true);}
+      finally{selecting=false;paintSelection(agentContext);}
+    }
     async function init() {
       try {
-        const context = (await options.context?.()) || {};
+        const context = (await selectionContext()) || {};
+        paintSelection(context);
         scope = context.scope || "project:Personal";
         const projects = await request({ action: "projects" });
         const all = [...new Set([scope, ...(projects.projects || [])])];
@@ -145,8 +183,9 @@
     async function refresh() {
       const gen = ++generation;
       try {
+        const context = await selectionContext();
+        if (!alive || gen !== generation) return;
         if (follow && !dirty) {
-          const context = await options.context?.();
           if (context?.scope && context.scope !== scope) {
             scope = context.scope;
             active = null;
@@ -158,6 +197,7 @@
             q("project").value = scope;
           }
         }
+        paintSelection(context);
         let next = [],
           offset = 0;
         do {
@@ -195,9 +235,14 @@
       }
     }
     async function poll() {
-      if (polling || !alive || dirty || busy) return;
+      if (polling || !alive || dirty || busy || selecting) return;
       polling = true;
       try {
+        const context = await selectionContext();
+        if (context && (context.scope!==agentContext.scope || context.chat!==agentContext.chat || context.mode!==agentContext.mode)) {
+          await refresh();
+          return;
+        }
         const state = await call("state");
         q("auto").checked = state.automatic === true;
         if (state.version !== version) await refresh();
@@ -819,6 +864,8 @@
         ),
       );
     }
+    q("pin").onclick = () => chooseVault(scope);
+    q("unpin").onclick = () => chooseVault("");
     q("active-project").onclick = async () => {
       if (!discard()) return;
       dirty = false;
@@ -1029,6 +1076,7 @@
       }
     };
     g.addEventListener?.("beforeunload", before);
+    const offLocale = g.elioI18n?.onChange(() => paintSelection(agentContext));
     init();
     return {
       refresh,
@@ -1036,6 +1084,7 @@
       open,
       destroy() {
         alive = false;
+        offLocale?.();
         generation++;
         searchGeneration++;
         clearTimeout(searchTimer);

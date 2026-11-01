@@ -24,9 +24,7 @@ html[data-elio] :is(.pc-kit-card p,.pc-kit-buttons small,.pc-kit-buttons strong,
 
 html[data-elio] .pc-template-library p{opacity:1!important;color:var(--elio-muted)!important}html[data-elio] .pc-template-library{font-size:14px!important}html[data-elio] .pc-kit-buttons small{font-size:14px!important;color:var(--elio-muted)!important}
 
-/* Liquid Glass: one quiet chrome layer, opaque readable content beneath it.
- * No animated filters, pointer tracking or overlapping glass cards.
- * Sources and verification are documented in VAULT-GLASS-RU.md. */
+/* Shared layout and memory-selection controls. Glass material is defined below. */
 html[data-elio] .app {
   background:radial-gradient(ellipse at 0 0,color-mix(in srgb,var(--elio-accent) 10%,transparent),transparent 48%),var(--elio-canvas)!important;
 }
@@ -145,3 +143,94 @@ html[data-elio] #page-home .hero-agent {border-radius:0!important}
 }
 html[data-elio] .ev-editor label {align-content:start;font-size:14px}
 html[data-elio] .ev-editor [data-props] textarea {min-height:128px}
+
+/* Neutral Liquid Glass / v2
+ * A visible backdrop, translucent material, specular rim, and contact shadow.
+ * CSS approximation, not Apple's native refractive rendering. No image overlays,
+ * pointer tracking, animated filters, or changes to provider websites. */
+html[data-elio] .app {
+  background:
+    radial-gradient(ellipse at 5% 5%,rgba(255,255,255,.95),transparent 42%),
+    radial-gradient(ellipse at 96% 12%,rgba(194,183,168,.56),transparent 48%),
+    radial-gradient(ellipse at 18% 90%,rgba(194,184,180,.5),transparent 52%),
+    linear-gradient(135deg,#dedbd5,#f0eeea 48%,#dedbd3)!important;
+}
+html[data-elio-mode=dark] .app {
+  background:
+    radial-gradient(ellipse at 0 0,rgba(130,130,130,.34),transparent 44%),
+    radial-gradient(ellipse at 96% 15%,rgba(108,108,108,.3),transparent 48%),
+    radial-gradient(ellipse at 25% 95%,rgba(96,96,96,.23),transparent 50%),
+    linear-gradient(135deg,#222222,#171717 58%,#242424)!important;
+}
+html[data-elio] .main,html[data-elio] .content {background:transparent!important}
+html[data-elio] .sidebar {
+  background:linear-gradient(115deg,var(--elio-glass-highlight),transparent 32%),var(--elio-glass)!important;
+  border-right:1px solid var(--elio-glass-stroke)!important;
+  box-shadow:inset -1px 0 0 var(--elio-glass-rim),inset 1px 0 0 var(--elio-glass-edge),8px 0 28px var(--elio-glass-shade)!important;
+}
+html[data-elio] .titlebar {
+  background:linear-gradient(180deg,var(--elio-glass-highlight),transparent 65%),var(--elio-glass)!important;
+  border-bottom:1px solid var(--elio-glass-stroke)!important;
+  box-shadow:inset 0 -1px 0 var(--elio-glass-rim),0 4px 18px var(--elio-glass-shade)!important;
+}
+html[data-elio] :is(.sidebar,.titlebar) {
+  -webkit-backdrop-filter:blur(28px) saturate(112%);backdrop-filter:blur(28px) saturate(112%);
+}
+html[data-elio] :is(#page-home .hero,.ev-agent-selection,.ev-shell,.panel,.settingcard,.notification-panel) {
+  background:linear-gradient(135deg,var(--elio-glass-highlight),transparent 38%),var(--elio-glass-fill)!important;
+  border:1px solid var(--elio-glass-stroke)!important;
+  border-radius:18px!important;
+  box-shadow:inset 0 1px 0 var(--elio-glass-edge),inset 0 -1px 0 var(--elio-glass-rim),var(--elio-glass-shadow)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(112%);backdrop-filter:blur(24px) saturate(112%);
+}
+html[data-elio] .navbtn.active {
+  background:linear-gradient(160deg,var(--elio-glass-highlight),transparent 75%),var(--elio-glass-fill)!important;
+  border:1px solid var(--elio-glass-stroke)!important;
+  box-shadow:inset 0 1px 0 var(--elio-glass-edge),0 3px 8px var(--elio-glass-shade)!important;
+}
+html[data-elio] .navbtn.active .navicon {color:var(--elio-text)!important}
+html[data-elio] .navbtn:hover {background:var(--elio-glass-fill)!important}
+html[data-elio] :is(.softbtn,.clearbtn,.filter,.elio-theme-toggle,#sidebarCollapse,.notification-trigger) {
+  background:linear-gradient(160deg,var(--elio-glass-highlight),transparent 65%),var(--elio-glass-fill)!important;
+  border:1px solid var(--elio-glass-stroke)!important;
+  box-shadow:inset 0 1px 0 var(--elio-glass-edge),0 1px 3px var(--elio-glass-shade)!important;
+  color:var(--elio-text)!important;border-radius:10px;
+}
+html[data-elio] :is(.softbtn,.clearbtn,.filter):hover {background:var(--elio-reading)!important}
+html[data-elio] :is(.softbtn,.clearbtn,.filter):disabled {background:var(--elio-disabled-bg)!important;color:var(--elio-disabled-text)!important;box-shadow:none!important}
+html[data-elio] #page-home .hero-ai-links .softbtn {
+  background:var(--elio-glass-fill)!important;border-color:var(--elio-glass-stroke)!important;
+  min-height:80px;padding:18px;border-radius:12px;
+}
+html[data-elio] #page-home .hero-ai-links .softbtn:hover {background:var(--elio-reading)!important}
+html[data-elio] #page-home .hero-title {font-size:20px;font-weight:600;letter-spacing:-.45px;text-transform:none}
+html[data-elio] #page-home .hero-agent {border-color:var(--elio-glass-rim)!important}
+html[data-elio] .home-engine-switch {background:var(--elio-glass-shade)!important;border-color:var(--elio-glass-rim)!important;padding:5px;border-radius:12px}
+html[data-elio] .home-engine-switch button[aria-pressed=true] {background:var(--elio-reading)!important;box-shadow:0 2px 5px var(--elio-glass-shade)!important;border-color:var(--elio-glass-stroke)!important}
+html[data-elio] .stats {border:0!important;gap:12px;margin-block:28px}
+html[data-elio] .stat {border:0!important;border-radius:12px;padding:16px 20px;background:var(--elio-glass-fill)!important;box-shadow:inset 0 1px 0 var(--elio-glass-edge)!important}
+html[data-elio] .stat:last-child {border:0!important}
+html[data-elio] .ev-shell {overflow:hidden}
+html[data-elio] .ev-side {background:var(--elio-glass-shade)!important;border-color:var(--elio-glass-rim)!important}
+html[data-elio] .ev-main {background:var(--elio-reading)!important}
+html[data-elio] .ev-tabs button {background:transparent!important;border-color:transparent!important;box-shadow:none!important;color:var(--elio-muted)!important}
+html[data-elio] .ev-tabs button[aria-pressed=true] {background:var(--elio-selected)!important;color:var(--elio-text)!important}
+html[data-elio] .ev-agent-selection [data-agent-source] {color:var(--elio-text);font-weight:600}
+html[data-elio] :is(input,textarea,select,.terminal,.instructions-text,.sc-chat-composer) {background:var(--elio-reading)!important;color:var(--elio-text)!important}
+html[data-elio] .sc-chat-composer {border-color:var(--elio-line)!important;box-shadow:0 8px 24px var(--elio-glass-shade)!important}
+html[data-elio] .sc-chat-user {background:var(--elio-selected)!important}
+html[data-elio] :is(.accentbtn,.filter.active) {background:var(--elio-accent)!important;color:var(--elio-on-accent)!important;border-color:var(--elio-accent)!important}
+html[data-elio] :is(button,input,select,textarea,a):focus-visible {outline:2px solid var(--elio-accent)!important;outline-offset:3px}
+@supports not (backdrop-filter:blur(1px)) {
+  html[data-elio] :is(.sidebar,.titlebar,#page-home .hero,.ev-agent-selection,.ev-shell,.panel,.settingcard,.notification-panel) {background:var(--elio-surface)!important}
+}
+@media(prefers-reduced-transparency:reduce),(forced-colors:active) {
+  html[data-elio] :is(.sidebar,.titlebar,#page-home .hero,.ev-agent-selection,.ev-shell,.panel,.settingcard,.notification-panel) {
+    background:var(--elio-surface)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important;border-color:var(--elio-line)!important;
+  }
+}
+@media(max-width:760px) {
+  html[data-elio] #page-home .hero {padding:20px 16px!important}
+  html[data-elio] :is(.ev-agent-selection,.ev-shell,.panel,.settingcard) {border-radius:14px!important}
+  html[data-elio] .stats {gap:8px}html[data-elio] .stat {padding:14px}
+}

@@ -1,0 +1,57 @@
+name: Verify and build neutral glass Elio
+on:
+  push:
+    branches: [feat/neutral-liquid-glass]
+    paths: [.elio-source-transfer/patch.b64]
+permissions:
+  contents: read
+jobs:
+  apply:
+    if: github.repository == 'NeDioBrando/Elio'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      commit: ${{ steps.source.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: true
+      - id: source
+        run: python3 .elio-source-transfer/apply.py
+  windows:
+    needs: apply
+    runs-on: windows-2022
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.apply.outputs.commit }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.99.1'
+      - name: Verify tag and package versions
+        shell: pwsh
+        run: |
+          $Version = (Get-Content manifest.json -Raw | ConvertFrom-Json).version
+          if ('${{ github.ref_type }}' -eq 'tag' -and '${{ github.ref_name }}' -ne "v$Version") { throw 'Tag does not match the package version.' }
+      - name: Audit, test, compile and package
+        shell: pwsh
+        run: ./Build-Windows.ps1
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Elio-Windows-x64
+          path: dist/elio-v*-Windows-x64.zip
+          if-no-files-found: error

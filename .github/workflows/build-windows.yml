@@ -28,6 +28,13 @@ jobs:
         run: |
           $Version = (Get-Content manifest.json -Raw | ConvertFrom-Json).version
           if ('${{ github.ref_type }}' -eq 'tag' -and '${{ github.ref_name }}' -ne "v$Version") { throw 'Tag does not match the package version.' }
+      - name: Install Chromium for Playwright tests
+        shell: pwsh
+        run: |
+          npm ci --prefix release-tools --include=dev --ignore-scripts
+          if ($LASTEXITCODE -ne 0) { throw 'Pinned test dependencies could not be installed.' }
+          node ./release-tools/node_modules/playwright/cli.js install chromium
+          if ($LASTEXITCODE -ne 0) { throw 'Playwright Chromium installation failed.' }
       - name: Audit, test, compile and package
         shell: pwsh
         run: ./Build-Windows.ps1

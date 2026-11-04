@@ -69,6 +69,8 @@ node .\test-elio.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Elio regression tests failed.' }
 node .\test-elio-theme.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Elio theme tests failed.' }
+node .\test-elio-palette.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Elio palette tests failed.' }
 node .\test-updates.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Update UI tests failed.' }
 python tools/prepare_engram.py

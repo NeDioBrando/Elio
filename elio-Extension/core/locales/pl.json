@@ -947,5 +947,7 @@
   "Elio is connecting…": "Elio łączy się…",
   "Elio is running {tool}…": "Elio uruchamia {tool}…",
   "Elio is working…": "Elio pracuje…",
-  "Elio is stopping…": "Elio zatrzymuje się…"
+  "Elio is stopping…": "Elio zatrzymuje się…",
+  "Pick a Liquid Glass palette. The window, the logo and the browser extension follow it; light and dark mode stay independent.": "Wybierz paletę Liquid Glass. Okno, logo i rozszerzenie przeglądarki podążają za nią; tryb jasny/ciemny pozostaje niezależny.",
+  "Could not save palette": "Nie udało się zapisać palety"
 }

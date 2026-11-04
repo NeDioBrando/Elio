@@ -299,11 +299,12 @@ html[data-theme][data-palette] body #engine-roblox.on,html[data-theme][data-pale
 <body>
   <div class="hero">
     <div class="head">
-      <img class="crest" src="icon.png" alt="" aria-hidden="true" style="background:transparent;object-fit:contain" />
+      <span class="crest elio-logo" role="img" aria-label="Elio"></span>
       <div class="head-txt">
         <span class="logo" id="or-logo">Elio</span>
         <span id="ver" class="ver"></span>
       </div>
+      <button id="elio-palette-popup" type="button"></button>
       <button id="elio-theme-popup" type="button"></button>
       <span class="tag" id="site-tag">DeepSeek</span>
     </div>
@@ -327,6 +328,9 @@ html[data-theme][data-palette] body #engine-roblox.on,html[data-theme][data-pale
     <details class="card elio-fold" id="settings-card"><summary>Settings</summary>
       <section class="language-settings" style="margin-bottom:20px">
         <div class="sec-label">Language</div><div id="popup-language-picker"></div>
+      </section>
+      <section class="palette-settings" style="margin-bottom:20px">
+        <div class="sec-label">Color palette</div><div id="popup-palette-picker"></div>
       </section>
       <div class="sec-label">Effort</div>
       <div class="work">

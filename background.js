@@ -218,6 +218,7 @@ const RUST_ROBLOX_HTTP = "http://127.0.0.1:3000";
 const ENGINE_KEY = "rs-engine";
 const DESKTOP_PREF_KEYS = [
   "rsColorMode",
+  "rsPalette",
   "rsLanguage",
   "rsWorkMode",
   "rsPermMode",

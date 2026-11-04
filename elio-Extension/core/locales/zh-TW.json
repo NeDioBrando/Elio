@@ -947,5 +947,7 @@
   "Elio is connecting…": "Elio 正在連線…",
   "Elio is running {tool}…": "Elio 正在執行 {tool}…",
   "Elio is working…": "Elio 正在工作…",
-  "Elio is stopping…": "Elio 正在停止…"
+  "Elio is stopping…": "Elio 正在停止…",
+  "Pick a Liquid Glass palette. The window, the logo and the browser extension follow it; light and dark mode stay independent.": "選擇 Liquid Glass 配色。視窗、標誌與瀏覽器擴充功能會同步更換；淺色／深色模式仍可單獨設定。",
+  "Could not save palette": "無法儲存配色方案"
 }

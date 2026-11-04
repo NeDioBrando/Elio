@@ -947,5 +947,7 @@
   "Elio is connecting…": "Elio が接続しています…",
   "Elio is running {tool}…": "Elio が {tool} を実行しています…",
   "Elio is working…": "Elio が作業しています…",
-  "Elio is stopping…": "Elio が停止しています…"
+  "Elio is stopping…": "Elio が停止しています…",
+  "Pick a Liquid Glass palette. The window, the logo and the browser extension follow it; light and dark mode stay independent.": "Liquid Glass のパレットを選択します。ウィンドウ、ロゴ、ブラウザ拡張機能が連動し、ライト／ダークモードは別に設定できます。",
+  "Could not save palette": "パレットを保存できませんでした"
 }

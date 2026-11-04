@@ -947,5 +947,7 @@
   "Elio is connecting…": "Elio bağlanıyor…",
   "Elio is running {tool}…": "Elio {tool} çalıştırıyor…",
   "Elio is working…": "Elio çalışıyor…",
-  "Elio is stopping…": "Elio duruyor…"
+  "Elio is stopping…": "Elio duruyor…",
+  "Pick a Liquid Glass palette. The window, the logo and the browser extension follow it; light and dark mode stay independent.": "Bir Liquid Glass paleti seçin. Pencere, logo ve tarayıcı uzantısı bunu izler; açık/koyu mod ayrı kalır.",
+  "Could not save palette": "Palet kaydedilemedi"
 }

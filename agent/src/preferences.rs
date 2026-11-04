@@ -10,6 +10,9 @@ pub struct DesktopPreferences {
     pub language: String,
     #[serde(rename = "rsColorMode")]
     pub color_mode: String,
+    /// Liquid Glass palette id; validated against the allowlist in `normalize`.
+    #[serde(rename = "rsPalette")]
+    pub palette: String,
     #[serde(rename = "rs-engine")]
     pub engine: String,
     #[serde(rename = "rsWorkMode")]
@@ -80,6 +83,7 @@ impl Default for DesktopPreferences {
         Self {
             language: "en".to_string(),
             color_mode: "dark".to_string(),
+            palette: "aurora".to_string(),
             engine: "roblox".to_string(),
             work_mode: "balanced".to_string(),
             perm_mode: "sandbox".to_string(),
@@ -124,6 +128,7 @@ impl DesktopPreferences {
         self.command_cooldown=if self.command_cooldown.is_finite(){(self.command_cooldown.clamp(0.0,120.0)*10.0).round()/10.0}else{0.0};
         if !matches!(self.stop_mode.as_str(),"safe"|"immediate") {self.stop_mode="immediate".into();}
         if !matches!(self.color_mode.as_str(), "light" | "dark") {self.color_mode="dark".into();}
+        if !matches!(self.palette.as_str(), "aurora" | "ocean" | "amethyst" | "orchid" | "sakura" | "ember" | "crimson" | "emerald" | "graphite" | "linen") {self.palette="aurora".into();}
         if let Some(value) = &mut self.appearance {
             if value.theme=="solar" {value.theme="default".into();}
             if !matches!(value.theme.as_str(), "default" | "amethyst" | "cyan" | "rose" | "emerald" | "graphite" | "crimson" | "ocean" | "copper" | "aurora" | "orchid") { value.theme = "default".into(); }
@@ -436,6 +441,21 @@ mod tests {
 
         let _ = std::fs::remove_file(path);
     }
+    #[test]
+    fn elio_palette_persists_and_rejects_unknown() {
+        let root=temp_settings_path();
+        let store=PreferencesStore::load_from(root.clone());
+        assert_eq!(store.snapshot().palette,"aurora");
+        store.patch(serde_json::json!({"rsPalette":"sakura"})).unwrap();
+        assert_eq!(store.snapshot().palette,"sakura");
+        drop(store);
+        let reopened=PreferencesStore::load_from(root.clone());
+        assert_eq!(reopened.snapshot().palette,"sakura");
+        reopened.patch(serde_json::json!({"rsPalette":"not-a-palette"})).unwrap();
+        assert_eq!(reopened.snapshot().palette,"aurora");
+        let _ = std::fs::remove_file(root);
+    }
+
     #[test]
     fn elio_color_mode_persists_and_rejects_unknown() {
         let root=temp_settings_path();

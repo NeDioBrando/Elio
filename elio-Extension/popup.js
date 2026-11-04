@@ -389,3 +389,5 @@ setInterval(refresh, 2000);
 
 
 globalThis.elioTheme?.mountBrowser(document.getElementById("elio-theme-popup"));
+globalThis.elioTheme?.mountPaletteBrowser(document.getElementById("elio-palette-popup"));
+globalThis.elioTheme?.mountPaletteBrowser(document.getElementById("popup-palette-picker"),true);

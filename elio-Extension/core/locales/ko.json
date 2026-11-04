@@ -947,5 +947,7 @@
   "Elio is connecting…": "Elio 연결 중…",
   "Elio is running {tool}…": "Elio가 {tool} 실행 중…",
   "Elio is working…": "Elio 작업 중…",
-  "Elio is stopping…": "Elio 중지 중…"
+  "Elio is stopping…": "Elio 중지 중…",
+  "Pick a Liquid Glass palette. The window, the logo and the browser extension follow it; light and dark mode stay independent.": "Liquid Glass 팔레트를 선택하세요. 창, 로고, 브라우저 확장 프로그램이 함께 바뀌며 라이트/다크 모드는 별도로 유지됩니다.",
+  "Could not save palette": "팔레트를 저장하지 못했습니다"
 }

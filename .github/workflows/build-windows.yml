@@ -1,6 +1,11 @@
 name: Build and release Elio (Windows x64)
 on:
   workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the tested Windows archive as a GitHub Release
+        type: boolean
+        default: false
   push:
     tags:
       - 'v[0-9]*'
@@ -45,17 +50,30 @@ jobs:
           path: dist/elio-v*-Windows-x64.zip
           if-no-files-found: error
       - name: Publish complete stable GitHub Release
-        if: github.ref_type == 'tag'
+        if: github.ref_type == 'tag' || (github.event_name == 'workflow_dispatch' && inputs.publish)
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
           $Zip = @(Get-ChildItem dist/elio-v*-Windows-x64.zip)
           if ($Zip.Count -ne 1) { throw 'Expected exactly one Windows ZIP.' }
-          $Tag = '${{ github.ref_name }}'
-          # A new immutable version is required. Never overwrite published assets.
+          $Version = (Get-Content manifest.json -Raw | ConvertFrom-Json).version
+          if ($Version -notmatch '^\d+\.\d+\.\d+$') { throw 'Expected a three-part stable package version.' }
+          $Tag = "v$Version"
           $Title = "Elio $Tag"
-          gh release create $Tag $Zip[0].FullName --verify-tag --draft --title $Title --generate-notes
+          # A new immutable version is required. Never overwrite published assets.
+          if ($env:REF_TYPE -eq 'tag') {
+            if ($env:REF_NAME -ne $Tag) { throw 'Tag does not match package version.' }
+            gh release create $Tag $Zip[0].FullName --verify-tag --draft --title $Title --generate-notes
+          } else {
+            if ($env:GITHUB_REF -ne 'refs/heads/main') { throw 'Manual releases must be built from main.' }
+            git ls-remote --exit-code --tags origin "refs/tags/$Tag"
+            if ($LASTEXITCODE -eq 0) { throw 'Tag already exists. Choose a new version; do not overwrite it.' }
+            if ($LASTEXITCODE -ne 2) { throw 'Unable to verify whether the release tag already exists.' }
+            gh release create $Tag $Zip[0].FullName --target $env:GITHUB_SHA --draft --title $Title --generate-notes
+          }
           if ($LASTEXITCODE -ne 0) { throw 'Could not create draft release. Do not reuse an existing tag.' }
           gh release edit $Tag --draft=false --latest
           if ($LASTEXITCODE -ne 0) { throw 'Draft upload succeeded, but publication failed. Inspect it before publishing.' }

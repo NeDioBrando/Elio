@@ -949,5 +949,12 @@
   "Elio is working…": "Elio работает…",
   "Elio is stopping…": "Elio останавливается…",
   "Pick a Liquid Glass palette. The window, the logo and the browser extension follow it; light and dark mode stay independent.": "Выберите палитру Liquid Glass. Окно, логотип и расширение браузера следуют за ней; светлая и тёмная темы выбираются отдельно.",
-  "Could not save palette": "Не удалось сохранить палитру"
+  "Could not save palette": "Не удалось сохранить палитру",
+  "AI memory source": "Источник памяти ИИ",
+  "Applies to the selected chat, including AI memory reads and saves. Does not move notes or change its project. Previously sent chat context cannot be removed.": "Применяется к выбранному чату: чтению и сохранению памяти ИИ. Не перемещает заметки и не меняет проект. Уже отправленный в чат контекст удалить нельзя.",
+  "Auto": "Авто",
+  "Auto-select vault": "Выбирать vault автоматически",
+  "Follow AI vault": "Показать vault ИИ",
+  "Open a saved chat to choose its AI vault.": "Открой сохранённый чат, чтобы выбрать его vault.",
+  "Use this vault for AI": "Использовать этот vault для ИИ"
 }

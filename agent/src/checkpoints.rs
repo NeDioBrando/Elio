@@ -24,7 +24,7 @@ pub struct Task {
     #[serde(default)] pub scripts:Vec<ScriptChange>,
 }
 #[derive(Default, Serialize, Deserialize)]
-pub struct Journal { #[serde(default)] pub projects: std::collections::HashMap<String,String>, tasks: Vec<Task>, #[serde(default)] pub protected: Vec<String>, #[serde(skip)] path: PathBuf }
+pub struct Journal { #[serde(default)] pub vaults: std::collections::HashMap<String,String>, #[serde(default)] pub projects: std::collections::HashMap<String,String>, tasks: Vec<Task>, #[serde(default)] pub protected: Vec<String>, #[serde(skip)] path: PathBuf }
 pub static STORE: once_cell::sync::Lazy<tokio::sync::Mutex<Journal>> = once_cell::sync::Lazy::new(|| {
     let root = std::env::var_os("LOCALAPPDATA").or_else(|| std::env::var_os("XDG_CONFIG_HOME")).map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join(".config"));
@@ -85,6 +85,30 @@ impl Journal {
         if let Ok(task) = self.task_mut(id) { if task.steps.len() < 100 { task.steps.push(name.chars().take(100).collect()); } }
     }
     pub fn project(&self,chat:&str)->&str {self.projects.get(chat).map(String::as_str).unwrap_or("")}
+    /// A user-selected vault is independent of the task/project assignment.
+    pub fn memory_scope(&self, chat: &str) -> String {
+        self.vaults.get(chat).cloned().unwrap_or_else(|| {
+            let project = self.project(chat);
+            if project.is_empty() { format!("chat:{chat}") } else { format!("project:{project}") }
+        })
+    }
+    pub fn memory_context(&self, chat: &str) -> Value {
+        json!({"ok":true,"project":self.project(chat),"vault_scope":self.memory_scope(chat),
+            "vault_mode":if self.vaults.contains_key(chat){"manual"}else{"auto"}})
+    }
+    pub fn set_vault(&mut self, req: &Value) -> anyhow::Result<()> {
+        let chat = req["chat"].as_str().unwrap_or("");
+        let scope = req["scope"].as_str().ok_or_else(||anyhow::anyhow!("Choose a vault or Auto."))?;
+        anyhow::ensure!(!chat.is_empty() && !chat.ends_with('|') && chat.len()<=1000,
+            "Open a saved chat before choosing its vault.");
+        anyhow::ensure!(scope.is_empty() || (scope.len()<=2000 &&
+            (scope.strip_prefix("project:").or_else(||scope.strip_prefix("chat:"))).map_or(false,|s|!s.trim().is_empty())), "Invalid vault scope.");
+        anyhow::ensure!(scope.is_empty() || self.vaults.len()<500 || self.vaults.contains_key(chat), "Vault selections are full.");
+        let previous = self.vaults.clone();
+        if scope.is_empty() { self.vaults.remove(chat); } else { self.vaults.insert(chat.into(),scope.into()); }
+        if let Err(error) = self.save() { self.vaults=previous; return Err(error); }
+        Ok(())
+    }
     pub fn set_project(&mut self,req:&Value)->anyhow::Result<()> {
         let chat=req["chat"].as_str().unwrap_or("");let project=req["project"].as_str().unwrap_or("").trim();
         anyhow::ensure!(!chat.is_empty() && !chat.ends_with('|') && chat.len()<=1000 && project.chars().count()<=80,"Open a saved chat and enter a project name up to 80 characters.");
@@ -228,6 +252,34 @@ pub fn studio_revert(labels: &[String]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn manual_vault_is_persistent_chat_isolated_and_independent_of_project() {
+        let dir=std::env::temp_dir().join(format!("elio-vault-selection-{}",std::process::id()));
+        let _=std::fs::remove_dir_all(&dir);
+        let path=dir.join("journal.json");
+        let mut journal=Journal::load(path.clone());
+        journal.set_project(&json!({"chat":"notion|/chat?a","project":"Game"})).unwrap();
+        assert_eq!(journal.memory_scope("notion|/chat?a"),"project:Game");
+        journal.set_vault(&json!({"chat":"notion|/chat?a","scope":"project:Elio"})).unwrap();
+        journal.set_project(&json!({"chat":"notion|/chat?a","project":"Later project"})).unwrap();
+        assert_eq!(journal.memory_scope("notion|/chat?a"),"project:Elio");
+        assert_eq!(journal.project("notion|/chat?a"),"Later project");
+        assert_eq!(journal.memory_scope("notion|/chat?b"),"chat:notion|/chat?b");
+        let mut reopened=Journal::load(path.clone());
+        assert_eq!(reopened.memory_context("notion|/chat?a")["vault_mode"],"manual");
+        assert_eq!(reopened.memory_scope("notion|/chat?a"),"project:Elio");
+        for scope in ["x", "project:", "chat:   "] {
+            assert!(reopened.set_vault(&json!({"chat":"notion|/chat?a","scope":scope})).is_err());
+        }
+        assert!(reopened.set_vault(&json!({"chat":"notion|","scope":"project:Elio"})).is_err());
+        reopened.set_vault(&json!({"chat":"notion|/chat?a","scope":""})).unwrap();
+        assert_eq!(reopened.memory_scope("notion|/chat?a"),"project:Later project");
+        assert_eq!(Journal::load(path.clone()).memory_context("notion|/chat?a")["vault_mode"],"auto");
+        // Older journals without vault selections remain valid.
+        std::fs::write(&path,r#"{"projects":{"old":"Old project"},"tasks":[]}"#).unwrap();
+        assert_eq!(Journal::load(path).memory_scope("old"),"project:Old project");
+        std::fs::remove_dir_all(dir).unwrap();
+    }
     #[tokio::test]
     async fn selective_restore_preserves_other_files_and_rejects_conflicts() {
         let dir=std::env::temp_dir().join(format!("elio-selective-{}",std::process::id()));let ws=Workspace::new(dir.to_str()).unwrap();let mut j=Journal::load(dir.join("history.json"));let id=j.begin(&json!({"engine":"local"})).unwrap();

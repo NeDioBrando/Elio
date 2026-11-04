@@ -822,10 +822,43 @@ pub static STORE: once_cell::sync::Lazy<Vault> = once_cell::sync::Lazy::new(|| {
         });
     Vault::new(root.join("elio").join("vault"))
 });
-pub async fn post(axum::Json(v): axum::Json<Value>) -> axum::response::Response {
+pub async fn post(axum::Json(mut v): axum::Json<Value>) -> axum::response::Response {
     use axum::response::IntoResponse;
+    let action=v["action"].as_str().unwrap_or("");
+    // These UI-only actions are not in the model tool's action allowlist.
+    if matches!(action,"selection"|"select") {
+        let mut journal=crate::checkpoints::STORE.lock().await;
+        let result=(|| -> anyhow::Result<Value> {
+            let chat=v["chat"].as_str().unwrap_or("");
+            anyhow::ensure!(!chat.is_empty() && !chat.ends_with('|') && chat.len()<=1000,"Open a saved chat before choosing its vault.");
+            if action=="select" {
+                let scope=v["scope"].as_str().ok_or_else(||anyhow::anyhow!("Choose a vault or Auto."))?;
+                if !scope.is_empty() {
+                    let projects=STORE.execute(json!({"action":"projects"}))?;
+                    anyhow::ensure!(projects["projects"].as_array().map_or(false,|rows|rows.iter().any(|s|s.as_str()==Some(scope))),"Choose an existing vault. Refresh the list first.");
+                }
+                journal.set_vault(&v)?;
+            }
+            Ok(journal.memory_context(chat))
+        })();
+        return match result {
+            Ok(value)=>axum::Json(value).into_response(),
+            Err(error)=>(axum::http::StatusCode::BAD_REQUEST,axum::Json(json!({"ok":false,"error":error.to_string()}))).into_response(),
+        };
+    }
+    // Only the user-facing selection API can change the selection. Model-supplied
+    // scopes never override a pinned vault. Browser-only inspection has no chat.
+    let chat=v["chat"].as_str().unwrap_or("").to_owned();
+    let selection=if chat.is_empty(){None}else{Some(crate::checkpoints::STORE.lock().await.memory_context(&chat))};
+    if let Some(context)=&selection {
+        if context["vault_mode"]=="manual" { v["scope"]=context["vault_scope"].clone(); }
+    }
+    let scope=v["scope"].clone();
     match STORE.execute(v) {
-        Ok(v) => axum::Json(v).into_response(),
+        Ok(mut v) => {
+            if let Some(context)=selection { v["scope"]=scope; v["vault_mode"]=context["vault_mode"].clone(); }
+            axum::Json(v).into_response()
+        },
         Err(e) => (
             axum::http::StatusCode::BAD_REQUEST,
             axum::Json(json!({"ok":false,"error":e.to_string()})),

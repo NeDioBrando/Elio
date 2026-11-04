@@ -83,11 +83,11 @@
       node.replaceWith(frag);
     }
   }
-  const css = `.ev{--ev-border:var(--elio-line,#514b40);--ev-panel:var(--elio-surface,#302c25);color:var(--elio-text,#e4ddcf);font:14px/1.6 system-ui;min-height:70vh}.ev *{box-sizing:border-box}.ev button,.ev input,.ev select,.ev textarea{font:inherit;color:inherit;border:1px solid var(--ev-border);border-radius:9px;background:var(--ev-panel);padding:8px 12px}.ev input[type=checkbox]{accent-color:var(--elio-muted,#b8ac96)}.ev button{cursor:pointer}.ev button:hover,.ev button:focus-visible{border-color:var(--elio-muted,#b8ac96)}.ev button:disabled{opacity:.5;cursor:default}.ev [hidden]{display:none!important}.ev-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}.ev-head h1{margin:0;font:600 28px Georgia,serif}.ev-head p{margin:3px 0;color:var(--elio-muted,#bbb09c)}.ev-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.ev-shell{display:grid;grid-template-columns:240px minmax(0,1fr);border:1px solid var(--ev-border);border-radius:16px;min-height:65vh;overflow:hidden}.ev-side{padding:16px;background:color-mix(in srgb,var(--ev-panel) 60%,transparent);border-right:1px solid var(--ev-border)}.ev-side input{width:100%;margin:8px 0 12px}.ev-tree{max-height:60vh;overflow:auto}.ev-tree details{margin:10px 0}.ev-tree summary{cursor:pointer;color:var(--elio-muted,#bbb09c);font-size:12px;letter-spacing:.06em}.ev-tree button{display:block;width:100%;text-align:left;margin:4px 0;background:transparent;border-color:transparent;padding:8px 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ev-tree button[aria-current=true]{background:color-mix(in srgb,var(--elio-muted,#b8ac96) 20%,transparent);border-color:var(--ev-border)}.ev-main{min-width:0;padding:24px 30px}.ev-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}.ev-tabs button[aria-pressed=true]{background:color-mix(in srgb,var(--elio-muted,#b8ac96) 24%,transparent)}.ev-note h2{font:600 32px Georgia,serif;margin:8px 0 18px}.ev-meta{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 24px}.ev-chip{font-size:12px;padding:3px 9px;border:1px solid var(--ev-border);border-radius:20px}.ev-chip[data-status=stale]{color:#d9b67c}.ev-prose{max-width:850px;overflow-wrap:anywhere}.ev-prose p{white-space:pre-wrap;margin:0 0 16px}.ev-prose pre{white-space:pre-wrap;background:var(--ev-panel);padding:16px;border-radius:10px}.ev-prose h2,.ev-prose h3{font:600 23px Georgia,serif;margin:24px 0 12px}.ev-wikilink{border:0!important;background:transparent!important;padding:0!important;text-decoration:underline;color:var(--elio-muted,#b8ac96)!important}.ev-source{margin:24px 0;padding:14px 16px;border-left:3px solid var(--elio-muted,#b8ac96);background:color-mix(in srgb,var(--ev-panel) 60%,transparent);white-space:pre-wrap;overflow-wrap:anywhere}.ev-editor{display:grid;gap:12px}.ev-editor label{display:grid;gap:4px;font-size:12px;color:var(--elio-muted,#bbb09c)}.ev-editor textarea{width:100%;min-height:260px;resize:vertical;line-height:1.7}.ev-editor [data-props]{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ev-status{min-height:24px;margin:12px 0;white-space:pre-wrap}.ev-status[data-error=true]{color:var(--elio-error-text,#e3b6ae)}.ev-empty{padding:48px 16px;text-align:center}.ev-empty h2{font:28px Georgia,serif}.ev-muted{color:var(--elio-muted,#bbb09c);font-size:12px}.ev-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.ev-graph{position:relative;border:1px solid var(--ev-border);border-radius:12px;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--elio-muted,#b8ac96) 8%,transparent),transparent 75%);overflow:hidden}.ev-graph svg{display:block;width:100%;height:480px;touch-action:none;cursor:grab}.ev-graph text{fill:var(--elio-text,#e4ddcf);font:12px system-ui;paint-order:stroke;stroke:var(--elio-canvas,#24221d);stroke-width:3px;pointer-events:none}.ev-graph line{stroke:var(--elio-muted,#b8ac96);stroke-opacity:.3}.ev-graph circle{stroke:var(--elio-canvas,#24221d);stroke-width:3px;cursor:pointer}.ev-graph circle:hover{filter:drop-shadow(0 0 5px currentColor)}.ev-graph circle:focus-visible{stroke:var(--elio-text,#eee);stroke-width:5px;outline:none}.ev-graph .ev-legend{padding:12px;display:flex;gap:16px;flex-wrap:wrap;border-top:1px solid var(--ev-border)}.ev-history{border-left:2px solid var(--ev-border);padding:12px 18px;margin:14px 0}.ev-history pre{white-space:pre-wrap;max-height:250px;overflow:auto}.ev-kicker{text-transform:uppercase;letter-spacing:.12em;font-size:11px;color:var(--elio-muted,#bbb09c)}@media(max-width:850px){.ev-shell{grid-template-columns:180px minmax(0,1fr)}.ev-main{padding:18px}.ev-head{align-items:flex-start;flex-direction:column}.ev-editor [data-props]{grid-template-columns:1fr}}@media(max-width:550px){.ev-shell{display:block}.ev-side{border-right:0;border-bottom:1px solid var(--ev-border)}.ev-tree{max-height:180px}.ev-main{padding:16px}.ev-graph svg{height:350px}}`;
+  const css = `.ev-agent-selection{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px 24px;margin-bottom:20px;padding:20px 24px;background:var(--elio-surface,#302c25);border:1px solid var(--elio-line,#514b40);border-radius:12px}.ev-agent-selection strong{font-size:14px;font-weight:650}.ev-agent-selection [data-agent-source]{margin:4px 0 0;color:var(--elio-accent,#cbb18a);overflow-wrap:anywhere}.ev-selection-chat{margin:4px 0 0;font-size:14px;color:var(--elio-muted,#c2b6a4);overflow-wrap:anywhere}.ev-agent-selection .ev-selection-help{grid-column:1/-1;max-width:85ch;margin:0;color:var(--elio-muted,#c2b6a4);font-size:14px}.ev [data-pin]:not(:disabled){background:var(--elio-accent,#cbb18a);color:var(--elio-on-accent,#28231c);border-color:var(--elio-accent,#cbb18a)}@media(max-width:760px){.ev-agent-selection{grid-template-columns:1fr;padding:16px}.ev-agent-selection .ev-controls{grid-column:1;width:100%;align-items:stretch}.ev-agent-selection .ev-controls button{flex:1 1 130px;white-space:normal}}.ev{--ev-border:var(--elio-line,#514b40);--ev-panel:var(--elio-surface,#302c25);color:var(--elio-text,#e4ddcf);font:14px/1.6 system-ui;min-height:70vh}.ev *{box-sizing:border-box}.ev button,.ev input,.ev select,.ev textarea{font:inherit;color:inherit;border:1px solid var(--ev-border);border-radius:9px;background:var(--ev-panel);padding:8px 12px}.ev input[type=checkbox]{accent-color:var(--elio-muted,#b8ac96)}.ev button{cursor:pointer}.ev button:hover,.ev button:focus-visible{border-color:var(--elio-muted,#b8ac96)}.ev button:disabled{opacity:.5;cursor:default}.ev [hidden]{display:none!important}.ev-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}.ev-head h1{margin:0;font:600 28px Georgia,serif}.ev-head p{margin:3px 0;color:var(--elio-muted,#bbb09c)}.ev-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.ev-shell{display:grid;grid-template-columns:240px minmax(0,1fr);border:1px solid var(--ev-border);border-radius:16px;min-height:65vh;overflow:hidden}.ev-side{padding:16px;background:color-mix(in srgb,var(--ev-panel) 60%,transparent);border-right:1px solid var(--ev-border)}.ev-side input{width:100%;margin:8px 0 12px}.ev-tree{max-height:60vh;overflow:auto}.ev-tree details{margin:10px 0}.ev-tree summary{cursor:pointer;color:var(--elio-muted,#bbb09c);font-size:12px;letter-spacing:.06em}.ev-tree button{display:block;width:100%;text-align:left;margin:4px 0;background:transparent;border-color:transparent;padding:8px 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ev-tree button[aria-current=true]{background:color-mix(in srgb,var(--elio-muted,#b8ac96) 20%,transparent);border-color:var(--ev-border)}.ev-main{min-width:0;padding:24px 30px}.ev-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}.ev-tabs button[aria-pressed=true]{background:color-mix(in srgb,var(--elio-muted,#b8ac96) 24%,transparent)}.ev-note h2{font:600 32px Georgia,serif;margin:8px 0 18px}.ev-meta{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 24px}.ev-chip{font-size:12px;padding:3px 9px;border:1px solid var(--ev-border);border-radius:20px}.ev-chip[data-status=stale]{color:#d9b67c}.ev-prose{max-width:850px;overflow-wrap:anywhere}.ev-prose p{white-space:pre-wrap;margin:0 0 16px}.ev-prose pre{white-space:pre-wrap;background:var(--ev-panel);padding:16px;border-radius:10px}.ev-prose h2,.ev-prose h3{font:600 23px Georgia,serif;margin:24px 0 12px}.ev-wikilink{border:0!important;background:transparent!important;padding:0!important;text-decoration:underline;color:var(--elio-muted,#b8ac96)!important}.ev-source{margin:24px 0;padding:14px 16px;border-left:3px solid var(--elio-muted,#b8ac96);background:color-mix(in srgb,var(--ev-panel) 60%,transparent);white-space:pre-wrap;overflow-wrap:anywhere}.ev-editor{display:grid;gap:12px}.ev-editor label{display:grid;gap:4px;font-size:12px;color:var(--elio-muted,#bbb09c)}.ev-editor textarea{width:100%;min-height:260px;resize:vertical;line-height:1.7}.ev-editor [data-props]{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ev-status{min-height:24px;margin:12px 0;white-space:pre-wrap}.ev-status[data-error=true]{color:var(--elio-error-text,#e3b6ae)}.ev-empty{padding:48px 16px;text-align:center}.ev-empty h2{font:28px Georgia,serif}.ev-muted{color:var(--elio-muted,#bbb09c);font-size:12px}.ev-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.ev-graph{position:relative;border:1px solid var(--ev-border);border-radius:12px;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--elio-muted,#b8ac96) 8%,transparent),transparent 75%);overflow:hidden}.ev-graph svg{display:block;width:100%;height:480px;touch-action:none;cursor:grab}.ev-graph text{fill:var(--elio-text,#e4ddcf);font:12px system-ui;paint-order:stroke;stroke:var(--elio-canvas,#24221d);stroke-width:3px;pointer-events:none}.ev-graph line{stroke:var(--elio-muted,#b8ac96);stroke-opacity:.3}.ev-graph circle{stroke:var(--elio-canvas,#24221d);stroke-width:3px;cursor:pointer}.ev-graph circle:hover{filter:drop-shadow(0 0 5px currentColor)}.ev-graph circle:focus-visible{stroke:var(--elio-text,#eee);stroke-width:5px;outline:none}.ev-graph .ev-legend{padding:12px;display:flex;gap:16px;flex-wrap:wrap;border-top:1px solid var(--ev-border)}.ev-history{border-left:2px solid var(--ev-border);padding:12px 18px;margin:14px 0}.ev-history pre{white-space:pre-wrap;max-height:250px;overflow:auto}.ev-kicker{text-transform:uppercase;letter-spacing:.12em;font-size:11px;color:var(--elio-muted,#bbb09c)}@media(max-width:850px){.ev-shell{grid-template-columns:180px minmax(0,1fr)}.ev-main{padding:18px}.ev-head{align-items:flex-start;flex-direction:column}.ev-editor [data-props]{grid-template-columns:1fr}}@media(max-width:550px){.ev-shell{display:block}.ev-side{border-right:0;border-bottom:1px solid var(--ev-border)}.ev-tree{max-height:180px}.ev-main{padding:16px}.ev-graph svg{height:350px}}`;
   function mount(root, request, options = {}) {
     root.classList.add("ev");
     root.setAttribute("data-i18n-user-content", "");
-    root.innerHTML = `<style>${css}</style><header class="ev-head"><div><div class="ev-kicker">Elio • project memory</div><h1>Memory, with connections.</h1><p>A quiet place for everything worth remembering.</p></div><div class="ev-controls"><select data-project aria-label="Project"></select><label><input type="checkbox" data-auto> Auto memory</label><button data-active-project>Active project</button><button data-project-new>New project</button><button data-refresh>↻ Refresh</button></div></header><div class="ev-shell"><aside class="ev-side"><div class="ev-controls"><button data-new>＋ New note</button></div><input data-search type="search" placeholder="Find a memory…" aria-label="Search project memory"><div data-count class="ev-muted"></div><div class="ev-tree" data-tree></div><hr><button data-import>Import old notes</button><button data-import-file>Import file</button><input type="file" data-file accept=".md,.markdown,.json" hidden><button data-export>Export</button><button data-location>Vault location</button><button data-obsidian>Obsidian snapshot</button></aside><main class="ev-main"><nav class="ev-tabs" aria-label="Memory views"><button data-view="notes">Notes</button><button data-view="graph">Connections</button><button data-view="context">Agent context</button><button data-view="audit">Review memory</button></nav><div data-content></div></main></div><p class="ev-status" data-status role="status" aria-live="polite"></p>`;
+    root.innerHTML = `<style>${css}</style><header class="ev-head"><div><div class="ev-kicker">Elio • project memory</div><h1>Memory, with connections.</h1><p>A quiet place for everything worth remembering.</p></div><div class="ev-controls"><select data-project aria-label="Project"></select><label><input type="checkbox" data-auto> Auto memory</label><button data-active-project>Follow AI vault</button><button data-project-new>New project</button><button data-refresh>↻ Refresh</button></div></header><section class="ev-agent-selection" aria-label="AI vault selection"><div><strong data-source-title>AI memory source</strong><p data-agent-source role="status" aria-live="polite">Checking active vault…</p><p class="ev-selection-chat" data-agent-chat></p></div><div class="ev-controls"><button data-pin>Use this vault for AI</button><button data-unpin>Auto-select vault</button></div><p class="ev-selection-help" data-selection-help>Applies to the selected chat, including AI memory reads and saves. Does not move notes or change its project. Previously sent chat context cannot be removed.</p></section><div class="ev-shell"><aside class="ev-side"><div class="ev-controls"><button data-new>＋ New note</button></div><input data-search type="search" placeholder="Find a memory…" aria-label="Search project memory"><div data-count class="ev-muted"></div><div class="ev-tree" data-tree></div><hr><button data-import>Import old notes</button><button data-import-file>Import file</button><input type="file" data-file accept=".md,.markdown,.json" hidden><button data-export>Export</button><button data-location>Vault location</button><button data-obsidian>Obsidian snapshot</button></aside><main class="ev-main"><nav class="ev-tabs" aria-label="Memory views"><button data-view="notes">Notes</button><button data-view="graph">Connections</button><button data-view="context">Agent context</button><button data-view="audit">Review memory</button></nav><div data-content></div></main></div><p class="ev-status" data-status role="status" aria-live="polite"></p>`;
     const q = (s) => root.querySelector("[data-" + s + "]");
     let scope = "",
       notes = [],
@@ -102,7 +102,9 @@
       searchGeneration = 0,
       searchMatches = null,
       version = "",
-      polling = false;
+      polling = false,
+      agentContext = {},
+      selecting = false;
     const status = (s, error = false) => {
       q("status").textContent = s;
       q("status").dataset.error = String(error);
@@ -123,9 +125,45 @@
           ? "Unassigned chat · " + s.slice(-10)
           : s;
     }
+    async function selectionContext() {
+      const chat=options.chat?.() || "";
+      if(!chat)return {...((await options.context?.()) || {}),chat:""};
+      const selected=await request({action:"selection",chat});
+      if(!selected || selected.ok===false)throw Error(selected?.error || "AI vault selection is unavailable.");
+      return {scope:selected.vault_scope,mode:selected.vault_mode || "auto",chat};
+    }
+    const tr = (key) => g.elioI18n?.t(key) || key;
+    function paintSelection(context) {
+      agentContext=context || {};
+      const manual=agentContext.mode==="manual";
+      q("agent-source").textContent=(manual?tr("Pinned"):tr("Auto"))+" · "+label(agentContext.scope || "project:Personal");
+      q("agent-source").setAttribute("data-i18n-user-content", "");
+      q("agent-chat").textContent=agentContext.chat || tr("Open a saved chat to choose its AI vault.");
+      q("agent-chat").setAttribute("data-i18n-user-content", "");
+      for(const [key,text] of Object.entries({"source-title":"AI memory source",pin:"Use this vault for AI",unpin:"Auto-select vault","active-project":"Follow AI vault","selection-help":"Applies to the selected chat, including AI memory reads and saves. Does not move notes or change its project. Previously sent chat context cannot be removed."}))q(key).textContent=tr(text);
+      q("pin").disabled=selecting || !agentContext.chat || (manual && agentContext.scope===scope);
+      q("unpin").disabled=selecting || !agentContext.chat || !manual;
+    }
+    async function chooseVault(next) {
+      if(selecting || !agentContext.chat || !discard())return;
+      const chat=agentContext.chat;
+      selecting=true;paintSelection(agentContext);
+      try {
+        const current=await selectionContext();
+        if(current?.chat!==chat)throw Error("The selected chat changed. Refresh and choose its vault again.");
+        const saved=await request({action:"select",scope:next,chat});
+        if(!saved || saved.ok===false)throw Error(saved?.error || "Vault selection could not be saved.");
+        paintSelection({scope:saved.vault_scope,mode:saved.vault_mode,chat});
+        dirty=false;active=null;follow=true;
+        await refresh();
+        if(q("status").dataset.error!=="true")status(next?"Vault pinned for AI. New memory requests use this vault.":"Automatic vault selection restored.");
+      }catch(e){status(e.message,true);}
+      finally{selecting=false;paintSelection(agentContext);}
+    }
     async function init() {
       try {
-        const context = (await options.context?.()) || {};
+        const context = (await selectionContext()) || {};
+        paintSelection(context);
         scope = context.scope || "project:Personal";
         const projects = await request({ action: "projects" });
         const all = [...new Set([scope, ...(projects.projects || [])])];
@@ -145,8 +183,9 @@
     async function refresh() {
       const gen = ++generation;
       try {
+        const context = await selectionContext();
+        if (!alive || gen !== generation) return;
         if (follow && !dirty) {
-          const context = await options.context?.();
           if (context?.scope && context.scope !== scope) {
             scope = context.scope;
             active = null;
@@ -158,6 +197,7 @@
             q("project").value = scope;
           }
         }
+        paintSelection(context);
         let next = [],
           offset = 0;
         do {
@@ -195,9 +235,14 @@
       }
     }
     async function poll() {
-      if (polling || !alive || dirty || busy) return;
+      if (polling || !alive || dirty || busy || selecting) return;
       polling = true;
       try {
+        const context = await selectionContext();
+        if (context && (context.scope!==agentContext.scope || context.chat!==agentContext.chat || context.mode!==agentContext.mode)) {
+          await refresh();
+          return;
+        }
         const state = await call("state");
         q("auto").checked = state.automatic === true;
         if (state.version !== version) await refresh();
@@ -819,6 +864,8 @@
         ),
       );
     }
+    q("pin").onclick = () => chooseVault(scope);
+    q("unpin").onclick = () => chooseVault("");
     q("active-project").onclick = async () => {
       if (!discard()) return;
       dirty = false;
@@ -1029,6 +1076,7 @@
       }
     };
     g.addEventListener?.("beforeunload", before);
+    const offLocale = g.elioI18n?.onChange(() => paintSelection(agentContext));
     init();
     return {
       refresh,
@@ -1036,6 +1084,7 @@
       open,
       destroy() {
         alive = false;
+        offLocale?.();
         generation++;
         searchGeneration++;
         clearTimeout(searchTimer);

@@ -1355,7 +1355,7 @@ async fn checkpoint_handler(State(state): State<AppState>, Json(req): Json<serde
                 let task=journal.task(id)?;
                 if let Some(report)=shared_learning::report(&task.engine,&task.status,&task.learning){let id=id.to_owned();tokio::spawn(async move{let _=shared_learning::enqueue(&id,report).await;});}
                 Ok(serde_json::json!({"ok":true})) },
-            "context" => Ok(serde_json::json!({"ok":true,"project":journal.project(req["chat"].as_str().unwrap_or(""))})),
+            "context" => Ok(journal.memory_context(req["chat"].as_str().unwrap_or(""))),
             "project" => {journal.set_project(&req)?;Ok(serde_json::json!({"ok":true}))},
             "protect" => {journal.protect(&req)?;Ok(serde_json::json!({"ok":true}))},
             "approve" => {journal.task_mut(id)?.approved=true;journal.save()?;Ok(serde_json::json!({"ok":true}))},
@@ -1453,7 +1453,7 @@ async fn checkpoint_tool_inner(state: &AppState, engine: &str, id: &str, name: &
         let task=journal.task_mut(id)?;if task.learning.len()<101{task.learning.push(shared_learning::observation(name,&args,success));}
         journal.save()?;
         if let Err(error)=journal.commit_files(&state.workspace,id,&paths) { journal.warn(id,&format!("Checkpoint verification failed: {error}"));journal.task_mut(id)?.learning.push(shared_learning::observation("checkpoint_verification_failed",&serde_json::Value::Null,false));let _=journal.save(); }
-        if success{let chat=journal.task(id)?.chat.clone();let project=journal.project(&chat);let scope=if project.is_empty(){format!("chat:{chat}")}else{format!("project:{project}")};if let Err(error)=vault::STORE.invalidate(&scope,"file",&paths){journal.warn(id,&format!("Memory dependency review could not be updated: {error}"));let _=journal.save();}}
+        if success{let chat=journal.task(id)?.chat.clone();let scope=journal.memory_scope(&chat);if let Err(error)=vault::STORE.invalidate(&scope,"file",&paths){journal.warn(id,&format!("Memory dependency review could not be updated: {error}"));let _=journal.save();}}
         return result;
     }
     journal.step(id,name);
@@ -1497,7 +1497,7 @@ async fn checkpoint_tool_inner(state: &AppState, engine: &str, id: &str, name: &
         Err(_)=>journal.warn(id,"Studio checkpoint completion was not confirmed. Automatic revert is disabled."),
     }
     if outcome.is_err(){journal.warn(id,"A Studio mutation failed with an uncertain outcome. Check Studio before attempting a restore.");}
-    if outcome.is_ok(){if let Some(path)=source_path{let chat=journal.task(id)?.chat.clone();let project=journal.project(&chat);let scope=if project.is_empty(){format!("chat:{chat}")}else{format!("project:{project}")};if let Err(error)=vault::STORE.invalidate(&scope,"studio",&[path]){journal.warn(id,&format!("Memory dependency review could not be updated: {error}"));}}}
+    if outcome.is_ok(){if let Some(path)=source_path{let chat=journal.task(id)?.chat.clone();let scope=journal.memory_scope(&chat);if let Err(error)=vault::STORE.invalidate(&scope,"studio",&[path]){journal.warn(id,&format!("Memory dependency review could not be updated: {error}"));}}}
     journal.save()?;outcome
 }
 

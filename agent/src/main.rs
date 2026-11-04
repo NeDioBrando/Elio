@@ -89,6 +89,8 @@ mod emitter2d_skill;
 mod creation_export;
 mod toolkit;
 mod blender;
+mod blender_headless;
+mod blender_headless_job;
 mod platform;
 mod checkpoints;
 mod mcp_addons;
@@ -1098,6 +1100,7 @@ async fn start() -> anyhow::Result<()> {
         match gui::run_gui(shared, restart_tx, preferences, addr, shutdown_state.pairing_key.as_str(), args.background) {
             Ok(()) => {
                 info!("elio exit requested — killing MCP helper tree and exiting");
+                blender_headless::stop(false);
                 shutdown_state.roblox_mcp.lock().await.reset().await;
                 std::process::exit(0);
             }
@@ -1246,6 +1249,7 @@ async fn run_server(state: AppState, addr: SocketAddr, start: std::time::Instant
         .route("/api/desktop/agent-result", post(desktop_agent_result_handler))
         .route("/api/checkpoints", post(checkpoint_handler))
         .route("/api/toolkit", post(toolkit::post).layer(axum::extract::DefaultBodyLimit::max(64000)))
+        .route("/api/blender-headless", post(blender_headless_handler))
         .route("/api/blender", post(blender::post).layer(axum::extract::DefaultBodyLimit::max(2 * 1024 * 1024)))
         .route("/api/skills", post(skills::post).layer(axum::extract::DefaultBodyLimit::max(2 * 1024 * 1024)))
         .route("/api/explorer", post(explorer::post).layer(axum::extract::DefaultBodyLimit::max(3 * 1024 * 1024)))
@@ -1781,6 +1785,7 @@ async fn show_handler(State(state): State<AppState>) -> impl IntoResponse {
 }
 
 async fn shutdown_handler(State(state): State<AppState>) -> impl IntoResponse {
+    blender_headless::stop(false);
     state.ui.request_quit();
     Json(serde_json::json!({"ok": true, "shutting_down": true}))
 }
@@ -2414,4 +2419,8 @@ mod studio_detection_tests {
         assert!(!should_clear_competitors(3));
         assert!(should_clear_competitors(30));
     }
+}
+
+async fn blender_headless_handler(State(state):State<AppState>,Json(req):Json<serde_json::Value>)->Json<serde_json::Value>{
+    match blender_headless::control(&state.workspace,req).await{Ok(v)=>Json(v),Err(e)=>Json(serde_json::json!({"ok":false,"error":e.to_string()}))}
 }

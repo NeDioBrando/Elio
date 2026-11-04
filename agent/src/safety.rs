@@ -8,11 +8,18 @@ pub struct Policy{pub read_only:bool,pub allowed_folders:Vec<String>}
 impl Default for Policy{fn default()->Self{Self{read_only:false,allowed_folders:vec![]}}}
 struct Guard{policy:Policy}
 fn path()->PathBuf{let root=std::env::var_os("LOCALAPPDATA").or_else(||std::env::var_os("XDG_CONFIG_HOME")).map(PathBuf::from).unwrap_or_else(||PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join(".config"));root.join("elio/safety.json")}
-static GUARD:once_cell::sync::Lazy<Mutex<Guard>>=once_cell::sync::Lazy::new(||Mutex::new(Guard{policy:match std::fs::read(path()){Ok(raw)=>serde_json::from_slice(&raw).unwrap_or(Policy{read_only:true,..Policy::default()}),Err(_)=>Policy::default()}}));
+fn load_policy(path:&Path)->Policy {
+    match std::fs::read(path) {
+        Ok(raw)=>serde_json::from_slice(&raw).unwrap_or(Policy{read_only:true,..Policy::default()}),
+        Err(error) if error.kind()==std::io::ErrorKind::NotFound=>Policy::default(),
+        Err(_)=>Policy{read_only:true,..Policy::default()},
+    }
+}
+static GUARD:once_cell::sync::Lazy<Mutex<Guard>>=once_cell::sync::Lazy::new(||Mutex::new(Guard{policy:load_policy(&path())}));
 pub fn readonly()->bool{GUARD.lock().unwrap_or_else(|e|e.into_inner()).policy.read_only}
 pub fn mutation()->anyhow::Result<()>{anyhow::ensure!(!readonly(),"Read-only mode: no project changes or opaque code execution are allowed. Disable it in Task history → Safety only when ready.");Ok(())}
 pub fn api(v:&Value)->anyhow::Result<Value>{let mut g=GUARD.lock().unwrap_or_else(|e|e.into_inner());match v["action"].as_str().unwrap_or(""){
- "safety-set"=>{let p:Policy=serde_json::from_value(v["policy"].clone())?;anyhow::ensure!(p.allowed_folders.len()<=32,"At most 32 allowed folders");for s in &p.allowed_folders{anyhow::ensure!(!s.trim().is_empty()&&s.len()<=1000,"Invalid folder");}let path=path();std::fs::create_dir_all(path.parent().unwrap())?;let raw=serde_json::to_vec_pretty(&p)?;let temp=path.with_extension("tmp");std::fs::write(&temp,raw)?;if path.exists(){std::fs::copy(&path,path.with_extension("previous.json"))?;}#[cfg(windows)] if path.exists(){std::fs::remove_file(&path)?;}std::fs::rename(temp,path)?;g.policy=p;},
+ "safety-set"=>{let p:Policy=serde_json::from_value(v["policy"].clone())?;anyhow::ensure!(p.allowed_folders.len()<=32,"At most 32 allowed folders");for s in &p.allowed_folders{anyhow::ensure!(!s.trim().is_empty()&&s.len()<=1000,"Invalid folder");}let path=path();std::fs::create_dir_all(path.parent().unwrap())?;let raw=serde_json::to_vec_pretty(&p)?;let temp=path.with_extension("tmp");std::fs::write(&temp,raw)?;if path.exists(){std::fs::copy(&path,path.with_extension("previous.json"))?;}std::fs::rename(temp,path)?;g.policy=p;},
  "safety-approve"=>anyhow::bail!("Per-command confirmations were removed. There is nothing to approve."),
  "safety"=>{},_=>anyhow::bail!("Unknown safety action")}
  Ok(json!({"ok":true,"policy":g.policy,"pending":null,"confirmations_removed":true}))}
@@ -42,3 +49,11 @@ fn check_desktop_policy(p:&Policy,read_only:bool)->anyhow::Result<()>{anyhow::en
 pub fn desktop_policy(read_only:bool)->anyhow::Result<()>{let g=GUARD.lock().unwrap_or_else(|e|e.into_inner());check_desktop_policy(&g.policy,read_only)}
 #[cfg(test)]mod desktop_tests{use super::*;#[test]fn desktop_cannot_escape_policy(){let mut p=Policy::default();assert!(check_desktop_policy(&p,false).is_ok());p.read_only=true;assert!(check_desktop_policy(&p,true).is_ok());assert!(check_desktop_policy(&p,false).is_err());p.read_only=false;p.allowed_folders=vec!["project".into()];assert!(check_desktop_policy(&p,true).is_err());assert!(check_desktop_policy(&p,false).is_err());assert!(read_tool("roblox","studio_ui_snapshot",&json!({})));assert!(!read_tool("roblox","studio_ui_action",&json!({})));}}
 
+
+#[cfg(test)] mod audit_policy_load_tests {use super::*;
+    #[test]fn unreadable_existing_policy_is_not_treated_as_first_install(){
+        let root=std::env::temp_dir().join(format!("elio-audit-policy-{}",std::process::id()));std::fs::create_dir_all(&root).unwrap();
+        assert!(!load_policy(&root.join("missing.json")).read_only);assert!(load_policy(&root).read_only);
+        let path=root.join("safety.json");std::fs::write(&path,b"broken").unwrap();assert!(load_policy(&path).read_only);std::fs::write(&path,b"{\"read_only\":false}").unwrap();assert!(!load_policy(&path).read_only);std::fs::remove_dir_all(root).unwrap();
+    }
+}

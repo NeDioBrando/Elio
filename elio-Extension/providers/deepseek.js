@@ -791,7 +791,27 @@ const RSProvider = (() => {
     return text.slice(0, headLen) + marker + text.slice(text.length - tailLen);
   }
 
-  async function typeAndSend(text, images) {
+  let sendTail = Promise.resolve(), sendFinishedAt = 0, sendEpoch = 0;
+  function typeAndSend(text, images) {
+    const chat = conversationKey(), epoch = sendEpoch;
+    const run = async () => {
+      const fresh = () => { if (epoch !== sendEpoch || conversationKey() !== chat) throw new Error("DeepSeek queued send cancelled: chat changed or Stop pressed"); };
+      fresh();
+      const delay = sendFinishedAt ? 8000 + Math.floor(Math.random()*1801) : 0;
+      const until = sendFinishedAt + delay;
+      while (Date.now() < until) { fresh(); await sleep(Math.min(200,until-Date.now())); }
+      fresh();
+      const draft = editorText().trim();
+      if (draft && draft !== truncateForSend(text).trim()) throw new Error("DeepSeek composer contains a different draft; queued send refused");
+      try { return await typeAndSendNow(text,images,fresh); }
+      finally { sendFinishedAt = Date.now(); }
+    };
+    const pendingSend = sendTail.then(run,run);
+    sendTail = pendingSend.catch(() => {});
+    return pendingSend;
+  }
+  async function typeAndSendNow(text, images, fresh) {
+    fresh();
     const editor = getEditor();
     if (!editor) throw new Error("DeepSeek input box not found");
     editor.focus();
@@ -813,6 +833,7 @@ const RSProvider = (() => {
       // DOM node (the file-input path in attachImages does the real upload).
       const t0 = Date.now();
       while (Date.now() - t0 < 25000) {
+        fresh();
         const btn = getSendBtn();
         if (btn && !isStopBtn(btn) && safeRead(() => btn.getAttribute("aria-disabled"), null) !== "true") {
           try { btn.click(); } catch {}
@@ -820,21 +841,24 @@ const RSProvider = (() => {
         // Editor cleared = the message left; stop square up = generation started.
         if (await waitFor(() => editorText().trim() === "" || isHardGenerating(), 1200)) return;
       }
-      return;
+      throw new Error("DeepSeek send not confirmed before attachment timeout; not replayed");
     }
     // Text-only: wait for React to re-enable the send button, then click.
     await waitFor(() => {
       const btn = getSendBtn();
       return btn && safeRead(() => btn.getAttribute("aria-disabled"), null) !== "true" && !isStopBtn(btn);
     }, 800);
+    fresh();
     if (!clickSendButton() && !isBusyNow()) {
       pressEnter(editor);
     }
+    if (!await waitFor(() => editorText().trim() === "" || isHardGenerating(), 5000)) throw new Error("DeepSeek send not confirmed; not replayed");
   }
 
   // Click DeepSeek's stop only if it is actually in the stop state (<rect>), so
   // we never accidentally re-trigger a send.
   function stopGeneration() {
+    sendEpoch++;
     const b = getSendBtn();
     if (isStopBtn(b)) try { b.click(); } catch {}
   }
@@ -1033,8 +1057,8 @@ const RSProvider = (() => {
   // insert the chip: {parent, ref} - or null if no tool block was found.
   function findToolBlockSpot(item, chip) {
     const P = RSParse;
-    const hasStart = (t) => P.LUA_START_RE.test(t) || t.includes("###mcp_tool###");
-    const hasEnd = (t) => P.LUA_END_RE.test(t) || t.includes("###end_mcp_tool###") || t.includes("###end-mcp_tool###");
+    const hasStart = (t) => P.LUA_START_RE.test(t) || t.includes("###mcp_tool###") || /<\s*[|｜]dsml[|｜]function_calls\s*>/i.test(t);
+    const hasEnd = (t) => P.LUA_END_RE.test(t) || t.includes("###end_mcp_tool###") || t.includes("###end-mcp_tool###") || /<\s*(?:\/\s*[|｜]dsml[|｜]function_calls|[|｜]dsml[|｜]\/function_calls)\s*>/i.test(t);
     const isJson = (t) => /\{\s*"(?:command|tool)"\s*:/.test(t);
     // The reply markdown containers (never the reasoning/think area).
     const containers = [...safeQueryAll(item, S.markdown)].filter((m) => !safeClosest(m, S.thinking));
@@ -1081,8 +1105,8 @@ const RSProvider = (() => {
     startupReplyAsCode: true,
     settleStartupReply: true,
     displayName: "DeepSeek",
-    minSecondsBetweenSends: 5,
-    startNotice: {title:"DeepSeek automation notice",text:"Automated use may be restricted by DeepSeek. Elio waits at least five seconds between its automated sends; this does not guarantee account safety or remove the service’s limits. Check the service’s current terms before continuing."},
+    minSecondsBetweenSends: 8,
+    startNotice: {title:"DeepSeek automation notice",text:"Automated use may be restricted by DeepSeek. Elio waits at least eight seconds after its previous automated send finishes; this does not guarantee account safety or remove the service’s limits. Check the service’s current terms before continuing."},
     // DYNAMIC. Since the 2026-09 unification there is ONE model and no picker, so
     // images are allowed on every DeepSeek chat and this is true (see
     // detectVision). It stays a getter so a conversation still pinned to the old

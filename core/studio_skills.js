@@ -2201,6 +2201,115 @@ Players.PlayerAdded:Connect(assign)
 end
 
 
+
+-- Bounded read-only batches. Cursors carry a source fingerprint and UTF-8 byte offset.
+-- Only game-owned roots: never inspect CoreGui or plugin/internal source trees.
+function api.read_scripts(a)
+ local maxChars=math.clamp(math.floor(tonumber(a.max_chars) or 48000),2000,90000)
+ local maxScripts=math.clamp(math.floor(tonumber(a.max_scripts) or 1000),1,2000)
+ local allowed={Workspace=true,ServerScriptService=true,ServerStorage=true,ReplicatedStorage=true,ReplicatedFirst=true,StarterPlayer=true,StarterGui=true,StarterPack=true,Lighting=true,SoundService=true,Teams=true,Chat=true,TextChatService=true}
+ local roots,seenRoots={},{}
+ local function addRoot(path)
+  if type(path)~="string" or #path>1000 then return "Invalid script path" end
+  local service=path:gsub("^game%.",""):match("^([^%.]+)")
+  if not allowed[service] then return "Script root is not an allowed game service: "..path end
+  local node=resolvePath(path)
+  if not node then return "Script path not found: "..path end
+  if not seenRoots[node] then seenRoots[node]=true table.insert(roots,node) end
+ end
+ local explicit=false
+ for _,field in ipairs({"paths","folders"}) do
+  if a[field]~=nil then
+   if type(a[field])~="table" or #a[field]>64 then return fail(field.." must contain at most 64 paths") end
+   for _,path in ipairs(a[field]) do explicit=true local err=addRoot(path) if err then return fail(err) end end
+  end
+ end
+ if not explicit then
+  local names={} for name in pairs(allowed) do table.insert(names,name) end table.sort(names)
+  for _,name in ipairs(names) do local worked,node=pcall(function()return game:GetService(name)end) if worked then table.insert(roots,node) end end
+ end
+ local scripts,seen,stack={}, {}, {}
+ for _,node in ipairs(roots) do table.insert(stack,node) end
+ local visited=0
+ while #stack>0 do
+  local node=table.remove(stack)
+  if not seen[node] then
+   seen[node]=true visited+=1
+   if visited>30000 then return fail("Script scan exceeded 30000 objects; narrow folders/paths") end
+   if node:IsA("LuaSourceContainer") then
+    table.insert(scripts,node)
+    if #scripts>maxScripts then return fail("Script count exceeds max_scripts; narrow folders/paths or raise the bounded limit") end
+   end
+   local childrenOk,children=pcall(function()return node:GetChildren()end)
+   if not childrenOk then return fail("Cannot inspect children of "..pathOf(node)) end
+   for _,child in ipairs(children) do table.insert(stack,child) end
+  end
+ end
+ table.sort(scripts,function(x,y)return pathOf(x)<pathOf(y)end)
+ local records={} local totalBytes=0 local hash=2166136261 local paths={}
+ local function hashText(text)
+  for i=1,#text do hash=(hash*33+string.byte(text,i))%4294967296 end
+ end
+ local editorOk,editor=pcall(function()return game:GetService("ScriptEditorService")end)
+ for _,node in ipairs(scripts) do
+  local path=pathOf(node)
+  if paths[path] then return fail("Ambiguous duplicate script path: "..path) end paths[path]=true
+  local sourceOk,source=false,nil
+  if editorOk then sourceOk,source=pcall(function()return editor:GetEditorSource(node)end) end
+  if not sourceOk or type(source)~="string" then sourceOk,source=pcall(function()return node.Source end) end
+  local record={path=path,class=node.ClassName}
+  hashText(path.."\0"..node.ClassName.."\0")
+  if sourceOk and type(source)=="string" then
+   totalBytes+=#source
+   if totalBytes>16000000 then return fail("Sources exceed 16 MB; narrow folders/paths") end
+   record.source=source record.bytes=#source hashText(source)
+  else record.error="Source unavailable" hashText("<unavailable>") end
+  hashText("\0") table.insert(records,record)
+ end
+ local fingerprint=tostring(hash).."-"..tostring(#records).."-"..tostring(totalBytes)..(a.list_only and "-list" or "-source")..(a.line_numbers and "-numbered" or "-raw")
+ local index,offset=1,1
+ if a.cursor~=nil then
+  if type(a.cursor)~="string" then return fail("cursor must be returned next_cursor") end
+  local prior,i,o=a.cursor:match("^([%w%-]+):(%d+):(%d+)$")
+  if prior~=fingerprint then return fail("Script snapshot changed or cursor invalid; restart without cursor") end
+  index,offset=tonumber(i),tonumber(o)
+  if not index or not offset or index<1 or index>#records or offset<1 or offset>#(records[index].source or "")+1 then return fail("Invalid script cursor") end
+ end
+ local output={} local used=0
+ while index<=#records do
+  local record=records[index]
+  local overhead=#record.path+#(record.error or "")+200
+  if used+overhead>maxChars then break end
+  local item={path=record.path,class=record.class,bytes=record.bytes,error=record.error}
+  if record.source and not a.list_only then
+   local budget=maxChars-used-overhead
+   local last=math.min(#record.source,offset+budget-1)
+   -- Never cut a UTF-8 codepoint in half. Source offsets remain byte offsets.
+   while last<#record.source and last>=offset and string.byte(record.source,last+1)>=128 and string.byte(record.source,last+1)<192 do last-=1 end
+   if last<offset and #record.source>0 then break end
+   local text=record.source:sub(offset,last)
+   local line=1 local before=record.source:sub(1,offset-1) for _ in before:gmatch("\n") do line+=1 end
+   if a.line_numbers then
+    -- Line labels are budgeted too; return a smaller chunk rather than overflow.
+    while true do
+     local n=line local numbered=tostring(n).."\t"..text:gsub("\n",function()n+=1 return "\n"..tostring(n).."\t"end)
+     if #numbered<=budget then text=numbered break end
+     last=offset+math.floor((last-offset)*0.8)
+     while last>=offset and last<#record.source and string.byte(record.source,last+1)>=128 and string.byte(record.source,last+1)<192 do last-=1 end
+     if last<offset then return fail("Insufficient page budget for source codepoint") end
+     text=record.source:sub(offset,last)
+    end
+   end
+   item.source=text item.start_byte=offset item.end_byte=last item.start_line=line item.partial=offset>1 or last<#record.source
+   used+=overhead+#text
+   if last<#record.source then offset=last+1 table.insert(output,item) break end
+  else used+=overhead end
+  table.insert(output,item) index+=1 offset=1
+ end
+ local nextCursor=index<=#records and (fingerprint..":"..index..":"..offset) or nil
+ return okdata({read_only=true,scripts=output,total_scripts=#records,total_source_bytes=totalBytes,fingerprint=fingerprint,next_cursor=nextCursor,has_more=nextCursor~=nil,max_chars=maxChars},"Read game script batch; continue only with returned next_cursor")
+end
+
 function api.script_analysis(a)
 	local scope = tostring(a.scope or a.path or "")
 	local includeOutput = a.include_output ~= false
@@ -2694,6 +2803,7 @@ local dispatch = {
 	plugin_create = api.plugin_create,
 	web_fetch = api.web_fetch,
 	web_search = api.web_search,
+	read_scripts = api.read_scripts,
 	script_analysis = api.script_analysis,
 }
 
@@ -2709,6 +2819,11 @@ return res
 `;
 
 const SKILL_COMMANDS = [
+  {name:"read_scripts", description:"Read multiple game scripts/folders in one bounded read-only request. Defaults to game-owned services, never CoreGui/plugins. Uses current editor source where available. Continue with next_cursor; restart if snapshot changed. Prefer list_only for discovery, then exact paths. max_chars is a source/metadata budget, not serialized JSON bytes.", params:{
+    paths:{type:"array",req:false,desc:"Exact dotted script paths, max 64"},folders:{type:"array",req:false,desc:"Game folder roots, max 64"},
+    max_chars:{type:"number",req:false,desc:"Page character/byte budget 2000..90000, default 48000"},max_scripts:{type:"number",req:false,desc:"Scan cap 1..2000, default 1000; fails instead of silently omitting scripts"},
+    cursor:{type:"string",req:false,desc:"Opaque next_cursor from same snapshot/options"},list_only:{type:"boolean",req:false,desc:"Return paths/types/sizes, no source"},line_numbers:{type:"boolean",req:false,desc:"Add line labels; byte offsets identify exact continuation"}
+  }},
   {
     name: "lighting_set_preset",
     description: "Instantly configure production lighting & atmosphere presets: cyberpunk, sunset_warm, warm_night (warm night 20h), horror_dark, fantasy_vibrant, overcast_moody, realistic_noon, vaporwave, space_void. Configures Atmosphere, Bloom, ColorCorrection, and SunRays (assumes Future technology is set manually - do not write Lighting.Technology via Luau). Use Glare (not Glaire) and EnvironmentDiffuseScale/EnvironmentSpecularScale.",
@@ -3150,6 +3265,11 @@ function validateStudioSkill(op, args) {
       if (t === "boolean" && typeof val !== "boolean") return `'${k}' must be a boolean for ${op}`;
       if (t === "array" && !Array.isArray(val)) return `'${k}' must be an array for ${op}`;
     }
+  }
+  if (op === "read_scripts") {
+    for (const key of ["paths","folders"]) if (args[key] !== undefined && (!Array.isArray(args[key]) || args[key].length > 64 || args[key].some(x => typeof x !== "string" || !x || x.length > 1000))) return key + " must contain up to 64 non-empty game paths";
+    for (const [key,min,max] of [["max_chars",2000,90000],["max_scripts",1,2000]]) if (args[key] !== undefined && (!Number.isSafeInteger(args[key]) || args[key]<min || args[key]>max)) return key + " out of bounds";
+    if (args.cursor !== undefined && (typeof args.cursor !== "string" || args.cursor.length > 160)) return "Invalid cursor";
   }
   if (op === "plugin_inspect") {
     if (args.surface_title !== undefined && (typeof args.surface_title !== "string" || !args.surface_title || args.surface_title.length > 1000)) return "surface_title must be a non-empty exact title up to 1000 UTF-8 bytes";

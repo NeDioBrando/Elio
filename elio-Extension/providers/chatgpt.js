@@ -461,6 +461,13 @@ const RSProvider = (() => {
           safeRead(() => e.parentElement, null) && safeRead(() => safeRead(() => e.parentElement, null).getAttribute("data-placeholder"), null),
           (safeRead(() => e.textContent, "") || "").trim().slice(0, 80)].filter(Boolean).join(" ")));
     for (const e of workNodes) if (!nodes.includes(e)) nodes.unshift(e);
+    if (/^\/codex(?:\/|$)/.test(location.pathname)) {
+      for (const e of safeQueryAll(document, 'textarea[placeholder], [contenteditable="true"][role="textbox"][aria-label]')) {
+        if (safeClosest(e, '#rs-root, [data-message-author-role], [data-testid="conversation-turn"], [role="dialog"]')) continue;
+        const cue = [e.getAttribute('placeholder'),e.getAttribute('aria-label')].filter(Boolean).join(' ');
+        if (/ask codex|message codex|describe (?:a |your )?task|what (?:should|can).*codex/i.test(cue) && !e.disabled && !e.readOnly && !nodes.includes(e)) nodes.unshift(e);
+      }
+    }
     const visible = nodes.find((e) => {
       try {
         const r = safeRect(e);

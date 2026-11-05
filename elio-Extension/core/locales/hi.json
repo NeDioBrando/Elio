@@ -949,5 +949,7 @@
   "Elio is working…": "Elio काम कर रहा है…",
   "Elio is stopping…": "Elio रुक रहा है…",
   "Pick a Liquid Glass palette. The window, the logo and the browser extension follow it; light and dark mode stay independent.": "Liquid Glass पैलेट चुनें। विंडो, लोगो और ब्राउज़र एक्सटेंशन इसी का पालन करते हैं; लाइट/डार्क मोड अलग से चुना जाता है।",
-  "Could not save palette": "पैलेट सहेजा नहीं जा सका"
+  "Could not save palette": "पैलेट सहेजा नहीं जा सका",
+  "Elio not connected": "Elio कनेक्ट नहीं है",
+  "No stable release found": "कोई स्थिर रिलीज़ नहीं मिली"
 }

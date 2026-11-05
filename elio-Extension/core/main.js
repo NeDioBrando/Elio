@@ -87,8 +87,9 @@
   function closeSkillOffer(node=skillOfferNode){if(!node)return;try{clearInterval(node._rsWatch);}catch{}node.remove();if(skillOfferNode===node)skillOfferNode=null;}
   function showSkillSuggestion(skill){
     closeSkillOffer();
+    if(popupDismissed('skill-offer'))return null;
     const node=document.createElement('section');node.className='rs-skill-offer';node.setAttribute('role','dialog');node.setAttribute('aria-label','Save as skill');
-    const style=document.createElement('style');style.textContent='.rs-skill-offer{position:fixed;bottom:96px;right:16px;overflow:auto;z-index:2147483640;width:min(380px,calc(100vw - 32px));box-sizing:border-box;padding:16px 18px;border:1px solid var(--pc-accent,var(--elio-muted));border-radius:14px;background:var(--pc-bg,#14161b);color:#f5f5f5;box-shadow:0 14px 50px #0008;font:13px/1.5 system-ui,sans-serif}.rs-skill-offer h3{margin:0 0 6px;font-size:15px}.rs-skill-offer strong{display:block;margin-bottom:4px}.rs-skill-offer p{margin:0 0 8px;opacity:.85;white-space:pre-wrap;overflow-wrap:anywhere}.rs-skill-offer small{display:block;opacity:.7;margin-bottom:10px}.rs-skill-offer button{font:inherit;padding:8px 12px;margin:0 8px 0 0;border-radius:9px;border:1px solid var(--pc-accent,var(--elio-muted));background:transparent;color:inherit;cursor:pointer}.rs-skill-offer button.rs-skill-save{background:var(--pc-accent,var(--elio-muted));color:var(--elio-surface);font-weight:650}.rs-skill-offer button:disabled{opacity:.55;cursor:default}.rs-skill-offer [role=status]{margin:10px 0 0;min-height:1em}';
+    const style=document.createElement('style');style.textContent='.rs-skill-offer{position:fixed;bottom:96px;right:16px;overflow:auto;z-index:2147483640;width:min(380px,calc(100vw - 32px));box-sizing:border-box;padding:16px 18px;border:1px solid var(--pc-accent,var(--elio-muted));border-radius:14px;background:var(--pc-bg,#14161b);color:#f5f5f5;box-shadow:0 14px 50px #0008;font:13px/1.5 system-ui,sans-serif}.rs-skill-offer h3{margin:0 0 6px;padding-right:36px;font-size:15px}.rs-skill-offer .rs-popup-x{position:absolute;top:8px;right:8px;width:32px;height:32px;margin:0;padding:0;border-color:transparent;font-size:20px;line-height:1}.rs-skill-offer strong{display:block;margin-bottom:4px}.rs-skill-offer p{margin:0 0 8px;opacity:.85;white-space:pre-wrap;overflow-wrap:anywhere}.rs-skill-offer small{display:block;opacity:.7;margin-bottom:10px}.rs-skill-offer button{font:inherit;padding:8px 12px;margin:0 8px 0 0;border-radius:9px;border:1px solid var(--pc-accent,var(--elio-muted));background:transparent;color:inherit;cursor:pointer}.rs-skill-offer button.rs-skill-save{background:var(--pc-accent,var(--elio-muted));color:var(--elio-surface);font-weight:650}.rs-skill-offer button:disabled{opacity:.55;cursor:default}.rs-skill-offer [role=status]{margin:10px 0 0;min-height:1em}';
     const heading=document.createElement('h3');heading.textContent='Save this as a skill?';
     const name=document.createElement('strong');name.textContent=skill.title;
     const preview=document.createElement('p');const text=skill.steps.join('\n');preview.textContent=text.length>280?text.slice(0,279)+'…':text;
@@ -107,8 +108,9 @@
       }catch(error){status.textContent=String(error?.message||error);save.disabled=dismiss.disabled=false;}
     };
     dismiss.onclick=()=>closeSkillOffer(node);
+    const skillX=popupCloseButton(()=>{dismissPopup('skill-offer');closeSkillOffer(node);});
     const actions=document.createElement('div');actions.append(save,dismiss);
-    node.append(style,heading,name,preview,note,actions,status);
+    node.append(style,skillX,heading,name,preview,note,actions,status);
     const chat=P.conversationKey();node._rsIdleSince=Date.now();
     // Hover, keyboard focus or a save in progress keeps the card open; otherwise it
     // closes by itself after SKILL_OFFER_MS. It follows the chat box as it moves.
@@ -392,12 +394,21 @@
   // manifest.json (single source of truth) rather than duplicated here.
   const EXT_VERSION = chrome.runtime.getManifest().version;
   let releaseStatus = null;
+  // Popups closed with × stay hidden for this browser session (chrome.storage.session
+  // via the worker). A different popup kind (e.g. a newer update) still appears.
+  const dismissedPopups=new Set();let dismissedPopupsLoaded=null;
+  function loadDismissedPopups(){return dismissedPopupsLoaded||=bg({type:'rs-popup-dismissals'}).then(r=>{if(r?.ok&&Array.isArray(r.keys))for(const k of r.keys)dismissedPopups.add(String(k));}).catch(()=>{});}
+  function popupDismissed(key){return dismissedPopups.has(String(key));}
+  function dismissPopup(key){key=String(key||'').slice(0,200);if(!key)return;dismissedPopups.add(key);bg({type:'rs-popup-dismissals',add:key}).catch(()=>{});}
+  function popupCloseButton(onClose){const x=document.createElement('button');x.type='button';x.className='rs-popup-x';x.textContent='\u00d7';x.title='Close';x.setAttribute('aria-label','Close');x.onclick=onClose;return x;}
   let updateBannerMounted=false;
   function mountUpdateBanner(){
     if(updateBannerMounted || !document.documentElement)return;updateBannerMounted=true;
     const host=document.createElement('div');host.id='elio-update-notice';host.hidden=true;document.documentElement.appendChild(host);
-    elioVersion.mount(host,{floating:true,current:EXT_VERSION,
-      getStatus:async()=>{const result=await bg({type:'rs-update-status'});if(!result?.ok)throw Error(result?.error||'Нет связи с приложением.');releaseStatus=result.update;renderVersionIndicators();return releaseStatus;},
+    loadDismissedPopups();
+    elioVersion.mount(host,{floating:true,dismissible:true,current:EXT_VERSION,
+      isDismissed:kind=>popupDismissed('update:'+kind),onDismiss:kind=>dismissPopup('update:'+kind),
+      getStatus:async()=>{const result=await bg({type:'rs-update-status'});if(!result?.ok){releaseStatus={phase:'disconnected'};renderVersionIndicators();throw Error(result?.error||'Нет связи с приложением.');}releaseStatus=result.update;renderVersionIndicators();return releaseStatus;},
       invoke:async(action)=>{const result=await bg({type:'rs-update-action',action});if(!result?.ok)throw Error(result?.error||'Обновление не запущено.');return result;}
     });
   }
@@ -9842,7 +9853,7 @@ function renderCards(panel) {
       if(reliabilitySettings.rsContinuationOffer===false){offerFreshSince=0;if(!offerBusy)closeOffer();return;}
       if(document.hidden||!offerReady||offerBusy||offerDecision||A.running||A.starting||A.enhancing||!savedHandoff||!elioReliability.canContinue(savedHandoff)||String(P.editorText()||'').trim())return;
       if(!offerFreshSince){offerFreshSince=Date.now();return;}if(Date.now()-offerFreshSince<2000)return;
-      const key=P.id+'|'+location.href+'|'+savedHandoff.chat_id;if(continuationChoices[key]||offerNode)return;
+      const key=P.id+'|'+location.href+'|'+savedHandoff.chat_id;if(continuationChoices[key]||offerNode||popupDismissed('continuation-offer'))return;
       const transfer=JSON.parse(JSON.stringify(savedHandoff));offerKey=key;
       offerNode=document.createElement('section');offerNode.className='rs-continuation-offer';offerNode.setAttribute('role','dialog');offerNode.setAttribute('aria-label','Continue previous chat');
       const title=document.createElement('h3');title.textContent='Want to continue where you left off in your previous chat?';
@@ -9878,7 +9889,11 @@ function renderCards(panel) {
           rememberChoice(key);closeOffer();agentLoop(base);
         }catch(error){status.textContent=error.message||String(error);yes.disabled=false;no.disabled=false;}finally{offerBusy=false;}
       };
-      offerNode.append(title,detail,yes,no,status);root.appendChild(offerNode);
+      offerNode.append(title,detail,yes,no,status);
+      // × only hides the offer for this browser session; the saved handoff is kept.
+      const offerX=popupCloseButton(()=>{if(offerBusy)return;dismissPopup('continuation-offer');closeOffer();});
+      Object.assign(offerX.style,{position:'absolute',top:'10px',right:'10px',width:'34px',height:'34px',margin:'0',padding:'0',borderColor:'transparent',fontSize:'22px',lineHeight:'1'});title.style.paddingRight='40px';
+      offerNode.prepend(offerX);root.appendChild(offerNode);
     },1000);
     function captureHandoff(reason,onlyLong=false){
       const history=captureExportHistory();

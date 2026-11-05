@@ -949,5 +949,7 @@
   "Elio is working…": "Elio 正在工作…",
   "Elio is stopping…": "Elio 正在停止…",
   "Pick a Liquid Glass palette. The window, the logo and the browser extension follow it; light and dark mode stay independent.": "选择 Liquid Glass 配色。窗口、徽标和浏览器扩展会同步更换；浅色/深色模式仍可单独设置。",
-  "Could not save palette": "无法保存配色方案"
+  "Could not save palette": "无法保存配色方案",
+  "Elio not connected": "Elio 未连接",
+  "No stable release found": "未找到稳定版本"
 }

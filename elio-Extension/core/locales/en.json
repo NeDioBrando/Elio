@@ -956,5 +956,7 @@
   "Auto-select vault": "Auto-select vault",
   "Follow AI vault": "Follow AI vault",
   "Open a saved chat to choose its AI vault.": "Open a saved chat to choose its AI vault.",
-  "Use this vault for AI": "Use this vault for AI"
+  "Use this vault for AI": "Use this vault for AI",
+  "Elio not connected": null,
+  "No stable release found": null
 }

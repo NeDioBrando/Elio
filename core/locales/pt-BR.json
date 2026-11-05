@@ -949,5 +949,7 @@
   "Elio is working…": "Elio está trabalhando…",
   "Elio is stopping…": "Elio está parando…",
   "Pick a Liquid Glass palette. The window, the logo and the browser extension follow it; light and dark mode stay independent.": "Escolha uma paleta Liquid Glass. A janela, o logotipo e a extensão do navegador a acompanham; os modos claro e escuro continuam independentes.",
-  "Could not save palette": "Não foi possível salvar a paleta"
+  "Could not save palette": "Não foi possível salvar a paleta",
+  "Elio not connected": "Elio não conectado",
+  "No stable release found": "Nenhuma versão estável encontrada"
 }

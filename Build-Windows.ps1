@@ -93,6 +93,8 @@ node .\test-elio-palette.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Elio palette tests failed.' }
 node .\test-updates.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Update UI tests failed.' }
+node .\test-popup-dismiss.cjs
+if ($LASTEXITCODE -ne 0) { throw 'Popup dismissal regression failed.' }
 python tools/prepare_engram.py
 if ($LASTEXITCODE -ne 0) { throw 'Verified Engram runtime preparation failed.' }
 python tools/test_prepare_engram.py

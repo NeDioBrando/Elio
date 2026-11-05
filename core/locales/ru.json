@@ -956,5 +956,7 @@
   "Auto-select vault": "Выбирать vault автоматически",
   "Follow AI vault": "Показать vault ИИ",
   "Open a saved chat to choose its AI vault.": "Открой сохранённый чат, чтобы выбрать его vault.",
-  "Use this vault for AI": "Использовать этот vault для ИИ"
+  "Use this vault for AI": "Использовать этот vault для ИИ",
+  "Elio not connected": "Elio не подключён",
+  "No stable release found": "Стабильный релиз не найден"
 }

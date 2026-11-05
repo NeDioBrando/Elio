@@ -2122,6 +2122,16 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     const mode = await tabEngine(tabId);
     const dispatch = (value, timeout) => normalizeEngine(msg.engine ?? mode) === "local" ? sendLocalEngine(value, timeout) : send(value, timeout);
     switch (msg.type) {
+      case "rs-popup-dismissals": {
+        // Popups closed with × stay closed until the browser session ends.
+        try {
+          const stored = await chrome.storage.session.get("elioDismissedPopups");
+          const keys = Array.isArray(stored.elioDismissedPopups) ? stored.elioDismissedPopups.filter(k => typeof k === "string").slice(-100) : [];
+          if (typeof msg.add === "string" && msg.add && msg.add.length <= 200 && !keys.includes(msg.add)) { keys.push(msg.add); await chrome.storage.session.set({ elioDismissedPopups: keys.slice(-100) }); }
+          sendResponse({ ok: true, keys });
+        } catch (error) { sendResponse({ ok: false, error: error.message || String(error), keys: [] }); }
+        break;
+      }
       case "rs-update-status":
         try{sendResponse({ok:true,update:await readUpdateStatus()});}catch(error){sendResponse({ok:false,error:error.message||String(error)});}break;
       case "rs-update-action":

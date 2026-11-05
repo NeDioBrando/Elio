@@ -949,5 +949,7 @@
   "Elio is working…": "Elio çalışıyor…",
   "Elio is stopping…": "Elio duruyor…",
   "Pick a Liquid Glass palette. The window, the logo and the browser extension follow it; light and dark mode stay independent.": "Bir Liquid Glass paleti seçin. Pencere, logo ve tarayıcı uzantısı bunu izler; açık/koyu mod ayrı kalır.",
-  "Could not save palette": "Palet kaydedilemedi"
+  "Could not save palette": "Palet kaydedilemedi",
+  "Elio not connected": "Elio bağlı değil",
+  "No stable release found": "Kararlı sürüm bulunamadı"
 }

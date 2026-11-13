@@ -1,0 +1,61 @@
+name: Build browser extension
+on:
+  push:
+    branches: ['**']
+    tags: ['v[0-9]*']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: extension-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  extension:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      NODE_PATH: ${{ github.workspace }}/release-tools/node_modules
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install pinned test dependencies and Chromium
+        run: |
+          npm ci --prefix release-tools --include=dev --ignore-scripts
+          node release-tools/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Check extension sources
+        run: |
+          for f in background.js popup.js core/main.js core/theme.js providers/*.js; do node --check "$f"; done
+          python tools/gen_palettes.py >/dev/null
+          git diff --exit-code -- core/theme.css elio-Extension/core/theme.css
+      - name: Extension tests
+        env:
+          ELIO_TEST_OUTPUT: ${{ runner.temp }}/elio-screens
+        run: |
+          node test-hoplite-provider.js
+          node test-provider-dom-resilience.js
+          node test-elio-theme.cjs
+          node test-elio-palette.cjs
+          node test-elio-extension-ui.cjs
+      - name: Package
+        run: python tools/package_extension.py --output dist
+      - name: Upload ready-to-install extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: Elio-Extension
+          path: |
+            dist/Elio-Extension-v*.zip
+            dist/Elio-Extension-v*.zip.sha256
+          if-no-files-found: error
+      - name: Upload test screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Elio-Extension-screenshots
+          path: ${{ runner.temp }}/elio-screens
+          if-no-files-found: ignore

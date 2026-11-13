@@ -16,6 +16,7 @@ const fixtures={
  crax:['https://gpt.crax.lol/','<textarea id="promptInput"></textarea>'],
  useai:['https://use.ai/chat/test','<textarea placeholder="Ask anything"></textarea>'],
  oxalpha:['https://oxalpha.com/chat/test','<textarea placeholder="Ask anything"></textarea>'],
+ hoplite:['https://app.hoplite.sh/threads/test','<fieldset aria-label="Message composer"><textarea aria-label="Message prompt" name="message"></textarea></fieldset>'],
  notion:['https://app.notion.com/chat/test','<textarea placeholder="Ask Notion AI"></textarea>'],
  copilot:['https://copilot.microsoft.com/chats/test','<textarea id="userInput" placeholder="Message Copilot"></textarea>'],
  meta:['https://www.meta.ai/','<textarea data-testid="composer-input"></textarea>'],

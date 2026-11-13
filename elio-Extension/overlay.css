@@ -5829,3 +5829,55 @@ html[data-elio-mode=light] #rs-root :is(input,textarea,select){color-scheme:ligh
 html[data-rs-palette][data-rs-theme] #rs-root :is(#rs-enhancer-send,#rs-cowork-resume){background:var(--elio-accent)!important;color:var(--elio-on-accent)!important;border-color:var(--elio-accent)!important}
 html[data-rs-palette][data-rs-theme] #rs-root :is(#rs-enhancer-close,#rs-cowork-close,#rs-memory-close,#rs-media-close){color:var(--elio-muted)!important}
 html[data-rs-palette][data-rs-theme] #rs-root :is(#rs-cowork-panel,#rs-memory-panel,#rs-activity-panel,#rs-media-panel) button:not(#rs-cowork-resume){color:var(--elio-text);border-color:var(--elio-line)}
+
+/* ===== Elio Clean: on-page bar. One control height, one radius, sans wordmark, neutral secondary buttons. ===== */
+html #rs-root #rs-bar{font-family:var(--elio-font)!important;padding:8px 10px!important;border:1px solid var(--elio-line)!important;border-radius:12px!important;background:var(--elio-surface)!important;box-shadow:0 4px 18px rgba(0,0,0,.08)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html[data-elio-mode=dark] #rs-root #rs-bar{box-shadow:0 4px 18px rgba(0,0,0,.35)!important}
+html #rs-root #rs-brand{font-family:var(--elio-font)!important;font-size:15px!important;font-weight:650!important;letter-spacing:-.01em!important;line-height:1.2!important;text-shadow:none!important}
+html #rs-root #rs-bar-version{font-family:var(--elio-font)!important;font-size:11px!important}
+html #rs-root #rs-bar .rs-cluster-right{gap:6px!important;align-items:center!important}
+html #rs-root #rs-bar .rs-cluster-right>button{height:34px!important;min-height:34px!important;border-radius:8px!important;font:600 13px/1 var(--elio-font)!important;letter-spacing:0!important;text-transform:none!important;box-shadow:none!important;text-shadow:none!important;background-image:none!important}
+html #rs-root#rs-root #rs-bar#rs-bar :is(#rs-enhance,#rs-cowork,#rs-cowork-queue,#rs-extra,#rs-undo,#rs-activity){padding:0 12px!important;border:1px solid var(--elio-line)!important;background:var(--elio-surface)!important;color:var(--elio-text)!important}
+html #rs-root#rs-root #rs-bar#rs-bar :is(#rs-enhance,#rs-cowork,#rs-cowork-queue,#rs-extra,#rs-undo,#rs-activity):hover{background:var(--elio-raised)!important}
+html #rs-root#rs-root #rs-bar#rs-bar #rs-cowork[aria-pressed=true]{border-color:var(--elio-accent)!important;background:var(--elio-selected)!important}
+html #rs-root #rs-bar #rs-action{padding:0 14px!important}
+html #rs-root #rs-bar :is(#rs-media,#rs-discord,#rs-settings-btn,#rs-hide,.elio-theme-toggle){flex:0 0 34px!important;width:34px!important;min-width:34px!important;padding:0!important;border:1px solid transparent!important;background-color:transparent!important;color:var(--elio-muted)!important}
+html #rs-root #rs-bar :is(#rs-media,#rs-discord,#rs-settings-btn,#rs-hide,.elio-theme-toggle):hover{background-color:var(--elio-raised)!important;color:var(--elio-text)!important}
+html #rs-root #rs-bar :is(#rs-discord,#rs-settings-btn,#rs-hide) svg{width:17px!important;height:17px!important}
+html #rs-root #rs-bar .elio-theme-toggle svg{width:18px;height:18px}
+/* the paperclip is an emoji in the markup; draw a line icon in its place */
+html #rs-root #rs-bar #rs-media{font-size:0!important}
+html #rs-root #rs-bar #rs-media::before{content:"";display:block;width:17px;height:17px;margin:auto;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 11.5l-8.2 8.2a5 5 0 0 1-7.1-7.1l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7l-8.4 8.4a1.7 1.7 0 0 1-2.4-2.4l7.7-7.7'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 11.5l-8.2 8.2a5 5 0 0 1-7.1-7.1l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7l-8.4 8.4a1.7 1.7 0 0 1-2.4-2.4l7.7-7.7'/%3E%3C/svg%3E") center/contain no-repeat}
+html #rs-root #rs-engine{border-radius:8px!important;box-shadow:none!important}
+html #rs-root #rs-engine .rs-mode-btn{font-family:var(--elio-font)!important;letter-spacing:.02em!important}
+html #rs-root .rs-chip{border-radius:8px!important;box-shadow:none!important;font-family:var(--elio-font)!important}
+/* on-page menu and dialogs */
+html #rs-root #rs-menu{padding:0!important;border:1px solid var(--elio-line)!important;border-radius:12px!important;background:var(--elio-surface)!important;color:var(--elio-text)!important;box-shadow:0 12px 32px rgba(0,0,0,.16)!important;font-family:var(--elio-font)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html #rs-root #rs-menu .rs-menu-head{display:flex!important;align-items:center!important;gap:10px!important;height:auto!important;min-height:0!important;margin:0!important;padding:14px 16px!important;border:0!important;border-bottom:1px solid var(--elio-line)!important;border-radius:0!important;background:none!important;box-shadow:none!important}
+html #rs-root #rs-menu .rs-menu-head::before,html #rs-root #rs-menu .rs-menu-head::after{display:none!important}
+html #rs-root #rs-menu .rs-menu-mark{position:relative!important;inset:auto!important;flex:none!important;width:32px!important;height:32px!important}
+html #rs-root #rs-menu .rs-menu-head-txt{position:static!important;display:flex!important;flex-direction:column!important;padding:0!important;line-height:1.2!important}
+html #rs-root #rs-menu .rs-menu-logo{font:650 15px/1.2 var(--elio-font)!important;letter-spacing:-.01em!important;color:var(--elio-text)!important;text-shadow:none!important;text-transform:none!important}
+html #rs-root #rs-menu .rs-menu-tag{padding:0!important;border:0!important;background:none!important;box-shadow:none!important;font:400 11px/1.3 var(--elio-font)!important;letter-spacing:0!important;text-transform:none!important;color:var(--elio-muted)!important}
+html #rs-root #rs-menu .rs-menu-sec{margin:0!important;padding:14px 16px!important;border:0!important;border-bottom:1px solid var(--elio-line)!important;border-radius:0!important;background:none!important;box-shadow:none!important}
+html #rs-root #rs-menu :is(.rs-sec-label,.rs-sec-label span){letter-spacing:0!important;text-transform:none!important;font:600 12px/1.3 var(--elio-font)!important;color:var(--elio-muted)!important}
+html #rs-root #rs-menu .rs-sec-label{margin:0 0 8px!important;font:600 12px/1.3 var(--elio-font)!important;letter-spacing:0!important;text-transform:none!important;color:var(--elio-muted)!important}
+html #rs-root #rs-menu .rs-menu-note{font-size:12px!important;line-height:1.5!important;color:var(--elio-muted)!important}
+html #rs-root #rs-menu :is(.rs-work-card,.rs-lvl-btn,.rs-tgl-row,.rs-set-row button,.rs-tip-opt){border:1px solid var(--elio-line)!important;border-radius:8px!important;background:var(--elio-surface)!important;color:var(--elio-text)!important;box-shadow:none!important;background-image:none!important}
+html #rs-root #rs-menu :is(.rs-work-card,.rs-lvl-btn,.rs-tgl-row,.rs-set-row button,.rs-tip-opt):hover{background:var(--elio-raised)!important}
+html #rs-root #rs-menu :is(.rs-work-card,.rs-lvl-btn).on{border-color:var(--elio-accent)!important;background:var(--elio-selected)!important;box-shadow:0 0 0 1px var(--elio-accent)!important}
+html #rs-root #rs-menu .rs-tgl-row{margin:0 0 6px!important;padding:9px 12px!important}
+html #rs-root #rs-menu :is(.rs-work-name,.rs-tgl-name){font-weight:600!important;color:var(--elio-text)!important}
+html #rs-root #rs-menu :is(.rs-work-sub,.rs-tgl-sub){color:var(--elio-muted)!important}
+html #rs-root #rs-menu .rs-tgl{background:var(--elio-disabled-bg)!important;border:0!important;box-shadow:inset 0 0 0 1px var(--elio-line)!important}
+html #rs-root #rs-menu .rs-tgl-row[aria-checked=true] .rs-tgl{background:var(--elio-accent)!important;box-shadow:none!important}
+html #rs-root #rs-menu :is(input:not([type=checkbox]):not([type=radio]),select,textarea){border:1px solid var(--elio-line)!important;border-radius:8px!important;background:var(--elio-surface)!important;color:var(--elio-text)!important;box-shadow:none!important}
+html #rs-root #rs-menu .rs-menu-foot{padding:12px 16px!important;border:0!important;color:var(--elio-muted)!important;font-size:11px!important}
+html #rs-root #rs-approve{border:0!important;border-radius:0!important;background:rgba(0,0,0,.32)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html #rs-root #rs-approve .rs-approve-card{border:1px solid var(--elio-line)!important;border-radius:12px!important;background:var(--elio-surface)!important;color:var(--elio-text)!important;box-shadow:0 16px 40px rgba(0,0,0,.2)!important;font-family:var(--elio-font)!important}
+html #rs-root #rs-approve .rs-approve-kicker{font:600 12px/1.3 var(--elio-font)!important;letter-spacing:0!important;text-transform:none!important;color:var(--elio-muted)!important}
+html #rs-root #rs-approve .rs-approve-title{color:var(--elio-text)!important;font-family:var(--elio-font)!important}
+html #rs-root #rs-approve :is(#rs-approve-deny,#rs-approve-allow){min-height:34px!important;padding:0 14px!important;border-radius:8px!important;font:600 13px/1 var(--elio-font)!important;box-shadow:none!important;background-image:none!important}
+html #rs-root #rs-approve #rs-approve-deny{border:1px solid var(--elio-line)!important;background:var(--elio-surface)!important;color:var(--elio-text)!important}
+html #rs-root #rs-approve #rs-approve-allow{border:1px solid var(--elio-accent)!important;background:var(--elio-accent)!important;color:var(--elio-on-accent)!important}
+/* ===== end Elio Clean ===== */

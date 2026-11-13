@@ -36,57 +36,57 @@ html[data-elio] .app{position:relative;z-index:1;background:transparent!importan
 /* Sidebar: floating glass panel */
 html[data-elio] .sidebar{margin:12px 0 12px 12px;height:calc(100vh - 24px);border-radius:var(--lg-radius);border:1px solid var(--lg-edge)!important;
  background:linear-gradient(160deg,var(--lg-sheen),transparent 38%),color-mix(in srgb,var(--elio-surface) 76%,transparent)!important;-webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur);
- box-shadow:inset 0 1px 0 var(--lg-edge),inset 0 -1px 0 var(--lg-edge-low),0 18px 50px var(--lg-shadow)!important;overflow:hidden auto}
+ box-shadow:inset 0 -1px 0 var(--lg-edge-low),0 18px 50px var(--lg-shadow)!important;overflow:hidden auto}
 html[data-elio] .shell{background:transparent!important}
-html[data-elio] .titlebar{margin:12px 12px 0 12px;height:52px;flex-basis:52px;border-radius:18px;border:1px solid var(--lg-edge)!important;
- background:linear-gradient(120deg,var(--lg-sheen),transparent 40%),color-mix(in srgb,var(--elio-surface) 66%,transparent)!important;-webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur);box-shadow:inset 0 1px 0 var(--lg-edge),0 10px 30px var(--lg-shadow)}
+html[data-elio] .titlebar{margin:12px 12px 0 12px;height:52px;flex-basis:52px;border-radius:10px;border:1px solid var(--lg-edge)!important;
+ background:linear-gradient(120deg,var(--lg-sheen),transparent 40%),color-mix(in srgb,var(--elio-surface) 66%,transparent)!important;-webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur);box-shadow:0 10px 30px var(--lg-shadow)}
 html[data-elio] .content{background:transparent!important}
 /* Brand */
 html[data-elio] .brand-mark{width:44px;height:44px;flex:none;display:block;padding:0;background:none!important;border:0!important;box-shadow:none!important;border-radius:0;overflow:visible}
 html[data-elio] .brand-word{font-weight:650;letter-spacing:-.02em;font-family:"Segoe UI Variable Display","Segoe UI Variable","Segoe UI",system-ui,sans-serif}
 html[data-elio] .elio-welcome-mark{width:72px;height:72px}
 /* Navigation pills */
-html[data-elio] .navbtn{height:40px;min-height:40px;border-radius:14px;transition:background .2s ease,color .2s ease,box-shadow .2s ease}
+html[data-elio] .navbtn{height:40px;min-height:40px;border-radius:8px;transition:background .2s ease,color .2s ease,box-shadow .2s ease}
 html[data-elio] .navbtn:hover{background:color-mix(in srgb,var(--elio-text) 8%,transparent)!important}
-html[data-elio] .navbtn.active{background:linear-gradient(135deg,var(--lg-sheen),transparent 70%),color-mix(in srgb,var(--elio-accent) 15%,transparent)!important;color:var(--elio-text)!important;border:1px solid var(--lg-edge);box-shadow:inset 0 1px 0 var(--lg-edge),0 6px 18px color-mix(in srgb,var(--elio-accent) 28%,transparent)!important}
+html[data-elio] .navbtn.active{background:linear-gradient(135deg,var(--lg-sheen),transparent 70%),color-mix(in srgb,var(--elio-accent) 15%,transparent)!important;color:var(--elio-text)!important;border:1px solid var(--lg-edge);box-shadow:0 6px 18px color-mix(in srgb,var(--elio-accent) 28%,transparent)!important}
 html[data-elio] .nav-caption{color:var(--elio-muted)!important;opacity:1!important}html[data-elio] :is(.version,.title-label,.title-version,.desktop-effort){color:var(--elio-muted)!important;opacity:1!important}
 /* Glass surfaces */
 html[data-elio] :is(.settingcard,.panel,.hero-agent,.saved-log-card,.stat,.enhancer-modal>.settingcard,.notification-panel,#page-home details.settingcard){
  background:linear-gradient(140deg,var(--lg-sheen),transparent 46%),var(--lg-fill)!important;border:1px solid var(--lg-edge)!important;border-radius:var(--lg-radius)!important;
- -webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur);box-shadow:inset 0 1px 0 var(--lg-edge),inset 0 -1px 0 var(--lg-edge-low),0 14px 38px var(--lg-shadow)!important}
+ -webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur);box-shadow:inset 0 -1px 0 var(--lg-edge-low),0 14px 38px var(--lg-shadow)!important}
 html[data-elio] :is(.toolcard,.mcpcard,.action,.hero-ai-links .softbtn,.supported-ai-link,.rs-lib-card,.rs-memory-card,.rs-task-card,.ex-card,.sk-card,.tk-card,.pc-kit-card){
- background:linear-gradient(140deg,var(--lg-sheen),transparent 50%),var(--lg-fill)!important;border:1px solid var(--lg-edge)!important;border-radius:18px!important;box-shadow:inset 0 1px 0 var(--lg-edge),0 8px 24px var(--lg-shadow)!important;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
-html[data-elio] :is(.toolcard,.mcpcard,.action,.hero-ai-links .softbtn,.supported-ai-link):hover{transform:translateY(-2px)!important;border-color:color-mix(in srgb,var(--elio-accent) 60%,var(--lg-edge))!important;box-shadow:inset 0 1px 0 var(--lg-edge),0 14px 32px var(--lg-shadow)!important}
+ background:linear-gradient(140deg,var(--lg-sheen),transparent 50%),var(--lg-fill)!important;border:1px solid var(--lg-edge)!important;border-radius:10px!important;box-shadow:0 8px 24px var(--lg-shadow)!important;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+html[data-elio] :is(.toolcard,.mcpcard,.action,.hero-ai-links .softbtn,.supported-ai-link):hover{transform:translateY(-2px)!important;border-color:color-mix(in srgb,var(--elio-accent) 60%,var(--lg-edge))!important;box-shadow:0 14px 32px var(--lg-shadow)!important}
 html[data-elio] .stats{gap:12px;border:0!important;background:none!important}
 html[data-elio] .stat{padding:20px;border-right:1px solid var(--lg-edge)!important}
 html[data-elio] #page-home .hero-agent{border:1px solid var(--lg-edge)!important;padding:22px}
 /* Controls */
 html[data-elio] :is(.softbtn,.clearbtn,.filter,.toolbar,.search,.settingrow select,.settingrow input,.instructions-text,.page select,.page input:not([type=checkbox]):not([type=color]),.page textarea){
- background:linear-gradient(140deg,var(--lg-sheen),transparent 60%),var(--lg-fill-soft)!important;border:1px solid var(--lg-edge)!important;border-radius:14px!important;box-shadow:inset 0 1px 0 var(--lg-edge)!important;color:var(--elio-text)!important}
+ background:linear-gradient(140deg,var(--lg-sheen),transparent 60%),var(--lg-fill-soft)!important;border:1px solid var(--lg-edge)!important;border-radius:8px!important;box-shadow:inset 0 1px 0 var(--lg-edge)!important;color:var(--elio-text)!important}
 html[data-elio] :is(.softbtn,.clearbtn,.filter):not(:disabled):hover{background:linear-gradient(140deg,var(--lg-sheen),transparent 60%),var(--lg-fill)!important;border-color:color-mix(in srgb,var(--elio-accent) 55%,var(--lg-edge))!important}
-html[data-elio] :is(.accentbtn,.filter.active){background:linear-gradient(180deg,var(--lg-accent-sheen),transparent 55%),linear-gradient(135deg,var(--elio-accent),var(--lg-accent-end))!important;color:var(--elio-on-accent)!important;border:1px solid var(--lg-edge)!important;border-radius:14px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 8px 22px color-mix(in srgb,var(--elio-accent) 40%,transparent)!important}
-html[data-elio] .dangerbtn{border-radius:14px!important;backdrop-filter:blur(10px)}
+html[data-elio] :is(.accentbtn,.filter.active){background:linear-gradient(180deg,var(--lg-accent-sheen),transparent 55%),linear-gradient(135deg,var(--elio-accent),var(--lg-accent-end))!important;color:var(--elio-on-accent)!important;border:1px solid var(--lg-edge)!important;border-radius:8px!important;box-shadow:0 8px 22px color-mix(in srgb,var(--elio-accent) 40%,transparent)!important}
+html[data-elio] .dangerbtn{border-radius:8px!important;backdrop-filter:blur(10px)}
 html[data-elio] :is(button,select,input,textarea,summary):focus-visible{outline:2px solid var(--elio-accent)!important;outline-offset:2px}
 html[data-elio] .toggle{background:var(--lg-fill-soft)!important;border:1px solid var(--lg-edge)!important;box-shadow:inset 0 1px 2px var(--lg-shadow)}
 html[data-elio] .toggle.on{background:var(--elio-accent)!important}
-html[data-elio] .elio-theme-toggle{border-radius:14px!important;background:var(--lg-fill)!important;border-color:var(--lg-edge)!important}
+html[data-elio] .elio-theme-toggle{border-radius:8px!important;background:var(--lg-fill)!important;border-color:var(--lg-edge)!important}
 html[data-elio] .winbtn{border-radius:12px}
 /* Chat */
-html[data-elio] .sc-chat-composer{border-radius:26px!important;border:1px solid var(--lg-edge)!important;background:linear-gradient(140deg,var(--lg-sheen),transparent 46%),var(--lg-fill)!important;-webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur);box-shadow:inset 0 1px 0 var(--lg-edge),0 18px 44px var(--lg-shadow)!important}
-html[data-elio] .sc-chat-composer:focus-within{border-color:var(--elio-accent)!important;box-shadow:inset 0 1px 0 var(--lg-edge),0 0 0 3px color-mix(in srgb,var(--elio-accent) 30%,transparent),0 18px 44px var(--lg-shadow)!important}
+html[data-elio] .sc-chat-composer{border-radius:8px!important;border:1px solid var(--lg-edge)!important;background:linear-gradient(140deg,var(--lg-sheen),transparent 46%),var(--lg-fill)!important;-webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur);box-shadow:0 18px 44px var(--lg-shadow)!important}
+html[data-elio] .sc-chat-composer:focus-within{border-color:var(--elio-accent)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--elio-accent) 30%,transparent),0 18px 44px var(--lg-shadow)!important}
 html[data-elio] #desktopChat .sc-chat-composer textarea{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important}
-html[data-elio] .sc-chat-user{border-radius:22px 22px 6px 22px!important;border:1px solid var(--lg-edge)!important;background:linear-gradient(140deg,var(--lg-sheen),transparent 55%),color-mix(in srgb,var(--elio-accent) 26%,var(--elio-surface))!important;box-shadow:inset 0 1px 0 var(--lg-edge),0 10px 26px var(--lg-shadow)!important;color:var(--elio-text)!important}
-html[data-elio] .elio-tool{border-radius:16px!important;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 1px 0 var(--lg-edge)}
-html[data-elio] .sc-chat #sc-chat-send,html[data-elio] .sc-chat #sc-chat-start{border-radius:16px!important}
-html[data-elio] .sc-chat-message pre{border-radius:14px;border:1px solid var(--lg-edge)}
-html[data-elio] .terminal{border-radius:18px;border:1px solid var(--lg-edge);background:var(--lg-fill-strong)!important;-webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur)}
+html[data-elio] .sc-chat-user{border-radius:12px 12px 4px 12px!important;border:1px solid var(--lg-edge)!important;background:linear-gradient(140deg,var(--lg-sheen),transparent 55%),color-mix(in srgb,var(--elio-accent) 26%,var(--elio-surface))!important;box-shadow:0 10px 26px var(--lg-shadow)!important;color:var(--elio-text)!important}
+html[data-elio] .elio-tool{border-radius:10px!important;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 1px 0 var(--lg-edge)}
+html[data-elio] .sc-chat #sc-chat-send,html[data-elio] .sc-chat #sc-chat-start{border-radius:10px!important}
+html[data-elio] .sc-chat-message pre{border-radius:8px;border:1px solid var(--lg-edge)}
+html[data-elio] .terminal{border-radius:10px;border:1px solid var(--lg-edge);background:var(--lg-fill-strong)!important;-webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur)}
 html[data-elio] .mcpcommand{border-radius:12px!important}
 html[data-elio] ::-webkit-scrollbar{width:12px;height:12px}html[data-elio] ::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--elio-text) 22%,transparent);border-radius:12px;border:3px solid transparent;background-clip:padding-box}html[data-elio] ::-webkit-scrollbar-thumb:hover{background:color-mix(in srgb,var(--elio-accent) 55%,transparent);background-clip:padding-box;border:3px solid transparent}
 html[data-elio] .pc-notice-badge{background:var(--elio-accent)!important;color:var(--elio-on-accent)!important;box-shadow:0 0 0 2px var(--elio-surface)}
 /* Palette picker in Settings */
 html[data-elio] .palette-card .elio-palette-picker{margin-top:14px}
 html[data-elio] #elio-palette-native{margin-inline-end:8px}
-@media(max-width:760px){html[data-elio] .sidebar{margin:8px 0 8px 8px;height:calc(100vh - 16px);border-radius:18px}html[data-elio] .titlebar{margin:8px 8px 0 8px}}
+@media(max-width:760px){html[data-elio] .sidebar{margin:8px 0 8px 8px;height:calc(100vh - 16px);border-radius:10px}html[data-elio] .titlebar{margin:8px 8px 0 8px}}
 @media(prefers-reduced-motion:reduce){html[data-elio] body::before{animation:none!important}html[data-elio] :is(.toolcard,.mcpcard,.action):hover{transform:none!important}}
 @media(prefers-reduced-transparency:reduce){html[data-elio]{--lg-fill:var(--elio-surface);--lg-fill-soft:var(--elio-surface);--lg-fill-strong:var(--elio-surface);--lg-blur:none}html[data-elio] body::before{opacity:.35}}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){html[data-elio]{--lg-fill:var(--elio-surface);--lg-fill-soft:var(--elio-surface);--lg-fill-strong:var(--elio-surface)}}
@@ -95,3 +95,11 @@ html[data-elio] #elio-palette-native{margin-inline-end:8px}
 /* Liquid Glass a11y: hint texts that the legacy styles dimmed below AA on translucent surfaces */
 html[data-desktop-theme] :is(.explorer-tree-heading>span,.explorer-empty>span,.explorer-detail-footer kbd,.pc-task-center p,.pc-template-library p,.pc-creator small,.pc-sb-label,.pc-sb-foot,.rs-skill-offer small,.pc-notice-item small){opacity:.94}
 html[data-desktop-theme] p[style*="opacity:.75"]{opacity:.94!important}
+/* ===== Elio Clean (desktop shell): sans headings, flat accent buttons. Tokens: core/theme.css ===== */
+html[data-elio] body{font-family:var(--elio-font)}
+html[data-elio] :is(.brand-word,.page-title,.page-head h1,.home-heading h1,.hero-title,.explorer-heading h1),html[data-elio] #page-home .hero-agent h2{font-family:var(--elio-font)!important;font-weight:650!important;letter-spacing:-.02em!important;text-transform:none!important}
+html[data-elio] .brand-word{font-size:22px!important}
+html[data-elio] :is(.page-title,.page-head h1,.home-heading h1,.explorer-heading h1){font-size:26px!important}
+html[data-elio] .hero-title,html[data-elio] #page-home .hero-agent h2{font-size:18px!important}
+html[data-elio] :is(.accentbtn,.filter.active){background:var(--elio-accent)!important;border-color:var(--elio-accent)!important;box-shadow:none!important}
+html[data-elio] :is(.accentbtn,.filter.active):hover{background:color-mix(in srgb,var(--elio-accent) 88%,var(--elio-text))!important}

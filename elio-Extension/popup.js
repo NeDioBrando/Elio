@@ -16,7 +16,7 @@ const SUPPORTED_HOSTS = [
   "claude.ai", "claude.com",
   "gemini.google.com", "www.kimi.com", "kimi.com",
   "vani.ai", "www.vani.ai", "c.vani.ai", "chat.z.ai", "chat.qwen.ai", "arena.ai", "freebuff.ai", "freebuff.com", "notion.so", "notion.com",
-  "gpt.crax.lol", "use.ai", "www.use.ai", "oxalpha.com", "www.oxalpha.com", "oxalpha.org", "www.oxalpha.org",
+  "gpt.crax.lol", "use.ai", "www.use.ai", "oxalpha.com", "www.oxalpha.com", "oxalpha.org", "www.oxalpha.org", "app.hoplite.sh",
   "localhost", "127.0.0.1", "ollama.com",
 ];
 const DEFAULT_AI_URL = "https://chat.deepseek.com/";
@@ -188,7 +188,7 @@ if (runHint) {
     const names = {
       "chat.deepseek.com": "DeepSeek", "deepseek.com": "DeepSeek",
       "chatgpt.com": "ChatGPT", "chat.openai.com": "ChatGPT",
-      "app.clickup.com": "ClickUp Brain", "claude.ai": "Claude", "claude.com": "Claude",
+      "app.clickup.com": "ClickUp Brain", "app.hoplite.sh": "Hoplite", "claude.ai": "Claude", "claude.com": "Claude",
       "gemini.google.com": "Gemini",
       "kimi.com": "Kimi", "kimi.ai": "Kimi",
       "chat.z.ai": "GLM", "chat.qwen.ai": "Qwen",

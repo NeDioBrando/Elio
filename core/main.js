@@ -553,6 +553,7 @@
     { name: "Crax GPT", url: "https://gpt.crax.lol/" },
     { name: "Use AI", url: "https://use.ai/chat" },
     { name: "Ox Alpha", url: "https://oxalpha.com/chat" },
+    { name: "Hoplite", url: "https://app.hoplite.sh/threads" },
     { name: "Vani AI", url: "https://c.vani.ai/c" },
     { name: "Ollama", url: "ollama://local" },
   ];
